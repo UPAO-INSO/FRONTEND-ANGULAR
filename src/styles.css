@@ -1,11 +1,59 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: light --default;
+  themes: light --default, dark --prefersdark;
 }
 @theme {
   --color-gold: oklch(0.87 0.13 80.5);
   --color-brown: oklch(0.73 0.13 60.5);
   --color-background: oklch(0.2101 0.0318 264.66);
+  --color-secondary-background: oklch(0.223 0.0313 264.77);
   --color-side-background: oklch(0.2781 0.0296 256.85);
   --color-navbar-background: oklch(0.2522 0.0296 256.85);
+  --color-status: oklch(0.753 0.1199 228.77);
+  --color-status-cancelled: oklch(0.6368 0.2078 25.33);
+  --color-status-ready: oklch(0.7227 0.192 149.58);
+}
+@layer utilities {
+  .text-outline {
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+      1px 1px 0 #000;
+  }
+
+  .text-stroke {
+    -webkit-text-stroke: 1px black;
+  }
+
+  .text-stroke-thin {
+    -webkit-text-stroke: 0.5px black;
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: #374150 #1f2937;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    background: #22223b;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #374150;
+    border-radius: 8px;
+  }
+
+  .custom-secondary-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: #374150 #141b2a;
+  }
+
+  .custom-secondary-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    background: #22223b;
+  }
+
+  .custom-secondary-scrollbar::-webkit-scrollbar-thumb {
+    background: #374150;
+    border-radius: 8px;
+  }
 }
