@@ -1,0 +1,119 @@
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable, signal } from '@angular/core';
+import { catchError, map, Observable, tap, throwError } from 'rxjs';
+import { OrderMapper } from '../mapper/order.mapper';
+import { ContentOrder, Order, RESTOrder } from '../interfaces/order.interface';
+import { environment } from '@environments/environment';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class OrderService {
+  private http = inject(HttpClient);
+
+  envs = environment;
+  token = this.envs.API_TOKEN;
+
+  private page = signal(0);
+
+  ordersByTableIds = signal<Order[]>([]);
+  orders = signal<Order[]>([]);
+  tableIds = signal<number[]>([]);
+  filterOrders = signal<Order[]>([]);
+
+  fecthOrders(): Observable<Order[]> {
+    return this.http
+      .get<RESTOrder>(`${this.envs.API_URL}/orders`, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+        params: {
+          page: this.page(),
+          limit: 10,
+        },
+      })
+      .pipe(
+        map(({ content }) => OrderMapper.mapRestOrdersToOrdersArray(content)),
+        tap((orders) => {
+          this.orders.set(orders);
+          this.tableIds.set(orders.map((order) => order.mesa));
+        }),
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => new Error(`No se pudo obtener ordenes`));
+        })
+      );
+  }
+
+  fetchFilterOrder(status: string): Observable<Order[]> {
+    status = status.toUpperCase();
+
+    return this.http
+      .get<ContentOrder[]>(`${this.envs.API_URL}/orders/filter-by`, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+        params: {
+          status: status,
+        },
+      })
+      .pipe(
+        map((resp) => OrderMapper.mapRestOrdersToOrdersArray(resp)),
+        tap((orders) => {
+          this.filterOrders.set(orders);
+          this.tableIds.set(orders.map((order) => order.mesa));
+        }),
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(
+            () => new Error(`No se pudo obtener ordenes con ${status}`)
+          );
+        })
+      );
+  }
+
+  fetchOrderByTableIds(tableIds: number[]) {
+    return this.http
+      .post<ContentOrder[]>(`${this.envs.API_URL}/orders/tables`, tableIds, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      })
+      .pipe(
+        map((resp) => OrderMapper.mapRestOrdersToOrdersArray(resp)),
+        tap((orders) => this.ordersByTableIds.set(orders)),
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(
+            () => new Error(`No se pudo obtener ordenes con ${tableIds}`)
+          );
+        })
+      );
+  }
+
+  getOrderStatus(status: string): { class: string; text: string } {
+    switch (status) {
+      case 'PENDING':
+        return { class: 'badge bg-amber-500', text: status };
+      case 'PREPARING':
+        return {
+          class: 'badge bg-blue-600',
+          text: status,
+        };
+      case 'PAID':
+        return { class: 'badge bg-purple-700', text: status };
+      case 'READY':
+        return { class: 'badge bg-status-ready', text: status };
+      case 'CANCELLED':
+        return {
+          class: 'badge bg-status-cancelled',
+          text: status,
+        };
+      default:
+        return { class: 'badge bg-gray-500', text: status };
+    }
+  }
+}

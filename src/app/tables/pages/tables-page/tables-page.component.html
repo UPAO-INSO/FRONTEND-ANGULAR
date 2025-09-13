@@ -1,0 +1,12 @@
+<app-table-header-status (status)="tableStatus.set($event)" />
+
+<app-table-list
+  [tables]="tableResource.value() ?? []"
+  [filterTables]="filterTableResource.value() ?? []"
+  [isEmpty]="tableResource.value()?.length === 0"
+  [filterIsEmpty]="filterTableResource.value()?.length === 0"
+  [isLoading]="tableResource.isLoading()"
+  [filterIsLoading]="filterTableResource.isLoading()"
+/>
+
+<app-pagination />
