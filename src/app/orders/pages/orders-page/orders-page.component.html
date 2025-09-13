@@ -1,2 +1,17 @@
-<p>orders-page works!</p>
-,
+@if (orderResource.error() || filterOrderResource.error()) {
+<app-not-found />
+} @else if (orderResource.hasValue() || filterOrderResource.hasValue()) {
+<app-order-header-status (status)="orderStatus.set($event)" />
+
+<app-order-list
+  [orders]="orderResource.value() ?? []"
+  [isEmpty]="orderResource.value()?.length === 0"
+  [isLoading]="orderResource.isLoading()"
+  [errorMessage]="orderResource.error()"
+  [filterOrders]="filterOrderResource.value() ?? []"
+  [filterIsEmpty]="filterOrderResource.value()?.length === 0"
+  [filterIsLoading]="filterOrderResource.isLoading()"
+/>
+
+<app-pagination />
+}

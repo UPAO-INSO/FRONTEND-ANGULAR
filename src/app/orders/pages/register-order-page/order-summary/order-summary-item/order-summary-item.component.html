@@ -1,0 +1,34 @@
+<!-- order-summary-item.component.html -->
+<div class="flex items-center justify-between py-1">
+  <div class="flex items-center space-x-4">
+    <img
+      alt="Crispy Calamari Thumbnail"
+      class="w-12 h-12 rounded-md object-cover"
+      src="https://lh3.googleusercontent.com/aida-public/AB6AXuArr8YlVyZU0vwnMlylp53O7qh2SNZPUIvqsT6FWs5gwQ6Z7TmyHtvsQOqMzjVoKjH2kj_alwVpqKiapFe3A5t1fAy8T9lpScigCM5qDG0Kl1UXgAoyeJfJX1QleYQPEu3MsYO1HvX_X98sUyD8KUSkG5nKtAqsvXpRyo-wICO4FMZIO7kQACf6FgivDb5scXNltNBc-eSNcFSpLILYn8y8qEyee7pYWcRlsMoUnCfHPNcjkvnOcyDV-2iQrxfvShFt0ekAkf-wCaJ9"
+    />
+    <div>
+      <p class="font-semibold text-gray-200">{{ productSummary().name }}</p>
+      <div class="flex items-center mt-1 text-gray-200">
+        <button
+          class="w-5 h-5 rounded-full border border-gray-500 flex items-center justify-center text-lg font-bold leading-none cursor-pointer"
+        >
+          -
+        </button>
+        <span class="mx-2 text-sm font-bold">{{
+          productSummary().quantity
+        }}</span>
+        <button
+          class="w-5 h-5 rounded-full border border-gray-500 flex items-center justify-center text-lg font-bold leading-none cursor-pointer"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col items-end space-y-1 min-w-[90px]">
+    <p class="text-sm font-semibold text-gray-200">
+      S/. {{ productSummary().subtotal }}
+    </p>
+    <i class="fa-solid fa-trash text-sm text-red-400 cursor-pointer"></i>
+  </div>
+</div>

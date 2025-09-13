@@ -1,0 +1,21 @@
+<div class="flex items-center justify-center h-full w-full">
+  <div class="flex items-center grid-cols-3 text-gray-200 space-x-2">
+    <button
+      class="join-item btn bg-side-background border border-gray-700 rounded-box px-7"
+      (click)="setPage(page() - 1)"
+    >
+      Atras
+    </button>
+    <span
+      class="flex items-center justify-center h-10 w-10 rounded-full border-0 border-white bg-side-background/40 font-semibold text-sm pb-1"
+    >
+      {{ page() }}
+    </span>
+    <button
+      class="join-item btn bg-side-background border-gray-700 rounded-box"
+      (click)="setPage(page() + 1)"
+    >
+      Adelante
+    </button>
+  </div>
+</div>

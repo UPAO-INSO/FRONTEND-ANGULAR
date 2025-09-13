@@ -1,0 +1,51 @@
+<div
+  class="h-[calc(100vh-14rem)] relative overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 my-5"
+  #groupDiv
+>
+  <!-- (scroll)="onScroll($event)" -->
+  <button class="btn" onclick="my_modal_3.showModal()">open modal</button>
+  <dialog id="my_modal_3" class="modal">
+    <div class="modal-box text-white">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+          ✕
+        </button>
+      </form>
+      <h3 class="text-lg font-bold">Hello!</h3>
+      <p class="py-4">Press ESC key or click on ✕ button to close</p>
+    </div>
+  </dialog>
+  @if (filterTables().length > 0) { @for (filterTable of filterTables(); track
+  $index) {
+  <app-table-list-item [table]="filterTable" class="h-60" />
+  } } @else { @for (table of tables(); track $index) {
+  <app-table-list-item [table]="table" class="h-60" />
+  } }
+
+  <!--  -->
+  @if (errorMessage()) {
+  <tr>
+    <td colspan="8" class="text-center">
+      {{ errorMessage() }}
+    </td>
+  </tr>
+  }
+
+  <!--  -->
+  @if (isLoading()) {
+  <div
+    class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-1/2 w-1/2 flex items-center justify-center bg-gray-800 rounded-lg"
+  >
+    <span class="loading loading-bars loading-lg bg-white"></span>
+  </div>
+  }
+
+  <!--  -->
+  @if (tables().length === 0 && !isLoading() ) {
+  <div
+    class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-1/2 w-1/2 flex items-center justify-center bg-gray-800 rounded-lg"
+  >
+    <span class="text-white font-bold">No se encontraron resultados</span>
+  </div>
+  }
+</div>

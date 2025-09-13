@@ -1,0 +1,85 @@
+<div class="mb-4">
+  <section class="mt-5 overflow-x-auto rounded-lg border border-gray-700">
+    <table class="table table-md w-full divide-y divide-gray-700">
+      <thead class="text-xs text-gray-400 uppercase bg-side-background">
+        <tr class="divide-y divide-gray-700">
+          <th>#</th>
+          <th>Mesa</th>
+          <th>Hora</th>
+          <th>Productos</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 text-gray-200 bg-side-background">
+        @if (filterOrders().length > 0) { @for (filterOrder of filterOrders();
+        track filterOrder.id; let index = $index) {
+        <tr>
+          <td>{{ index + 1 }}</td>
+          <td>{{ filterOrder.mesa }}</td>
+          <td>
+            {{ filterOrder.createdAt | date : "HH:mm:ss" }}
+          </td>
+          <td>{{ filterOrder.productos }}</td>
+          <td class="font-semibold">
+            <span [class]="getOrderStatus(filterOrder.estado).class">
+              {{
+                getOrderStatus(filterOrder.estado).text
+                  | replaceUnderscore
+                  | titlecase
+              }}
+            </span>
+          </td>
+        </tr>
+        } } @else { @for (order of orders(); track order.id; let index = $index)
+        {
+        <tr>
+          <td>{{ index + 1 }}</td>
+          <td>{{ order.mesa }}</td>
+          <td>
+            {{ order.createdAt | date : "HH:mm:ss" }}
+          </td>
+          <td>{{ order.productos }}</td>
+          <td class="font-semibold">
+            <span [class]="getOrderStatus(order.estado).class">
+              {{
+                getOrderStatus(order.estado).text
+                  | replaceUnderscore
+                  | titlecase
+              }}
+            </span>
+          </td>
+        </tr>
+        } }
+
+        <!--  -->
+        @if (errorMessage()) {
+        <tr>
+          <td colspan="8" class="text-center">
+            {{ errorMessage() }}
+          </td>
+        </tr>
+        }
+
+        <!--  -->
+        @if (orders().length === 0 && !isLoading()) {
+        <tr>
+          <td colspan="8" class="text-center py-10">
+            No se encontraron resultados
+          </td>
+        </tr>
+        }
+
+        <!--  -->
+        @if (isLoading()) {
+        <tr>
+          <td colspan="8" class="text-center pb-12">
+            <div class="flex flex-row items-center justify-center">
+              <span class="loading loading-bars loading-lg mt-10"></span>
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</div>

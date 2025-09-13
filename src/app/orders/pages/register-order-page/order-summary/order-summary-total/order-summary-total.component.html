@@ -1,0 +1,22 @@
+<!-- order-summary-total.component.html -->
+<div class="px-1 sm:px-2 pb-4 text-white">
+  <div class="mt-6 border-t pt-4 space-y-3">
+    <div class="flex justify-between text-gray-200">
+      <p>Subtotal</p>
+      <p>S/. {{ getSubtotal(productsSummary) }}</p>
+    </div>
+    <div class="flex justify-between text-gray-200">
+      <p>Tax (7%)</p>
+      <p>S/. {{ tax }}</p>
+    </div>
+    <div class="flex justify-between font-bold text-gray-200 text-lg">
+      <p>Total</p>
+      <p>S/. {{ total }}</p>
+    </div>
+  </div>
+  <button
+    class="w-full bg-red-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-red-700 transition-colors"
+  >
+    Crear
+  </button>
+</div>
