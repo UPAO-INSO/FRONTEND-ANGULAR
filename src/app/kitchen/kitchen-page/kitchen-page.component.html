@@ -1,0 +1,22 @@
+<div class="kitchen-page">
+  <h1>Active Orders</h1>
+  <div class="order-list">
+    <div *ngFor="let order of orders" class="order-item">
+      <div class="order-header">
+        <h2>Table {{ order.mesa }}</h2>
+        <span>#{{ order.id }}</span>
+      </div>
+      <div class="order-details">
+        <p *ngFor="let product of order.productos">{{ product.quantity }}x Product ID: {{ product.productId }}</p>
+      </div>
+      <div class="order-status">
+        <span [ngClass]="order.estado">{{ order.estado }}</span>
+      </div>
+      <div class="order-actions">
+        <button *ngIf="order.estado === 'PENDIENTE'" (click)="startPreparation(order)">Start Preparation</button>
+        <button *ngIf="order.estado === 'EN_PREPARACION'" (click)="markAsFinished(order)">Mark as Finished</button>
+        <button *ngIf="order.estado === 'LISTO'" disabled>Completed</button>
+      </div>
+    </div>
+  </div>
+</div>

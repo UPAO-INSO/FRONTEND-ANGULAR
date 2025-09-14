@@ -94,6 +94,29 @@ export class OrderService {
       );
   }
 
+  updateOrder(order: Order): Observable<Order> {
+    return this.http
+      .put<Order>(`${this.envs.API_URL}/orders/${order.id}`, order, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      })
+      .pipe(
+        tap((updatedOrder) => {
+          const orders = this.orders();
+          const index = orders.findIndex((o) => o.id === updatedOrder.id);
+          if (index !== -1) {
+            orders[index] = updatedOrder;
+            this.orders.set(orders);
+          }
+        }),
+        catchError((error) => {
+          console.log({ error });
+          return throwError(() => new Error(`No se pudo actualizar la orden ${order.id}`));
+        })
+      );
+  }
+
   getOrderStatus(status: string): { class: string; text: string } {
     switch (status) {
       case 'PENDING':
