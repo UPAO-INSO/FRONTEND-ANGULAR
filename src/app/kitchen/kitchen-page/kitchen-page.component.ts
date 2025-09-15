@@ -6,7 +6,6 @@ import { Order, OrderStatus } from '../../orders/interfaces/order.interface';
   selector: 'app-kitchen-page',
   templateUrl: './kitchen-page.component.html',
   styleUrls: ['./kitchen-page.component.css'],
-  standalone: false
 })
 export class KitchenPageComponent implements OnInit {
   orders: Order[] = [];

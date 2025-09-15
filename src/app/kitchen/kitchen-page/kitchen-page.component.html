@@ -1,7 +1,8 @@
-<div class="kitchen-page">
+<div class="text-white">
   <h1>Active Orders</h1>
   <div class="order-list">
-    <div *ngFor="let order of orders" class="order-item">
+    @for(order of orders;track order.id){
+    <div class="order-item">
       <div class="order-header">
         <h2>Table {{ order.mesa }}</h2>
         <span>#{{ order.id }}</span>
@@ -18,5 +19,6 @@
         <button *ngIf="order.estado === 'LISTO'" disabled>Completed</button>
       </div>
     </div>
+    }
   </div>
 </div>
