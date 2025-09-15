@@ -14,6 +14,10 @@ export const routes: Routes = [
         path: 'orders',
         loadChildren: () => import('./orders/order.routes'),
       },
+      {
+        path: 'kitchen',
+        loadChildren: () => import('./kitchen/kitchen.routes'),
+      }
     ],
   },
   {

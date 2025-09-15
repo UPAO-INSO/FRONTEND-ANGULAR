@@ -1,7 +1,7 @@
 export interface Order {
   id: number;
   mesa: number;
-  productos: [];
+  productos: ProductOrder[];
   estado: OrderStatus | string;
   total: number;
   createdAt: Date;
