@@ -1,0 +1,36 @@
+<div class="text-white">
+  <h1>Active Orders</h1>
+  <div class="overflow-y-auto">
+    @for(order of orders;track order.id){
+    <div class="order-item">
+      <div class="order-header">
+        <h2>Table {{ order.mesa }}</h2>
+        <span>#{{ order.id }}</span>
+      </div>
+      <div class="order-details">
+        @for (product of order.productos; track $index) {
+        <p>{{ product.quantity }}x Product ID: {{ product.productId }}</p>
+        }
+      </div>
+      <div class="order-status">
+        <span [class]="order.estado">{{ order.estado }}</span>
+      </div>
+      <div class="order-actions">
+        @if(order.estado === orderStatus.PENDIENTE) {
+        <button (click)="startPreparation(order)">Start Preparation</button>
+        }
+
+        <!--  -->
+        @if(order.estado === orderStatus.EN_PREPARACION) {
+        <button (click)="startPreparation(order)">Start Preparation</button>
+        }
+
+        <!--  -->
+        @if(order.estado === orderStatus.TERMINADO) {
+        <button (click)="startPreparation(order)">Completed</button>
+        }
+      </div>
+    </div>
+    }
+  </div>
+</div>
