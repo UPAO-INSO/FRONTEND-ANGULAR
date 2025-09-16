@@ -4,7 +4,7 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root',
 })
 export class HeaderStateService {
-  header = signal<string>('Mesas');
+  header = signal<string>('');
 
   changeHeader(value: string) {
     this.header.set(value);
