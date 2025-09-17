@@ -1,6 +1,6 @@
-<div class="text-white">
+<div class="text-white kitchen-page">
   <h1>Active Orders</h1>
-  <div class="overflow-y-auto">
+  <div class="overflow-auto order-list">
     @for(order of orders;track order.id){
     <div class="order-item">
       <div class="order-header">
@@ -17,17 +17,23 @@
       </div>
       <div class="order-actions">
         @if(order.estado === orderStatus.PENDIENTE) {
-        <button (click)="startPreparation(order)">Start Preparation</button>
+        <button class="order-item" (click)="startPreparation(order)">
+          Start Preparation
+        </button>
         }
 
         <!--  -->
         @if(order.estado === orderStatus.EN_PREPARACION) {
-        <button (click)="startPreparation(order)">Start Preparation</button>
+        <button class="order-item" (click)="markAsFinished(order)">
+          Start Preparation
+        </button>
         }
 
         <!--  -->
         @if(order.estado === orderStatus.TERMINADO) {
-        <button (click)="startPreparation(order)">Completed</button>
+        <button class="order-item" (click)="startPreparation(order)">
+          Completed
+        </button>
         }
       </div>
     </div>
