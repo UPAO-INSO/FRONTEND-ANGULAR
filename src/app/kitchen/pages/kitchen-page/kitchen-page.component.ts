@@ -1,85 +1,65 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { OrderStatus, Order } from 'src/app/orders/interfaces/order.interface';
+import { Component, inject, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
+
+import { OrderListComponent } from '../../components/order-list/kitchen-order-list.component';
 import { OrderService } from 'src/app/orders/services/order.service';
+import {
+  Order,
+  OrderStatus,
+  ProductOrder,
+  RestOrderStatus,
+} from 'src/app/orders/interfaces/order.interface';
+import type { KitchenOrder } from '../../interfaces/kitchen-order.interface';
+import { map, tap } from 'rxjs';
 
 @Component({
   selector: 'app-kitchen-page',
+  imports: [CommonModule, OrderListComponent],
   templateUrl: './kitchen-page.component.html',
-  styleUrls: ['./kitchen-page.component.css'],
 })
-export class KitchenPageComponent implements OnInit {
-  orders: Order[] = [
-    {
-      id: 1,
-      estado: 'PENDIENTE',
-      total: 10,
-      createdAt: new Date(),
-      mesa: 1,
-      productos: [],
-    },
-    {
-      id: 2,
-      estado: 'EN_PREPARACION',
-      total: 10,
-      createdAt: new Date(),
-      mesa: 1,
-      productos: [],
-    },
-    {
-      id: 3,
-      estado: 'PENDIENTE',
-      total: 10,
-      createdAt: new Date(),
-      mesa: 1,
-      productos: [],
-    },
-    {
-      id: 4,
-      estado: 'PENDIENTE',
-      total: 10,
-      createdAt: new Date(),
-      mesa: 1,
-      productos: [],
-    },
-    {
-      id: 5,
-      estado: 'TERMINADO',
-      total: 10,
-      createdAt: new Date(),
-      mesa: 1,
-      productos: [],
-    },
-  ];
-
+export class KitchenPageComponent {
   orderService = inject(OrderService);
+  changeStatus = signal<RestOrderStatus.PREPARING | RestOrderStatus.READY>(
+    RestOrderStatus.PREPARING
+  );
   orderStatus = OrderStatus;
 
-  ngOnInit(): void {
-    this.loadOrders();
-  }
+  orderKitcheStatus = [
+    RestOrderStatus.PENDING,
+    RestOrderStatus.PREPARING,
+    RestOrderStatus.READY,
+  ];
 
-  loadOrders(): void {
-    this.orderService.fecthOrders().subscribe((orders) => {
-      this.orders = orders.sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  orderResource = rxResource({
+    params: () => ({ query: this.orderKitcheStatus }),
+    stream: ({ params }) => {
+      return this.orderService.fetchKitchenOrders(params.query).pipe(
+        tap((orders) => {
+          orders.sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        }),
+        tap((orders) => console.log({ orders }))
       );
-    });
+    },
+  });
+
+  mapOrderToKitchenOrder(order: Order): KitchenOrder {
+    return {
+      id: order.id,
+      mesa: order.mesa,
+      estado: order.estado as 'PENDIENTE' | 'EN_PREPARACION' | 'LISTO',
+      createdAt: order.createdAt,
+      productos: order.productos.map((p) => ({
+        nombre: (p as ProductOrder).name ?? '', // Ajusta según tu modelo
+        cantidad: p.quantity ?? 0,
+      })),
+    };
   }
 
-  startPreparation(order: Order): void {
-    order.estado = OrderStatus.EN_PREPARACION;
-    this.orderService.updateOrder(order).subscribe();
-  }
-
-  markAsFinished(order: Order): void {
-    order.estado = OrderStatus.LISTO;
-    this.orderService.updateOrder(order).subscribe(() => {
-      this.notifyWaiter(order);
-    });
-  }
-
-  notifyWaiter(order: Order): void {
+  notifyWaiter(order: KitchenOrder) {
     console.log(`Order ${order.id} is ready for delivery.`);
   }
 }

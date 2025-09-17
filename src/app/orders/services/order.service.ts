@@ -2,7 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, map, Observable, tap, throwError } from 'rxjs';
 import { OrderMapper } from '../mapper/order.mapper';
-import { ContentOrder, Order, RESTOrder } from '../interfaces/order.interface';
+import {
+  ContentOrder,
+  Order,
+  RESTOrder,
+  RestOrderStatus,
+} from '../interfaces/order.interface';
 import { environment } from '@environments/environment';
 
 @Injectable({
@@ -26,6 +31,7 @@ export class OrderService {
       .get<RESTOrder>(`${this.envs.API_URL}/orders`, {
         headers: {
           Authorization: `Bearer ${this.token}`,
+          'ngrok-skip-browser-warning': 'true',
         },
         params: {
           page: this.page(),
@@ -42,6 +48,31 @@ export class OrderService {
           console.log({ error });
 
           return throwError(() => new Error(`No se pudo obtener ordenes`));
+        })
+      );
+  }
+
+  fetchKitchenOrders(status: RestOrderStatus[]): Observable<Order[]> {
+    return this.http
+      .post<RESTOrder>(
+        `${this.envs.API_URL}/orders/filter-array-status`,
+        [...status],
+        {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+          params: {
+            page: this.page(),
+            limit: 10,
+          },
+        }
+      )
+      .pipe(
+        map(({ content }) => OrderMapper.mapRestOrdersToOrdersArray(content)),
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => new Error('No se pudo obtener ordenes'));
         })
       );
   }
@@ -112,7 +143,9 @@ export class OrderService {
         }),
         catchError((error) => {
           console.log({ error });
-          return throwError(() => new Error(`No se pudo actualizar la orden ${order.id}`));
+          return throwError(
+            () => new Error(`No se pudo actualizar la orden ${order.id}`)
+          );
         })
       );
   }

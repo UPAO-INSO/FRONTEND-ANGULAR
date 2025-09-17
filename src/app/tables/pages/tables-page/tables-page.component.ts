@@ -5,9 +5,7 @@ import { of } from 'rxjs';
 import { TableListComponent } from '../../components/table-list/table-list.component';
 import { TableHeaderStatusComponent } from '../../components/table-list/table-header-status/table-header-status.component';
 import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
-import { OrderService } from 'src/app/orders/services/order.service';
 import { TableService } from '../../services/table.service';
-import { Table } from '../../interfaces/table.interface';
 
 @Component({
   selector: 'app-orders-page',
