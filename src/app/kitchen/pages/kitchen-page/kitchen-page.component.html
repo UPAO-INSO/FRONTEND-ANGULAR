@@ -1,42 +1,7 @@
-<div class="text-white kitchen-page">
-  <h1>Active Orders</h1>
-  <div class="overflow-auto order-list">
-    @for(order of orders;track order.id){
-    <div class="order-item">
-      <div class="order-header">
-        <h2>Table {{ order.mesa }}</h2>
-        <span>#{{ order.id }}</span>
-      </div>
-      <div class="order-details">
-        @for (product of order.productos; track $index) {
-        <p>{{ product.quantity }}x Product ID: {{ product.productId }}</p>
-        }
-      </div>
-      <div class="order-status">
-        <span [class]="order.estado">{{ order.estado }}</span>
-      </div>
-      <div class="order-actions">
-        @if(order.estado === orderStatus.PENDIENTE) {
-        <button class="order-item" (click)="startPreparation(order)">
-          Start Preparation
-        </button>
-        }
-
-        <!--  -->
-        @if(order.estado === orderStatus.EN_PREPARACION) {
-        <button class="order-item" (click)="markAsFinished(order)">
-          Start Preparation
-        </button>
-        }
-
-        <!--  -->
-        @if(order.estado === orderStatus.TERMINADO) {
-        <button class="order-item" (click)="startPreparation(order)">
-          Completed
-        </button>
-        }
-      </div>
-    </div>
-    }
-  </div>
+<div class="p-8">
+  <h1 class="text-2xl font-bold mb-6 text-white">Active Orders</h1>
+  <app-order-list
+    [orders]="orderResource.value() ?? []"
+    (changeStatus)="changeStatus()"
+  ></app-order-list>
 </div>

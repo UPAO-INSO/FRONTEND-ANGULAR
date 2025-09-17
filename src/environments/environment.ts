@@ -4,7 +4,7 @@ export const environment = {
   companyName2: 'App',
   companySlogan: 'Gestiona tus pedidos',
 
-  API_URL: 'http://127.0.0.1:4000/api',
+  API_URL: 'https://9802dc90d874.ngrok-free.app/api',
   API_TOKEN:
-    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1NzgzMTcyNiwiZXhwIjoxNzU3ODM1MzI2fQ.twufESI6NFJZQRyDy32rkp8y7FNBRCR_F8iol0gS7frHHLRROA-HIKe21UbFURY9',
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1ODE0NDcwMywiZXhwIjoxNzU4MTQ4MzAzfQ.87-Trt6jOIjIRCZ8kfrEX_7Yh2IVwuZFYX0wuiRFoJL4EgfunxtI5w8Gvp1q0HmA',
 };

@@ -36,6 +36,7 @@ export class TableService {
       .get<RESTTable>(`${this.envs.API_URL}/tables`, {
         headers: {
           Authorization: `Bearer ${this.token}`,
+          'ngrok-skip-browser-warning': 'true',
         },
         params: {
           page: page,

@@ -1,0 +1,9 @@
+<div class="flex flex-wrap gap-4 text-white">
+  @for (order of orders(); track order.id) {
+  <app-order-card
+    class="flex-1"
+    [order]="order"
+    (changeStatus)="changeStatus.emit($event)"
+  ></app-order-card>
+  }
+</div>

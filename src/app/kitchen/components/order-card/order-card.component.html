@@ -1,0 +1,51 @@
+<div
+  class="bg-side-background rounded-xl shadow-md p-4 w-full max-w-xs flex flex-col gap-2"
+>
+  <div class="flex justify-between">
+    <div class="flex flex-col items-start justify-start">
+      <span class="font-bold text-lg">Table {{ order().mesa }}</span>
+      <span class="text-xs text-gray-400 ml-2">ID {{ order().id }}</span>
+    </div>
+    <span class="text-xs text-gray-500">{{
+      order().createdAt | date : "HH:mm"
+    }}</span>
+  </div>
+  <ul class="text-sm text-gray-700 mb-2">
+    @for (prod of order().productos; track $index) {
+    <li>{{ prod.quantity }}x {{ prod.name }}</li>
+    }
+  </ul>
+  <div class="mb-2">
+    <span class="badge {{ statusColor }} text-xs px-2 py-1">{{
+      getStatusLabel()
+    }}</span>
+  </div>
+  <div>
+    <!--  -->
+    @if(order().estado === orderStatus.PENDING) {
+    <button
+      class="btn btn-error btn-block btn-sm"
+      (click)="changeStatus.emit(orderStatus.PREPARING)"
+    >
+      Start Preparation
+    </button>
+    }
+
+    <!--  -->
+    @if (order().estado === orderStatus.PREPARING) {
+    <button
+      class="btn btn-success btn-block btn-sm"
+      (click)="changeStatus.emit(orderStatus.READY)"
+    >
+      Mark as Finished
+    </button>
+    }
+
+    <!--  -->
+    @if (order().estado === orderStatus.READY) {
+    <button class="btn btn-block btn-sm btn-disabled" disabled>
+      Completed
+    </button>
+    }
+  </div>
+</div>
