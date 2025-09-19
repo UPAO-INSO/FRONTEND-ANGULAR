@@ -2,7 +2,7 @@
 <div class="flex flex-wrap border-b mb-6 gap-2">
   @for (category of productCategories(); track category.id) {
   <button
-    class="py-2 px-4 text-gray-400 hover:text-gray-700 cursor-pointer border-b-2"
+    class="py-2 px-4 text-gray-500 hover:text-red-400 cursor-pointer border-b-2"
     (click)="selectCategory(category)"
     [class.text-red-600]="selectedCategory() === category"
   >
