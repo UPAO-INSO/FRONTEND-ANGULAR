@@ -7,7 +7,7 @@ import { Table, TableStatus } from '../../../interfaces/table.interface';
   templateUrl: './table-header-status.component.html',
 })
 export class TableHeaderStatusComponent {
-  status = output<string>();
+  status = output<TableStatus | null>();
 
-  TableStatus = TableStatus;
+  tableStatus = TableStatus;
 }

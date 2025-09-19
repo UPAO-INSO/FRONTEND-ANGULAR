@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '@environments/environment';
 import { Observable, map, tap } from 'rxjs';
-import { Table, RESTTable } from '../interfaces/table.interface';
+import { Table, RESTTable, TableStatus } from '../interfaces/table.interface';
 import { TableMapper } from '../mapper/table.mapper';
 
 @Injectable({
@@ -36,7 +36,6 @@ export class TableService {
       .get<RESTTable>(`${this.envs.API_URL}/tables`, {
         headers: {
           Authorization: `Bearer ${this.token}`,
-          'ngrok-skip-browser-warning': 'true',
         },
         params: {
           page: page,
@@ -45,17 +44,12 @@ export class TableService {
       })
       .pipe(
         tap((resp) => this.totalPages.set(resp.totalPages)),
-        map(({ content }) => {
-          const tables = TableMapper.mapRestTablesToTableArray(content);
-          this.tables.set(tables);
-          return tables;
-        })
+        map(({ content }) => TableMapper.mapRestTablesToTableArray(content)),
+        tap((tables) => this.tables.set(tables))
       );
   }
 
-  fetchFilterTables(status: string): Observable<Table[]> {
-    status = status.toUpperCase();
-
+  fetchFilterTables(status: TableStatus): Observable<Table[]> {
     return this.http
       .get<RESTTable>(`${this.envs.API_URL}/tables/filter-by`, {
         headers: {

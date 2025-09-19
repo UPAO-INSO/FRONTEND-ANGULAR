@@ -1,11 +1,13 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { of } from 'rxjs';
+import { of, tap } from 'rxjs';
 
 import { TableListComponent } from '../../components/table-list/table-list.component';
 import { TableHeaderStatusComponent } from '../../components/table-list/table-header-status/table-header-status.component';
 import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
 import { TableService } from '../../services/table.service';
+import { ProductService } from 'src/app/products/services/product.service';
+import { TableStatus } from '../../interfaces/table.interface';
 
 @Component({
   selector: 'app-orders-page',
@@ -18,8 +20,10 @@ import { TableService } from '../../services/table.service';
 })
 export class TablesPageComponent {
   tableService = inject(TableService);
+  productService = inject(ProductService);
 
-  tableStatus = signal('');
+  tableStatusEnum = TableStatus;
+  selectedStatusFilter = signal<TableStatus | null>(null);
 
   tableResource = rxResource({
     params: () => ({
@@ -33,12 +37,28 @@ export class TablesPageComponent {
   });
 
   filterTableResource = rxResource({
-    params: () => ({ query: this.tableStatus() }),
+    params: () => ({ query: this.selectedStatusFilter() }),
 
     stream: ({ params }) => {
       if (!params.query) return of([]);
 
       return this.tableService.fetchFilterTables(params.query);
+    },
+  });
+
+  productResource = rxResource({
+    stream: () => {
+      return this.productService
+        .fetchProducts()
+        .pipe(tap((products) => console.log({ products })));
+    },
+  });
+
+  productTypeResource = rxResource({
+    stream: () => {
+      return this.productService
+        .fetchProductsType()
+        .pipe(tap((productTypes) => console.log({ productTypes })));
     },
   });
 }

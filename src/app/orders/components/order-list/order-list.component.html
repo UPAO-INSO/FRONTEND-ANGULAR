@@ -10,9 +10,11 @@
           <th>Estado</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100 text-gray-200 bg-side-background">
-        @if (filterOrders().length > 0) { @for (filterOrder of filterOrders();
-        track filterOrder.id; let index = $index) {
+      <tbody class="divide-y divide-gray-100 text-white bg-side-background">
+        @if (filterOrders().length > 0) {
+        <!--  -->
+        @for (filterOrder of filterOrders(); track filterOrder.id; let index =
+        $index) {
         <tr>
           <td>{{ index + 1 }}</td>
           <td>{{ filterOrder.mesa }}</td>
@@ -30,8 +32,11 @@
             </span>
           </td>
         </tr>
-        } } @else { @for (order of orders(); track order.id; let index = $index)
-        {
+        }
+        <!--  -->
+        } @else {
+        <!--  -->
+        @for (order of orders(); track order.id; let index = $index) {
         <tr>
           <td>{{ index + 1 }}</td>
           <td>{{ order.mesa }}</td>

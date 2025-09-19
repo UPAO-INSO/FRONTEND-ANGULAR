@@ -1,0 +1,39 @@
+<!-- src/app/orders/pages/register-order-page/order-summary/order-summary-item/order-summary-item.component.html -->
+<div class="flex items-center justify-between py-2 border-b border-gray-600">
+  <div class="flex-1">
+    <h3 class="font-medium text-sm">
+      {{ cartItem().product.name | titlecase }}
+    </h3>
+    <p class="text-gray-400 text-xs">
+      S/. {{ cartItem().product.price.toFixed(2) }}
+    </p>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <!-- Controles de cantidad -->
+    <button
+      class="w-6 h-6 rounded-full bg-gray-600 text-white text-xs hover:bg-gray-500"
+      (click)="decreaseQuantity()"
+    >
+      -
+    </button>
+
+    <span class="min-w-[2rem] text-center">{{ cartItem().quantity }}</span>
+
+    <button
+      class="w-6 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-500"
+      (click)="increaseQuantity()"
+    >
+      +
+    </button>
+
+    <!-- Botón eliminar -->
+    <button class="text-red-400 hover:text-red-300 ml-2" (click)="onRemove()">
+      <span class="fa-solid fa-trash text-xs"></span>
+    </button>
+  </div>
+
+  <div class="ml-2 text-right">
+    <span class="font-semibold">S/. {{ cartItem().subtotal.toFixed(2) }}</span>
+  </div>
+</div>

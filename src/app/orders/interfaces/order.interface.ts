@@ -7,11 +7,6 @@ export interface Order {
   createdAt: Date;
 }
 
-export interface Product {
-  id: number;
-  name: string;
-}
-
 export enum OrderStatus {
   PENDIENTE = 'PENDIENTE',
   EN_PREPARACION = 'EN_PREPARACION',
