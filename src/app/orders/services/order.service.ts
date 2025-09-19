@@ -21,6 +21,8 @@ export class OrderService {
 
   private page = signal(0);
 
+  activeOrdersByTable = signal<Map<number, Order>>(new Map());
+
   ordersByTableIds = signal<Order[]>([]);
   orders = signal<Order[]>([]);
   tableIds = signal<number[]>([]);
@@ -31,7 +33,6 @@ export class OrderService {
       .get<RESTOrder>(`${this.envs.API_URL}/orders`, {
         headers: {
           Authorization: `Bearer ${this.token}`,
-          'ngrok-skip-browser-warning': 'true',
         },
         params: {
           page: this.page(),

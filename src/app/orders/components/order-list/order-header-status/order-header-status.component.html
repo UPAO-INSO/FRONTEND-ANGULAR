@@ -2,7 +2,7 @@
   <div class="flex flex-row items-center gap-4 font-semibold">
     <div class="flex items-center gap-2 cursor-pointer">
       <span
-        class="badge bg-blue-600"
+        class="badge bg-blue-600 text-white"
         (click)="status.emit(orderStatus.PREPARING)"
       >
         Preparando
@@ -10,20 +10,23 @@
     </div>
     <div class="flex items-center gap-2 cursor-pointer">
       <span
-        class="badge bg-amber-500"
+        class="badge bg-amber-500 text-white"
         (click)="status.emit(orderStatus.PENDING)"
       >
         Pendiente
       </span>
     </div>
     <div class="flex items-center gap-2 cursor-pointer">
-      <span class="badge bg-purple-700" (click)="status.emit(orderStatus.PAID)">
+      <span
+        class="badge bg-purple-700 text-white"
+        (click)="status.emit(orderStatus.PAID)"
+      >
         Pagado
       </span>
     </div>
     <div class="flex items-center gap-2 cursor-pointer">
       <span
-        class="badge bg-status-cancelled"
+        class="badge bg-status-cancelled text-white"
         (click)="status.emit(orderStatus.CANCELLED)"
       >
         Cancelado
@@ -31,7 +34,7 @@
     </div>
     <div class="flex items-center gap-2 cursor-pointer">
       <span
-        class="badge bg-status-ready"
+        class="badge bg-status-ready text-white"
         (click)="status.emit(orderStatus.READY)"
       >
         Listo

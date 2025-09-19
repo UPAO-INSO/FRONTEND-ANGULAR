@@ -22,23 +22,23 @@ export class OrderListComponent {
   getOrderStatus(status: string): { class: string; text: string } {
     switch (status) {
       case 'PENDING':
-        return { class: 'badge bg-amber-500', text: status };
+        return { class: 'badge bg-amber-500 text-white', text: status };
       case 'PREPARING':
         return {
-          class: 'badge bg-blue-600',
+          class: 'badge bg-blue-600 text-white',
           text: status,
         };
       case 'PAID':
-        return { class: 'badge bg-purple-700', text: status };
+        return { class: 'badge bg-purple-700 text-white', text: status };
       case 'READY':
-        return { class: 'badge bg-status-ready', text: status };
+        return { class: 'badge bg-status-ready text-white', text: status };
       case 'CANCELLED':
         return {
-          class: 'badge bg-status-cancelled',
+          class: 'badge bg-status-cancelled text-white',
           text: status,
         };
       default:
-        return { class: 'badge bg-gray-500', text: status };
+        return { class: 'badge bg-gray-500 text-white', text: status };
     }
   }
 }

@@ -1,6 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
-import { Component, input, signal } from '@angular/core';
-import { OrderStatus } from 'src/app/orders/interfaces/order.interface';
+import { Component, computed, inject, input, output } from '@angular/core';
+import { OrderCartService } from 'src/app/orders/services/order-cart.service';
 import { Table, TableStatus } from 'src/app/tables/interfaces/table.interface';
 
 @Component({
@@ -9,10 +9,21 @@ import { Table, TableStatus } from 'src/app/tables/interfaces/table.interface';
   templateUrl: './table-list-item.component.html',
 })
 export class TableListItemComponent {
-  table = input.required<Table>();
-  orderStatus = input<OrderStatus>();
+  private orderCartService = inject(OrderCartService);
 
-  tableStatus = signal(TableStatus);
+  table = input.required<Table>();
+  tableStatus = input.required<typeof TableStatus>();
+
+  tableSelected = output<Table>();
+
+  hasOrders = computed(() => {
+    const tablesWithOrders = this.orderCartService.getTablesWithOrders();
+    return tablesWithOrders.includes(this.table().id);
+  });
+
+  onTableClick() {
+    this.tableSelected.emit(this.table());
+  }
 
   getOrderStatus(status: string): { class: string; text: string } {
     switch (status) {

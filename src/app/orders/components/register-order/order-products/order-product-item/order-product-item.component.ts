@@ -1,8 +1,9 @@
+import { TitleCasePipe } from '@angular/common';
 import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-order-product-item',
-  imports: [],
+  imports: [TitleCasePipe],
   templateUrl: './order-product-item.component.html',
 })
 export class OrderProductItemComponent {
