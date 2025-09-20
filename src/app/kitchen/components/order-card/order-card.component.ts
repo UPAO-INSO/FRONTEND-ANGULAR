@@ -1,45 +1,69 @@
-import { Component, input, output } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, computed, input, output, signal } from '@angular/core';
+import { DatePipe, TitleCasePipe } from '@angular/common';
 import {
-  Order,
-  OrderStatus,
-  RestOrderStatus,
-} from 'src/app/orders/interfaces/order.interface';
+  KitchenOrder,
+  KitchenOrderStatus,
+} from '../../interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-order-card',
-  imports: [DatePipe],
+  imports: [DatePipe, TitleCasePipe],
   templateUrl: './order-card.component.html',
 })
 export class OrderCardComponent {
-  order = input.required<Order>();
-  changeStatus = output<RestOrderStatus.PREPARING | RestOrderStatus.READY>();
+  order = input.required<KitchenOrder>();
+  changeStatus = output<KitchenOrderStatus>();
 
-  orderStatus = RestOrderStatus;
+  orderStatus = KitchenOrderStatus;
 
-  getStatusLabel() {
-    switch (this.order().estado) {
-      case 'PENDING':
-        return 'Pendiente';
-      case 'PREPARING':
-        return 'Preparando';
-      case 'READY':
-        return 'Listo';
-      default:
-        return '';
-    }
-  }
+  allStatuses = [
+    {
+      value: KitchenOrderStatus.PENDING,
+      label: 'Pendiente',
+      color: 'badge-warning',
+    },
+    {
+      value: KitchenOrderStatus.PREPARING,
+      label: 'Preparando',
+      color: 'badge-info',
+    },
+    { value: KitchenOrderStatus.READY, label: 'Listo', color: 'badge-success' },
+  ];
 
-  get statusColor() {
-    switch (this.order().estado) {
-      case 'PENDIENTE':
+  statusColor = computed(() => {
+    const status = this.order().estado;
+    switch (status) {
+      case KitchenOrderStatus.PENDING:
         return 'badge-warning';
-      case 'EN_PREPARACION':
+      case KitchenOrderStatus.PREPARING:
         return 'badge-info';
-      case 'LISTO':
+      case KitchenOrderStatus.READY:
         return 'badge-success';
       default:
-        return '';
+        return 'badge-neutral';
     }
+  });
+
+  // Computed para el label del estado
+  statusLabel = computed(() => {
+    const status = this.order().estado;
+    switch (status) {
+      case KitchenOrderStatus.PENDING:
+        return 'Pendiente';
+      case KitchenOrderStatus.PREPARING:
+        return 'Preparando';
+      case KitchenOrderStatus.READY:
+        return 'Listo';
+      default:
+        return 'Desconocido';
+    }
+  });
+
+  onStatusChange(newStatus: KitchenOrderStatus) {
+    this.changeStatus.emit(newStatus);
+  }
+
+  onManualStatusChange(newStatus: KitchenOrderStatus) {
+    this.changeStatus.emit(newStatus);
   }
 }

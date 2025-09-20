@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '@environments/environment';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, catchError, map, tap, throwError } from 'rxjs';
 import { Table, RESTTable, TableStatus } from '../interfaces/table.interface';
 import { TableMapper } from '../mapper/table.mapper';
 
@@ -31,7 +31,7 @@ export class TableService {
     this.page.set(page);
   }
 
-  fetchTables(page = this.page()): Observable<Table[]> {
+  fetchTables(page: number = 1): Observable<Table[]> {
     return this.http
       .get<RESTTable>(`${this.envs.API_URL}/tables`, {
         headers: {
@@ -44,8 +44,16 @@ export class TableService {
       })
       .pipe(
         tap((resp) => this.totalPages.set(resp.totalPages)),
-        map(({ content }) => TableMapper.mapRestTablesToTableArray(content)),
-        tap((tables) => this.tables.set(tables))
+        map(({ content }) => {
+          const tables = TableMapper.mapRestTablesToTableArray(content);
+          this.tables.set(tables);
+          return tables;
+        }),
+        catchError((error) => {
+          console.log({ error });
+          this.tables.set([]);
+          return throwError(() => new Error('Error al cargar las mesas'));
+        })
       );
   }
 

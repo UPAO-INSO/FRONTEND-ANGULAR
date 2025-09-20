@@ -20,6 +20,7 @@ export class TableListComponent {
 
   isEmpty = input<boolean>(false);
   isLoading = input<boolean>(false);
+  filterIsLoading = input<boolean>(false);
   errorMessage = input<string | unknown | null>();
 
   orderStatus = input<OrderStatus>();

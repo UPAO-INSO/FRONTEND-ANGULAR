@@ -11,16 +11,40 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100 text-white bg-side-background">
-        @if (filterOrders().length > 0) {
-        <!--  -->
+        <!-- Loading state -->
+        @if (isLoading()) {
+        <tr>
+          <td colspan="5" class="text-center py-12">
+            <div class="flex flex-col items-center justify-center">
+              <span class="loading loading-bars loading-lg"></span>
+              <span class="text-white font-medium mt-5"
+                >Cargando pedidos...</span
+              >
+            </div>
+          </td>
+        </tr>
+        } @else if (errorMessage()) {
+        <tr>
+          <td colspan="5" class="text-center py-12">
+            <div class="flex flex-col items-center justify-center text-red-400">
+              <span
+                class="fa-solid fa-exclamation-triangle text-4xl mb-3"
+              ></span>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          </td>
+        </tr>
+        }
+
+        <!-- Data states -->
+        @else { @if (filterOrders().length > 0) {
+        <!-- Filtered orders -->
         @for (filterOrder of filterOrders(); track filterOrder.id; let index =
         $index) {
         <tr>
           <td>{{ index + 1 }}</td>
           <td>{{ filterOrder.mesa }}</td>
-          <td>
-            {{ filterOrder.createdAt | date : "HH:mm:ss" }}
-          </td>
+          <td>{{ filterOrder.createdAt | date : "HH:mm:ss" }}</td>
           <td>{{ filterOrder.productos }}</td>
           <td class="font-semibold">
             <span [class]="getOrderStatus(filterOrder.estado).class">
@@ -32,17 +56,13 @@
             </span>
           </td>
         </tr>
-        }
-        <!--  -->
-        } @else {
-        <!--  -->
+        } } @else if (orders().length > 0) {
+        <!-- All orders -->
         @for (order of orders(); track order.id; let index = $index) {
         <tr>
           <td>{{ index + 1 }}</td>
           <td>{{ order.mesa }}</td>
-          <td>
-            {{ order.createdAt | date : "HH:mm:ss" }}
-          </td>
+          <td>{{ order.createdAt | date : "HH:mm:ss" }}</td>
           <td>{{ order.productos }}</td>
           <td class="font-semibold">
             <span [class]="getOrderStatus(order.estado).class">
@@ -54,36 +74,22 @@
             </span>
           </td>
         </tr>
-        } }
-
-        <!--  -->
-        @if (errorMessage()) {
+        } } @else {
+        <!-- Empty state -->
         <tr>
-          <td colspan="8" class="text-center">
-            {{ errorMessage() }}
-          </td>
-        </tr>
-        }
-
-        <!--  -->
-        @if (orders().length === 0 && !isLoading()) {
-        <tr>
-          <td colspan="8" class="text-center py-10">
-            No se encontraron resultados
-          </td>
-        </tr>
-        }
-
-        <!--  -->
-        @if (isLoading()) {
-        <tr>
-          <td colspan="8" class="text-center pb-12">
-            <div class="flex flex-row items-center justify-center">
-              <span class="loading loading-bars loading-lg mt-10"></span>
+          <td colspan="5" class="text-center py-12">
+            <div
+              class="flex flex-col items-center justify-center text-gray-400"
+            >
+              <span class="fa-solid fa-clipboard-list text-4xl mb-3"></span>
+              <span class="text-lg font-medium">No se encontraron órdenes</span>
+              <span class="text-sm mt-1"
+                >No hay órdenes disponibles en este momento</span
+              >
             </div>
           </td>
         </tr>
-        }
+        } }
       </tbody>
     </table>
   </section>

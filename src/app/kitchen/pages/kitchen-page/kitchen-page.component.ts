@@ -1,65 +1,62 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
+import { tap } from 'rxjs';
 
-import { OrderListComponent } from '../../components/order-list/kitchen-order-list.component';
-import { OrderService } from 'src/app/orders/services/order.service';
-import {
-  Order,
-  OrderStatus,
-  ProductOrder,
-  RestOrderStatus,
-} from 'src/app/orders/interfaces/order.interface';
-import type { KitchenOrder } from '../../interfaces/kitchen-order.interface';
-import { map, tap } from 'rxjs';
+import type { KitchenOrderStatus } from '../../interfaces/kitchen-order.interface';
+import { KitchenService } from '../../services/kitchen.service';
+import { KitchenOrderListComponent } from '../../components/order-list/kitchen-order-list.component';
 
 @Component({
   selector: 'app-kitchen-page',
-  imports: [CommonModule, OrderListComponent],
+  imports: [KitchenOrderListComponent],
   templateUrl: './kitchen-page.component.html',
 })
-export class KitchenPageComponent {
-  orderService = inject(OrderService);
-  changeStatus = signal<RestOrderStatus.PREPARING | RestOrderStatus.READY>(
-    RestOrderStatus.PREPARING
-  );
-  orderStatus = OrderStatus;
+export default class KitchenPageComponent implements OnInit, OnDestroy {
+  private kitchenService = inject(KitchenService);
+  private refreshInterval?: number;
 
-  orderKitcheStatus = [
-    RestOrderStatus.PENDING,
-    RestOrderStatus.PREPARING,
-    RestOrderStatus.READY,
-  ];
-
-  orderResource = rxResource({
-    params: () => ({ query: this.orderKitcheStatus }),
-    stream: ({ params }) => {
-      return this.orderService.fetchKitchenOrders(params.query).pipe(
-        tap((orders) => {
-          orders.sort(
-            (a, b) =>
-              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        }),
-        tap((orders) => console.log({ orders }))
-      );
-    },
+  // Usa rxResource para manejar la carga automática
+  ordersResource = rxResource({
+    stream: () => this.kitchenService.fetchActiveOrders(),
   });
 
-  mapOrderToKitchenOrder(order: Order): KitchenOrder {
-    return {
-      id: order.id,
-      mesa: order.mesa,
-      estado: order.estado as 'PENDIENTE' | 'EN_PREPARACION' | 'LISTO',
-      createdAt: order.createdAt,
-      productos: order.productos.map((p) => ({
-        nombre: (p as ProductOrder).name ?? '', // Ajusta según tu modelo
-        cantidad: p.quantity ?? 0,
-      })),
-    };
+  // Computed desde el resource
+  orders = this.ordersResource.value;
+  isLoading = this.ordersResource.isLoading;
+  error = this.ordersResource.error;
+
+  ngOnInit() {
+    this.setupAutoRefresh();
   }
 
-  notifyWaiter(order: KitchenOrder) {
-    console.log(`Order ${order.id} is ready for delivery.`);
+  ngOnDestroy() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  }
+
+  onStatusChange(orderId: number, newStatus: KitchenOrderStatus) {
+    this.kitchenService.updateOrderStatus(orderId, newStatus).subscribe({
+      next: () => {
+        console.log(`Order ${orderId} status updated to ${newStatus}`);
+        // Recargar las órdenes después de actualizar
+        this.ordersResource.reload();
+      },
+      error: (error) => {
+        console.error('Error updating order status:', error);
+      },
+    });
+  }
+
+  onRefresh() {
+    this.ordersResource.reload();
+  }
+
+  private setupAutoRefresh() {
+    this.refreshInterval = window.setInterval(() => {
+      if (!this.isLoading()) {
+        this.ordersResource.reload();
+      }
+    }, 30000);
   }
 }
