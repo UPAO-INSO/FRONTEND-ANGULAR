@@ -1,64 +1,76 @@
 <div
-  class="h-[calc(100vh-14rem)] relative overflow-y-hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 my-5"
+  class="h-[calc(100vh-14rem)] relative overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 my-5"
   #groupDiv
 >
-  <!-- (scroll)="onScroll($event)" -->
-  @if (filterTables().length > 0) { @for (filterTable of filterTables(); track
-  $index) {
+  <!--  -->
+  @if (isLoading() || filterIsLoading()) {
+  <div
+    class="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg"
+  >
+    <div class="flex flex-col items-center justify-center">
+      <span class="loading loading-bars loading-lg bg-white mb-3"></span>
+      <span class="text-white font-medium">Cargando mesas...</span>
+    </div>
+  </div>
+  } @else if (errorMessage()) {
+  <div
+    class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg"
+  >
+    <div class="flex flex-col items-center justify-center text-red-400">
+      <span class="fa-solid fa-exclamation-triangle text-6xl mb-4"></span>
+      <span class="text-xl font-bold mb-2">Error al cargar</span>
+      <span class="text-center">{{ errorMessage() }}</span>
+    </div>
+  </div>
+  } @else if (filterTables().length > 0) {
+
+  <!-- Filtered tables -->
+  @for (filterTable of filterTables(); track filterTable.id) {
   <app-table-list-item
     [table]="filterTable"
     [tableStatus]="tableStatusEnum()"
     class="h-60"
     (tableSelected)="openRegisterOrder($event)"
   />
-  } } @else { @for (table of tables(); track $index) {
+  } }
+  <!--  -->
+  @else if (tables().length > 0) {
+
+  <!-- All tables -->
+  @for (table of tables(); track table.id) {
   <app-table-list-item
     [table]="table"
     [tableStatus]="tableStatusEnum()"
     class="h-60"
     (tableSelected)="openRegisterOrder($event)"
   />
-  } }
-
-  <!--  -->
-  @if (isLoading()) {
-  <div
-    class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-1/2 w-1/2 flex items-center justify-center bg-gray-800 rounded-lg"
-  >
-    <span class="loading loading-bars loading-lg bg-white"></span>
-  </div>
   }
-
   <!--  -->
-  @if (tables().length === 0 && !isLoading() ) {
+  } @else {
+  <!-- Empty state -->
   <div
-    class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-1/2 w-1/2 flex items-center justify-center bg-gray-800 rounded-lg"
+    class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg"
   >
-    <span class="text-white font-bold">No se encontraron resultados</span>
-  </div>
-  }
-
-  <!--  -->
-  @if (errorMessage()) {
-  <tr>
-    <td colspan="8" class="text-center">
-      {{ errorMessage() }}
-    </td>
-  </tr>
-  }
-
-  <!-- Modal para registro de órdenes -->
-  @if (selectedTable()) {
-  <div
-    class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-  >
-    <div class="w-full max-w-7xl max-h-[90vh] overflow-y-hidden">
-      <app-register-order
-        [productTypes]="productTypes()"
-        [selectedTable]="selectedTable()"
-        (closeModal)="closeRegisterOrder()"
-      />
+    <div class="flex flex-col items-center justify-center text-gray-400">
+      <span class="fa-solid fa-chair text-6xl mb-4"></span>
+      <span class="text-xl font-bold mb-2">No hay mesas disponibles</span>
+      <span class="text-center">No se encontraron mesas en el sistema</span>
     </div>
   </div>
   }
 </div>
+
+<!-- Modal para registro de órdenes -->
+@if (selectedTable()) {
+<div
+  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+>
+  <div class="w-full max-w-7xl max-h-[90vh] overflow-y-auto">
+    <app-register-order
+      [selectedTable]="selectedTable()"
+      [productTypes]="productTypes()"
+      (closeModal)="closeRegisterOrder()"
+    />
+  </div>
+</div>
+}

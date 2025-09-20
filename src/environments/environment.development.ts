@@ -6,5 +6,5 @@ export const environment = {
 
   API_URL: 'http://localhost:8080/api',
   API_TOKEN:
-    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1ODI2MjAwMCwiZXhwIjoxNzU4MjY1NjAwfQ.G0eYg0QeUQDG17KlCOvfWlEneZ2jcN1mXrqolIKDBkM226eQ0MsFTyOxjxAIvmiL',
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1ODMzMDM1OSwiZXhwIjoxNzU4MzMzOTU5fQ.OHG00m0SYcUw49oQ6OtnsSWoeFfB5Ha4GydG93b7unm2x1VGjK5d1etshYt5B8vu',
 };

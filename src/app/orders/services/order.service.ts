@@ -47,8 +47,8 @@ export class OrderService {
         }),
         catchError((error) => {
           console.log({ error });
-
-          return throwError(() => new Error(`No se pudo obtener ordenes`));
+          this.orders.set([]);
+          return throwError(() => new Error('Error al cargar las órdenes'));
         })
       );
   }

@@ -1,9 +1,55 @@
-<div class="flex flex-wrap gap-4 text-white">
-  @for (order of orders(); track order.id) {
-  <app-order-card
-    class="flex-1"
-    [order]="order"
-    (changeStatus)="changeStatus.emit($event)"
-  ></app-order-card>
+<div class="h-full flex flex-col">
+  <!--  -->
+  @if (isLoading()) {
+  <div class="flex justify-center items-center flex-1">
+    <div class="flex flex-col items-center">
+      <span class="loading loading-bars loading-lg"></span>
+      <span class="mt-2 text-gray-400">Cargando órdenes...</span>
+    </div>
+  </div>
+  } @else if (error()) {
+  <div
+    class="flex flex-col items-center justify-center flex-1 bg-gray-800 rounded-lg"
+  >
+    <span
+      class="fa-solid fa-exclamation-triangle text-red-400 text-4xl mb-3"
+    ></span>
+    <span class="text-red-400 text-lg font-medium mb-2"
+      >Error al cargar órdenes</span
+    >
+    <span class="text-red-400 mb-4">{{ error() }}</span>
+    <button class="btn btn-primary" (click)="onRefresh()">
+      <span class="fa-solid fa-refresh mr-2"></span>
+      Intentar de nuevo
+    </button>
+  </div>
+  } @else if (orders().length > 0) {
+  <div
+    class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pr-3 custom-secondary-scrollbar"
+  >
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 pb-4"
+    >
+      @for (order of orders(); track order.id) {
+      <app-order-card
+        [order]="order"
+        (changeStatus)="onStatusChange(order.id, $event)"
+      />
+      }
+    </div>
+    <div class="h-8"></div>
+  </div>
+  } @else {
+  <div
+    class="flex flex-col items-center justify-center flex-1 bg-gray-800 rounded-lg"
+  >
+    <span
+      class="fa-solid fa-clipboard-check text-gray-400 text-6xl mb-4"
+    ></span>
+    <span class="text-gray-400 text-xl font-medium mb-2"
+      >No hay órdenes activas</span
+    >
+    <span class="text-gray-500">Todas las órdenes han sido completadas</span>
+  </div>
   }
 </div>
