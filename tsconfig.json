@@ -8,6 +8,12 @@
       "@environments/*": [
         "src/environments/*"
       ],
+      "@auth/*": [
+        "src/app/auth/*"
+      ],
+      "@shared/*": [
+        "src/app/shared/*"
+      ],
     },
     "strict": true,
     "noImplicitOverride": true,

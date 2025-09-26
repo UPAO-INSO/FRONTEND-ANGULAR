@@ -12,7 +12,7 @@ export class TableService {
   private http = inject(HttpClient);
 
   envs = environment;
-  token = this.envs.API_TOKEN;
+  token = localStorage.getItem('access-token');
 
   page = signal(1);
   totalPages = signal(1);
@@ -34,9 +34,6 @@ export class TableService {
   fetchTables(page: number = 1): Observable<Table[]> {
     return this.http
       .get<RESTTable>(`${this.envs.API_URL}/tables`, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
         params: {
           page: page,
           limit: this.limit(),
@@ -60,9 +57,6 @@ export class TableService {
   fetchFilterTables(status: TableStatus): Observable<Table[]> {
     return this.http
       .get<RESTTable>(`${this.envs.API_URL}/tables/filter-by`, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
         params: {
           status: status,
           page: this.page(),
