@@ -1,14 +1,14 @@
 <header class="flex justify-center items-center my-3">
   <div class="flex flex-row items-center gap-4">
     <div class="flex items-center gap-2 pt-4">
-      <span class="badge font-bold cursor-pointer" (click)="status.emit('')">
+      <span class="badge font-bold cursor-pointer" (click)="status.emit(null)">
         Todos</span
       >
     </div>
     <div class="flex items-center gap-2 pt-4">
       <span
         class="badge text-sky-500 font-bold cursor-pointer"
-        (click)="status.emit(TableStatus.AVAILABLE)"
+        (click)="status.emit(tableStatus.AVAILABLE)"
       >
         Disponible
       </span>
@@ -16,7 +16,7 @@
     <div class="flex items-center gap-2 pt-4">
       <span
         class="badge text-amber-500 font-bold cursor-pointer"
-        (click)="status.emit(TableStatus.OCCUPIED)"
+        (click)="status.emit(tableStatus.OCCUPIED)"
       >
         Ocupada
       </span>

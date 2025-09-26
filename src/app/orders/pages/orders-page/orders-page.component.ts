@@ -6,16 +6,10 @@ import { OrderService } from '../../services/order.service';
 import { OrderListComponent } from '../../components/order-list/order-list.component';
 import { OrderStatusComponent } from '../../components/order-list/order-header-status/order-header-status.component';
 import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
-import { NotFoundComponent } from 'src/app/shared/components/not-found/not-found.component';
 
 @Component({
   selector: 'app-orders-page',
-  imports: [
-    OrderListComponent,
-    OrderStatusComponent,
-    PaginationComponent,
-    NotFoundComponent,
-  ],
+  imports: [OrderListComponent, OrderStatusComponent, PaginationComponent],
   templateUrl: './orders-page.component.html',
 })
 export default class OrdersPageComponent {

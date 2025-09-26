@@ -2,7 +2,7 @@ export interface Table {
   id: number;
   number: string;
   capacity: number;
-  status: TableStatus | string;
+  status: TableStatus;
 }
 
 export interface RESTTable {

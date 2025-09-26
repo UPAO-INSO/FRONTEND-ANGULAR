@@ -4,7 +4,7 @@ export const environment = {
   companyName2: 'App',
   companySlogan: 'Gestiona tus pedidos',
 
-  API_URL: 'http://127.0.0.1:4000/api',
+  API_URL: 'https://pleasant-adventure-production.up.railway.app/api',
   API_TOKEN:
-    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1NzU5NDk5MCwiZXhwIjoxNzU3NTk4NTkwfQ.yPPm5OStPIUHYMuiESJ2-Co-W1tV8Htf0FnoXmPUUI2OE6eQxqHP4B3YQ2HGia4O',
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1ODIyMjg5OSwiZXhwIjoxNzU4MjI2NDk5fQ.DCC33RZe8f2h-pkTE7do5hxhR5CY__LkgWLYyqisasq1kLtAB_8sXmkT3PCHKps-',
 };

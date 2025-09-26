@@ -1,0 +1,116 @@
+<div
+  class="bg-side-background rounded-xl shadow-md p-4 w-full min-w-[280px] h-80 flex flex-col gap-3 hover:shadow-lg transition-shadow"
+>
+  <div class="flex justify-between items-start flex-shrink-0">
+    <div class="flex flex-col">
+      <span class="font-bold text-lg text-white">Mesa {{ order().mesa }}</span>
+      <span class="text-xs text-gray-400">ID {{ order().id }}</span>
+    </div>
+    <span class="text-xs text-gray-500">
+      {{ order().createdAt | date : "HH:mm" }}
+    </span>
+  </div>
+
+  @if (order().comment) {
+  <div
+    class="text-xs text-yellow-400 bg-yellow-400/10 rounded px-2 py-1 flex-shrink-0"
+  >
+    <span class="fa-solid fa-comment mr-1"></span>
+    {{ order().comment }}
+  </div>
+  }
+
+  <div class="flex-1 overflow-hidden">
+    <div class="text-xs text-gray-400 mb-1">
+      {{ order().totalItems }} productos:
+    </div>
+    <ul
+      class="text-sm text-gray-300 space-y-1 h-full overflow-y-auto custom-scrollbar pr-2"
+    >
+      @for (prod of order().productos; track prod.id) {
+      <li class="flex justify-between text-sm">
+        <span class="truncate mr-2"
+          >{{ prod.quantity }}x {{ prod.name | titlecase }}</span
+        >
+      </li>
+      }
+    </ul>
+  </div>
+
+  <div class="flex-shrink-0 space-y-2">
+    @if (order().empleados.length > 0) {
+    <!--  -->
+    <div class="pb-2 flex flex-row gap-3">
+      <span class="fa-solid fa-user text-xs text-gray-400"></span>
+      @for (employee of order().empleados; track $index) {
+      <div class="text-xs text-gray-400">
+        <span class="truncate text-xs">
+          {{ order().empleados[$index].employeeName | titlecase }}
+          {{ order().empleados[$index].employeeLastname | titlecase }}
+        </span>
+      </div>
+      }
+    </div>
+    }
+
+    <div class="flex items-center gap-2 pb-2">
+      @if (order().estado === orderStatus.PENDING) {
+      <button
+        class="btn btn-warning flex-1 btn-sm text-black font-medium"
+        (click)="onStatusChange(orderStatus.PREPARING)"
+      >
+        <span class="fa-solid fa-play mr-1"></span>
+        Iniciar Preparación
+      </button>
+      } @else if (order().estado === orderStatus.PREPARING) {
+      <button
+        class="btn btn-success flex-1 btn-sm"
+        (click)="onStatusChange(orderStatus.READY)"
+      >
+        <span class="fa-solid fa-check mr-1"></span>
+        Marcar como Listo
+      </button>
+      } @else if (order().estado === orderStatus.READY) {
+      <button class="btn flex-1 btn-sm btn-disabled" disabled>
+        <span class="fa-solid fa-clock mr-1"></span>
+        Esperando Entrega
+      </button>
+      }
+
+      <div class="dropdown dropdown-end">
+        <div
+          tabindex="0"
+          role="button"
+          class="btn btn-ghost btn-xs text-gray-400 hover:text-white"
+        >
+          <span class="fa-solid fa-ellipsis-vertical text-sm"></span>
+        </div>
+
+        <ul
+          tabindex="0"
+          class="dropdown-content menu bg-side-background rounded-box z-[1] w-52 p-2 shadow-xl border border-gray-600"
+        >
+          <li class="menu-title text-xs text-gray-400 px-2 pb-1">
+            <span>Cambiar estado</span>
+          </li>
+
+          @for (status of allStatuses; track status.value) {
+          <li>
+            <a
+              class="text-sm justify-start"
+              [class.active]="status.value === order().estado"
+              (click)="onManualStatusChange(status.value)"
+            >
+              <span class="badge {{ status.color }} badge-sm"></span>
+              {{ status.label }}
+              @if (status.value === order().estado) {
+              <span class="fa-solid fa-check text-success ml-auto"></span>
+              }
+            </a>
+          </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
