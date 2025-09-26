@@ -1,0 +1,9 @@
+[build]
+  command = "ng build"
+  publish = "dist/pds-app/browser"
+
+# Para que Angular maneje las rutas (SPA redirects)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
