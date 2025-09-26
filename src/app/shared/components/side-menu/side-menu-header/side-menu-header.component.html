@@ -1,22 +1,22 @@
-<div id="logo" class="my-4 px-6">
-  <h1 class="text-lg md:text-2xl font-bold text-white">
-    {{ envs.companyName }}
-    <span class="text-sky-300"> {{ envs.companyName2 }}.</span>
-  </h1>
-  <p class="text-slate-300 text-sm">{{ envs.companySlogan }}.</p>
-</div>
-<div id="profile" class="px-6 py-5">
-  <p class="text-slate-300 mb-2">Bienvenido!</p>
+<div id="profile" class="mx-6 mt-8 mb-4">
+  @if (authStatus() === 'authenticated') {
   <a href="#" class="inline-flex space-x-2 items-center">
-    <span>
-      <img
-        class="rounded-full w-8 h-8"
-        src="https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=128&q=80"
-        alt=""
-      />
-    </span>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="25"
+      height="25"
+      viewBox="0 0 256 256"
+    >
+      <g fill="currentColor">
+        <path d="M192 96a64 64 0 1 1-64-64a64 64 0 0 1 64 64" opacity="0.2" />
+        <path
+          d="M230.92 212c-15.23-26.33-38.7-45.21-66.09-54.16a72 72 0 1 0-73.66 0c-27.39 8.94-50.86 27.82-66.09 54.16a8 8 0 1 0 13.85 8c18.84-32.56 52.14-52 89.07-52s70.23 19.44 89.07 52a8 8 0 1 0 13.85-8M72 96a56 56 0 1 1 56 56a56.06 56.06 0 0 1-56-56"
+        />
+      </g>
+    </svg>
     <span class="text-sm md:text-base font-bold text-white">
-      Gerson Portal
+      {{ user()?.fullName | titlecase }}
     </span>
   </a>
+  } @else {}
 </div>

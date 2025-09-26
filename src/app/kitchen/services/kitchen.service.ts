@@ -17,15 +17,11 @@ export class KitchenService {
   private http = inject(HttpClient);
 
   envs = environment;
-  token = this.envs.API_TOKEN;
+  token = localStorage.getItem('access-token');
 
   fetchActiveOrders(): Observable<KitchenOrder[]> {
     return this.http
-      .get<KitchenOrderResponse>(`${this.envs.API_URL}/orders`, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      })
+      .get<KitchenOrderResponse>(`${this.envs.API_URL}/orders`)
       .pipe(
         map((response) => {
           const allOrders = KitchenOrderMapper.mapRestOrdersToOrderArray(
@@ -74,15 +70,7 @@ export class KitchenService {
     status: KitchenOrderStatus
   ): Observable<KitchenOrder[]> {
     return this.http
-      .patch<any>(
-        `${this.envs.API_URL}/orders/status`,
-        { status, orderId },
-        {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-          },
-        }
-      )
+      .patch<any>(`${this.envs.API_URL}/orders/status`, { status, orderId })
       .pipe(
         catchError((error) => {
           console.error('Error updating order status:', error);

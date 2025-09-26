@@ -38,8 +38,6 @@ export default class KitchenPageComponent implements OnInit, OnDestroy {
   onStatusChange(orderId: number, newStatus: KitchenOrderStatus) {
     this.kitchenService.updateOrderStatus(orderId, newStatus).subscribe({
       next: () => {
-        console.log(`Order ${orderId} status updated to ${newStatus}`);
-        // Recargar las órdenes después de actualizar
         this.ordersResource.reload();
       },
       error: (error) => {

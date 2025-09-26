@@ -1,9 +1,10 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { OrderSummaryItemComponent } from './order-summary-item/order-summary-item.component';
 import { OrderSummaryTotalComponent } from './order-summary-total/order-summary-total.component';
 import { Table } from 'src/app/tables/interfaces/table.interface';
 import { OrderCartService } from 'src/app/orders/services/order-cart.service';
 import { TitleCasePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-order-summary',
@@ -11,6 +12,7 @@ import { TitleCasePipe } from '@angular/common';
     OrderSummaryItemComponent,
     OrderSummaryTotalComponent,
     TitleCasePipe,
+    FormsModule,
   ],
   templateUrl: './order-summary.component.html',
 })
@@ -21,6 +23,8 @@ export class OrderSummaryComponent {
 
   cartItems = this.orderCartService.cartItems;
   totalItems = this.orderCartService.totalItems;
+
+  orderComment = signal<string>('');
 
   onUpdateQuantity(productId: number, quantity: number) {
     this.orderCartService.updateQuantity(productId, quantity);

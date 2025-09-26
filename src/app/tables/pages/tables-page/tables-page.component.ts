@@ -50,7 +50,7 @@ export class TablesPageComponent {
     stream: () => {
       return this.productService
         .fetchProducts()
-        .pipe(tap((products) => console.log({ products })));
+        .pipe(tap((products) => products));
     },
   });
 
@@ -58,7 +58,7 @@ export class TablesPageComponent {
     stream: () => {
       return this.productService
         .fetchProductsType()
-        .pipe(tap((productTypes) => console.log({ productTypes })));
+        .pipe(tap((productTypes) => productTypes));
     },
   });
 }

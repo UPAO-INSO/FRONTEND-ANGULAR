@@ -8,12 +8,12 @@ export const kitchenRoutes: Routes = [
     component: KitchenLayoutComponent,
     children: [
       {
-        path: 'all',
+        path: '',
         component: KitchenPageComponent,
       },
       {
         path: '**',
-        redirectTo: 'all',
+        redirectTo: '',
       },
     ],
   },
