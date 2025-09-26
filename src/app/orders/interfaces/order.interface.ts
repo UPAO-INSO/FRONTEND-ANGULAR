@@ -1,15 +1,10 @@
 export interface Order {
   id: number;
   mesa: number;
-  productos: [];
+  productos: ProductOrder[];
   estado: OrderStatus | string;
   total: number;
   createdAt: Date;
-}
-
-export interface Product {
-  id: number;
-  name: string;
 }
 
 export enum OrderStatus {
@@ -56,6 +51,7 @@ export interface OrderEmployee {
 
 export interface ProductOrder {
   id: number;
+  name: string;
   quantity: number;
   unitPrice: number;
   subtotal: number;

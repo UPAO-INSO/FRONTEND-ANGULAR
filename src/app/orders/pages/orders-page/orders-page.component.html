@@ -1,6 +1,3 @@
-@if (orderResource.error() || filterOrderResource.error()) {
-<app-not-found />
-} @else if (orderResource.hasValue() || filterOrderResource.hasValue()) {
 <app-order-header-status (status)="orderStatus.set($event)" />
 
 <app-order-list
@@ -14,4 +11,3 @@
 />
 
 <app-pagination />
-}

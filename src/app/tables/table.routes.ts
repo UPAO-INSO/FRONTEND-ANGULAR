@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { TableLayoutComponent } from './layouts/table-layout/table-layout.component';
 import { TablesPageComponent } from './pages/tables-page/tables-page.component';
-import { RegisterOrderPageComponent } from '../orders/pages/register-order-page/register-order-page.component';
+import { RegisterOrderComponent } from '../orders/components/register-order/register-order.component';
 
 export const tableRoutes: Routes = [
   {
@@ -14,7 +14,7 @@ export const tableRoutes: Routes = [
       },
       {
         path: 'create-order',
-        component: RegisterOrderPageComponent,
+        component: RegisterOrderComponent,
       },
       {
         path: '**',

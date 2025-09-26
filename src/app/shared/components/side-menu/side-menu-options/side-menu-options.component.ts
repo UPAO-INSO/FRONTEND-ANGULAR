@@ -51,5 +51,11 @@ export class SideMenuOptionsComponent {
       sublabel: 'Valida tus pagos',
       route: '/dashboard/payments',
     },
+    {
+      icon: 'fa-solid fa-utensils text-white',
+      label: 'Cocina',
+      sublabel: 'Gestiona los pedidos en cocina',
+      route: '/dashboard/kitchen',
+    },
   ];
 }
