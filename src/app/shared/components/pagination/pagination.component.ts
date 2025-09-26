@@ -1,6 +1,4 @@
 import { Component, inject, signal } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
-import { of } from 'rxjs';
 import { TableService } from 'src/app/tables/services/table.service';
 
 @Component({

@@ -9,7 +9,7 @@ export const tableRoutes: Routes = [
     component: TableLayoutComponent,
     children: [
       {
-        path: 'all',
+        path: '',
         component: TablesPageComponent,
       },
       {
@@ -18,7 +18,7 @@ export const tableRoutes: Routes = [
       },
       {
         path: '**',
-        redirectTo: 'all',
+        redirectTo: '',
       },
     ],
   },

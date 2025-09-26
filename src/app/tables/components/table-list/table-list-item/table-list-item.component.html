@@ -1,11 +1,11 @@
 <div
-  class="card bg-side-background shadow-sm cursor-pointer h-63"
+  class="card bg-side-background shadow-lg hover:shadow-xl cursor-pointer h-full min-h-[200px] flex flex-col justify-center items-center transition-all duration-200 hover:scale-[0.98] relative overflow-hidden p-6"
   (click)="onTableClick()"
 >
   <!--  -->
   @if (hasOrders()) {
   <div
-    class="absolute top-4 left-4 w-3 h-3 bg-orange-500 rounded-full z-10"
+    class="absolute top-4 left-4 w-3 h-3 bg-orange-500 rounded-full z-10 animate-pulse"
   ></div>
   }
 

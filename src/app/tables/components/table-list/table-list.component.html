@@ -1,11 +1,11 @@
 <div
-  class="h-[calc(100vh-14rem)] relative overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 my-5"
+  class="h-[calc(100vh-14rem)] relative overflow-hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-5"
   #groupDiv
 >
   <!--  -->
   @if (isLoading() || filterIsLoading()) {
   <div
-    class="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg"
+    class="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg z-10"
   >
     <div class="flex flex-col items-center justify-center">
       <span class="loading loading-bars loading-lg bg-white mb-3"></span>
@@ -14,7 +14,7 @@
   </div>
   } @else if (errorMessage()) {
   <div
-    class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg"
+    class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg z-10"
   >
     <div class="flex flex-col items-center justify-center text-red-400">
       <span class="fa-solid fa-exclamation-triangle text-6xl mb-4"></span>
@@ -29,7 +29,7 @@
   <app-table-list-item
     [table]="filterTable"
     [tableStatus]="tableStatusEnum()"
-    class="h-60"
+    class="min-h-[200px] max-h-[300px]"
     (tableSelected)="openRegisterOrder($event)"
   />
   } }
@@ -41,7 +41,7 @@
   <app-table-list-item
     [table]="table"
     [tableStatus]="tableStatusEnum()"
-    class="h-60"
+    class="min-h-[200px] max-h-[300px]"
     (tableSelected)="openRegisterOrder($event)"
   />
   }
@@ -49,7 +49,7 @@
   } @else {
   <!-- Empty state -->
   <div
-    class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg"
+    class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg z-10"
   >
     <div class="flex flex-col items-center justify-center text-gray-400">
       <span class="fa-solid fa-chair text-6xl mb-4"></span>
@@ -65,7 +65,7 @@
 <div
   class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
 >
-  <div class="w-full max-w-7xl max-h-[90vh] overflow-y-auto">
+  <div class="w-full max-w-7xl max-h-[90vh] overflow-hidden">
     <app-register-order
       [selectedTable]="selectedTable()"
       [productTypes]="productTypes()"
