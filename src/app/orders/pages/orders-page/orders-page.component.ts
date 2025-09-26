@@ -19,7 +19,6 @@ export default class OrdersPageComponent {
   orderResource = rxResource({
     stream: () => {
       const orders = this.orderService.fecthOrders();
-      console.log({ orders });
       return orders;
     },
   });

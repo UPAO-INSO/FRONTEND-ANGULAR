@@ -9,7 +9,7 @@ export const orderRoutes: Routes = [
     component: OrderLayoutComponent,
     children: [
       {
-        path: 'all',
+        path: '',
         component: OrdersPageComponent,
       },
       {
@@ -18,7 +18,7 @@ export const orderRoutes: Routes = [
       },
       {
         path: '**',
-        redirectTo: 'all',
+        redirectTo: '',
       },
     ],
   },

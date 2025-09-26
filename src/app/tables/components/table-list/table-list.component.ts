@@ -1,11 +1,12 @@
 import { Component, input, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 
 import { TableListItemComponent } from './table-list-item/table-list-item.component';
 import { RegisterOrderComponent } from 'src/app/orders/components/register-order/register-order.component';
 
 import type { Table, TableStatus } from '../../interfaces/table.interface';
 import { OrderStatus } from 'src/app/orders/interfaces/order.interface';
-import { Product, ProductType } from 'src/app/products/interfaces/product.type';
+import { ProductType } from 'src/app/products/interfaces/product.type';
 
 @Component({
   selector: 'app-table-list',

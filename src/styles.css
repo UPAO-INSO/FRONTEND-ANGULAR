@@ -12,8 +12,66 @@
   --color-status: oklch(0.753 0.1199 228.77);
   --color-status-cancelled: oklch(0.6368 0.2078 25.33);
   --color-status-ready: oklch(0.7227 0.192 149.58);
+
+  --color-login-primary: oklch(0.6469 0.2774 303.4);
+  --color-login-primary-dark: oklch(0.5869 0.2574 303.4);
+  --color-login-primary-light: oklch(0.7069 0.2974 303.4);
+  --color-overlay: oklch(0.1 0 0);
+  --color-backdrop-blur: oklch(0.2522 0.0296 256.85 / 0.5);
 }
+
+@layer base {
+  @font-face {
+    font-family: "Montserrat";
+    src: url("/assets/fonts/montserrat-alternates/montserrat-alternates-medium.ttf")
+      format("truetype");
+  }
+
+  .bg-login-primary {
+    background-color: var(--color-login-primary);
+  }
+
+  .bg-login-primary-dark {
+    background-color: var(--color-login-primary-dark);
+  }
+
+  .text-login-primary {
+    color: var(--color-login-primary);
+  }
+
+  .text-login-primary-light {
+    color: var(--color-login-primary-light);
+  }
+
+  .hover\:bg-login-primary-dark:hover {
+    background-color: var(--color-login-primary-dark);
+  }
+
+  .hover\:text-login-primary-light:hover {
+    color: var(--color-login-primary-light);
+  }
+
+  .focus\:ring-login-primary:focus {
+    --tw-ring-color: var(--color-login-primary);
+  }
+}
+
 @layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .text-outline {
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
       1px 1px 0 #000;
@@ -55,5 +113,26 @@
   .custom-secondary-scrollbar::-webkit-scrollbar-thumb {
     background: #374150;
     border-radius: 8px;
+  }
+
+  .bg-login-primary-blur {
+    background-color: var(--color-backdrop-blur);
+    backdrop-filter: blur(4px);
+  }
+
+  .focus-ring-login-primary {
+    @apply focus:outline-none focus:ring-2 focus:ring-login-primary focus:border-transparent;
+  }
+
+  .input-glass {
+    background-color: rgb(31 41 55 / 0.5);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgb(75 85 99);
+  }
+
+  .input-glass:focus {
+    background-color: rgb(31 41 55 / 0.7);
+    border-color: var(--color-login-primary);
+    box-shadow: 0 0 0 2px var(--color-login-primary);
   }
 }

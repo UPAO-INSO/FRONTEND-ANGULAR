@@ -17,7 +17,7 @@ export class OrderService {
   private http = inject(HttpClient);
 
   envs = environment;
-  token = this.envs.API_TOKEN;
+  token = localStorage.getItem('access-token');
 
   private page = signal(0);
 
@@ -31,9 +31,6 @@ export class OrderService {
   fecthOrders(): Observable<Order[]> {
     return this.http
       .get<RESTOrder>(`${this.envs.API_URL}/orders`, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
         params: {
           page: this.page(),
           limit: 10,
@@ -59,9 +56,6 @@ export class OrderService {
         `${this.envs.API_URL}/orders/filter-array-status`,
         [...status],
         {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-          },
           params: {
             page: this.page(),
             limit: 10,
@@ -83,9 +77,6 @@ export class OrderService {
 
     return this.http
       .get<ContentOrder[]>(`${this.envs.API_URL}/orders/filter-by`, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
         params: {
           status: status,
         },
@@ -108,11 +99,7 @@ export class OrderService {
 
   fetchOrderByTableIds(tableIds: number[]) {
     return this.http
-      .post<ContentOrder[]>(`${this.envs.API_URL}/orders/tables`, tableIds, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      })
+      .post<ContentOrder[]>(`${this.envs.API_URL}/orders/tables`, tableIds, {})
       .pipe(
         map((resp) => OrderMapper.mapRestOrdersToOrdersArray(resp)),
         tap((orders) => this.ordersByTableIds.set(orders)),
@@ -128,11 +115,7 @@ export class OrderService {
 
   updateOrder(order: Order): Observable<Order> {
     return this.http
-      .put<Order>(`${this.envs.API_URL}/orders/${order.id}`, order, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
-      })
+      .put<Order>(`${this.envs.API_URL}/orders/${order.id}`, order)
       .pipe(
         tap((updatedOrder) => {
           const orders = this.orders();
