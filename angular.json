@@ -57,10 +57,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "dclassic-app:build:production"
+              "buildTarget": "pds-app:build:production"
             },
             "development": {
-              "buildTarget": "dclassic-app:build:development"
+              "buildTarget": "pds-app:build:development"
             }
           },
           "defaultConfiguration": "development"
