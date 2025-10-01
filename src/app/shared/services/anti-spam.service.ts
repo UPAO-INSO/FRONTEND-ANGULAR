@@ -60,7 +60,6 @@ export class AntiSpamService {
     };
 
     if (config.enableCache && this.ongoingObservables.has(key)) {
-      console.log(`🔄 Reusing ongoing request: ${key}`);
       return this.ongoingObservables.get(key)!;
     }
 
@@ -71,7 +70,6 @@ export class AntiSpamService {
       timeSinceLastAction < config.cooldownTime &&
       this._lastActionTime() > 0
     ) {
-      console.warn(`⏰ Action blocked due to cooldown: ${key}`);
       return this.ongoingObservables.get(key) || observableFactory();
     }
 
@@ -86,8 +84,6 @@ export class AntiSpamService {
       distinctUntilChanged(),
       shareReplay(1),
       tap({
-        next: () => console.log(`✅ Action completed: ${key}`),
-        error: (error) => console.error(`❌ Action failed: ${key}`, error),
         finalize: () => {
           this._isProcessing.set(false);
           if (config.enableCache) {

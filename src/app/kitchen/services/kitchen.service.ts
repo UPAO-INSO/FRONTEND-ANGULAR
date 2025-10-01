@@ -1,14 +1,27 @@
-// src/app/kitchen/services/kitchen.service.ts
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '@environments/environment';
 import { Observable, map, tap, catchError, throwError } from 'rxjs';
 import {
   KitchenOrder,
-  KitchenOrderResponse,
+  RESTKitchenOrders,
   KitchenOrderStatus,
+  ContentKitchen,
 } from '../interfaces/kitchen-order.interface';
 import { KitchenOrderMapper } from '../mapper/kitchen-order.mapper';
+import { OrderStatus } from 'src/app/orders/interfaces/order.interface';
+
+interface Options {
+  limit?: number;
+  page?: number;
+  status?: OrderStatus[];
+}
+
+const kitchenStatus = [
+  KitchenOrderStatus.PENDING,
+  KitchenOrderStatus.PREPARING,
+  KitchenOrderStatus.READY,
+];
 
 @Injectable({
   providedIn: 'root',
@@ -17,44 +30,33 @@ export class KitchenService {
   private http = inject(HttpClient);
 
   envs = environment;
-  token = localStorage.getItem('access-token');
 
-  fetchActiveOrders(): Observable<KitchenOrder[]> {
+  fetchActiveOrders(options: Options): Observable<RESTKitchenOrders> {
+    const { page = 1, limit = 6, status = kitchenStatus } = options;
+
     return this.http
-      .get<KitchenOrderResponse>(`${this.envs.API_URL}/orders`)
+      .post<RESTKitchenOrders>(
+        `${this.envs.API_URL}/orders/filter-array-status`,
+        [...status],
+        {
+          params: {
+            page,
+            limit,
+          },
+        }
+      )
       .pipe(
         map((response) => {
-          const allOrders = KitchenOrderMapper.mapRestOrdersToOrderArray(
-            response.content || []
-          );
-
-          const activeOrders = allOrders.filter(
-            (order) =>
-              order.estado === KitchenOrderStatus.PENDING ||
-              order.estado === KitchenOrderStatus.PREPARING ||
-              order.estado === KitchenOrderStatus.READY
-          );
-
-          const sortedOrders = activeOrders.sort((a, b) => {
-            if (
-              a.estado === KitchenOrderStatus.READY &&
-              b.estado !== KitchenOrderStatus.READY
-            ) {
-              return 1;
-            }
-            if (
-              b.estado === KitchenOrderStatus.READY &&
-              a.estado !== KitchenOrderStatus.READY
-            ) {
-              return -1;
-            }
-
+          const sortedOrders = response.content.sort((a, b) => {
             return (
               new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
             );
           });
 
-          return sortedOrders;
+          return {
+            ...response,
+            content: sortedOrders,
+          };
         }),
         catchError((error) => {
           console.error('Error fetching kitchen orders:', error);

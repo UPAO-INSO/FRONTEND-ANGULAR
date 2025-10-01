@@ -11,7 +11,7 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100 text-white bg-side-background">
-        <!-- Loading state -->
+        <!--  -->
         @if (isLoading()) {
         <tr>
           <td colspan="5" class="text-center py-12">
@@ -23,6 +23,7 @@
             </div>
           </td>
         </tr>
+
         } @else if (errorMessage()) {
         <tr>
           <td colspan="5" class="text-center py-12">
@@ -34,48 +35,37 @@
             </div>
           </td>
         </tr>
-        }
 
-        <!-- Data states -->
-        @else { @if (filterOrders().length > 0) {
-        <!-- Filtered orders -->
-        @for (filterOrder of filterOrders(); track filterOrder.id; let index =
-        $index) {
-        <tr>
-          <td>{{ index + 1 }}</td>
-          <td>{{ filterOrder.mesa }}</td>
-          <td>{{ filterOrder.createdAt | date : "HH:mm:ss" }}</td>
-          <td>{{ filterOrder.productos }}</td>
-          <td class="font-semibold">
-            <span [class]="getOrderStatus(filterOrder.estado).class">
-              {{
-                getOrderStatus(filterOrder.estado).text
-                  | replaceUnderscore
-                  | titlecase
-              }}
-            </span>
-          </td>
-        </tr>
-        } } @else if (orders().length > 0) {
-        <!-- All orders -->
+        } @else if (orders().length > 0) {
+        <!--  -->
         @for (order of orders(); track order.id; let index = $index) {
         <tr>
           <td>{{ index + 1 }}</td>
-          <td>{{ order.mesa }}</td>
-          <td>{{ order.createdAt | date : "HH:mm:ss" }}</td>
-          <td>{{ order.productos }}</td>
+          <td>{{ order.tableId }}</td>
+          <td>
+            {{ order.createdAt | date : "HH:mm" }} {{ getOrderAmPm(order) }}
+          </td>
+          <td class="max-w-48">
+            <div
+              class="truncate text-sm"
+              [title]="getProductsFullText(order.productOrders)"
+            >
+              {{ getProductsDisplayText(order.productOrders) | titlecase }}
+            </div>
+          </td>
           <td class="font-semibold">
-            <span [class]="getOrderStatus(order.estado).class">
+            <span [class]="getOrderStatus(order.orderStatus).class">
               {{
-                getOrderStatus(order.estado).text
+                getOrderStatus(order.orderStatus).text
                   | replaceUnderscore
                   | titlecase
               }}
             </span>
           </td>
         </tr>
-        } } @else {
-        <!-- Empty state -->
+        }
+        <!--  -->
+        } @else {
         <tr>
           <td colspan="5" class="text-center py-12">
             <div
@@ -83,13 +73,10 @@
             >
               <span class="fa-solid fa-clipboard-list text-4xl mb-3"></span>
               <span class="text-lg font-medium">No se encontraron órdenes</span>
-              <span class="text-sm mt-1"
-                >No hay órdenes disponibles en este momento</span
-              >
             </div>
           </td>
         </tr>
-        } }
+        }
       </tbody>
     </table>
   </section>

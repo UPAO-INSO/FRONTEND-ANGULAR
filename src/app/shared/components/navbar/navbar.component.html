@@ -1,41 +1,75 @@
 <div
-  class="navbar bg-navbar-background border-b border-gray-300 shadow-sm sticky top-0 z-20"
+  class="navbar justify-between font-poppins-semibold bg-navbar-background shadow-lg sticky top-0 z-20 pl-0 pr-5"
 >
-  <div id="logo" class="my-4 px-6">
-    <h1 class="text-lg md:text-2xl font-bold text-white">
+  <div class="navbar-start my-4 px-6">
+    <h1 class="text-lg md:text-xl font-bold text-white">
       {{ envs.companyName }}
-      <span class="text-sky-300"> {{ envs.companyName2 }}</span>
+      <span class="text-slogan-app"> {{ envs.companyName2 }}</span>
     </h1>
   </div>
-  <div class="flex flex-row flex-1 justify-center">
-    <a class="btn btn-ghost text-xl bg-side-background text-white">{{
-      header()
-    }}</a>
-  </div>
-  <div class="flex flex-row gap-2">
+
+  <div class="navbar-end">
+    <div class="dropdown dropdown-end dropdown-bottom">
+      <div
+        class="flex items-center text-white cursor-pointer hover:text-gray-300 transition-colors gap-4 px-6"
+      >
+        <section
+          class="flex flex-row items-center gap-2 border-0 hover:bg-gray-500/10 rounded-md py-1.5 px-2"
+        >
+          <button
+            popovertarget="side-menu"
+            role="button"
+            class="flex items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h7"
+              />
+            </svg>
+            <p class="text-lg">Menu</p>
+          </button>
+        </section>
+        <ul
+          id="side-menu"
+          class="menu menu-md dropdown-content bg-base-100 rounded-box border-1 border-gray-900 z-1 mt-3 w-70 p-2 shadow-lg"
+        >
+          @for (option of menuOptions; track $index) {
+          <li>
+            <a [routerLink]="option.route"
+              ><i [class]="option.icon"></i>{{ option.label }}</a
+            >
+          </li>
+          }
+        </ul>
+      </div>
+    </div>
+
     @if (authService.authStatus() === 'authenticated') {
     <a
       href="/auth/login"
-      class="btn btn-md bg-gray-900/50 border-0 hover:bg-gray-600"
+      class="btn btn-md rounded-md bg-gray-900/50 border-0 hover:bg-gray-600 text-gray-100 text-lg"
       (click)="authService.logout()"
     >
       Salir
     </a>
-    }
-
-    <!--  -->
-
-    <!-- @else if (authService.authStatus() === 'not-authenticated') {
+    } @else if (authService.authStatus() === 'not-authenticated') {
     <a
       href="/auth/login"
-      class="btn btn-md bg-gray-900/50 border-0 hover:bg-gray-600"
-      >Iniciar Sesion</a
+      class="btn btn-md rounded-md bg-gray-900/50 border-0 hover:bg-gray-600 text-gray-100"
     >
-    } -->
-
-    <!--  -->
-    @else {
-    <a class="btn btn-ghost">...</a>
+      Iniciar Sesión
+    </a>
+    } @else {
+    <a class="btn btn-ghost rounded-md text-white">...</a>
     }
   </div>
 </div>

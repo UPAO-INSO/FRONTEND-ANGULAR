@@ -5,6 +5,7 @@ import { environment } from '@environments/environment';
 import { AuthResponse, Tokens } from '../interfaces/auth-response.interface';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
 const baseUrl = environment.API_URL;
@@ -26,6 +27,7 @@ export class AuthService {
 
   private initializationEffect = effect(() => {
     if (!this._initialized()) {
+      console.log('Initializing auth from storage...');
       this.initializeFromStorage();
       this._initialized.set(true);
     }
@@ -54,36 +56,51 @@ export class AuthService {
   token = computed(() => this._token());
 
   private initializeFromStorage(): void {
-    const accessToken = localStorage.getItem(this.ACCESS_TOKEN_KEY);
-    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-    const userData = localStorage.getItem(this.USER_KEY);
+    try {
+      const accessToken = localStorage.getItem(this.ACCESS_TOKEN_KEY);
+      const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
+      const userData = localStorage.getItem(this.USER_KEY);
 
-    if (accessToken && userData && refreshToken) {
-      try {
+      console.log('Storage data:', {
+        hasToken: !!accessToken,
+        hasRefresh: !!refreshToken,
+        hasUser: !!userData,
+      });
+
+      if (accessToken && userData) {
         const user = JSON.parse(userData);
         const tokens: Tokens = {
           accessToken,
-          refreshToken,
+          refreshToken: refreshToken || '',
         };
 
         this._user.set(user);
         this._token.set(tokens);
         this._authStatus.set('authenticated');
-      } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        this.clearStorage();
+      } else {
         this._authStatus.set('not-authenticated');
       }
-    } else {
-      this._authStatus.set('not-authenticated');
+    } catch (error) {
+      console.error('Error initializing from storage:', error);
+      this.handleAuthError(error);
     }
   }
 
   getAccessToken(): string | null {
+    const tokenFromSignal = this._token()?.accessToken;
+    if (tokenFromSignal) {
+      return tokenFromSignal;
+    }
+
     return localStorage.getItem(this.ACCESS_TOKEN_KEY);
   }
 
-  getRefreshToken(): string | null {
+  etRefreshToken(): string | null {
+    const tokenFromSignal = this._token()?.refreshToken;
+    if (tokenFromSignal) {
+      return tokenFromSignal;
+    }
+
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
@@ -103,15 +120,11 @@ export class AuthService {
     const token = this.getAccessToken();
 
     if (!token) {
-      console.log('CheckStatus: No token found');
       this.logout();
       return of(false);
     }
 
-    console.log('CheckStatus: Making API request with token:', token);
-
     return this.http.get<AuthResponse>(`${baseUrl}/auth/check-status`).pipe(
-      tap(() => console.log('CheckStatus: API request successful')),
       map((resp) => this.handleAuthSuccess(resp)),
       catchError((error: any) => this.handleAuthError(error))
     );
@@ -140,6 +153,8 @@ export class AuthService {
   }
 
   private handleAuthError(error: any): Observable<boolean> {
+    console.log({ error });
+
     this.logout();
     return of(false);
   }
