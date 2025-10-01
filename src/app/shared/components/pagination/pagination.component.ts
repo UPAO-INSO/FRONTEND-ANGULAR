@@ -1,21 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
-import { TableService } from 'src/app/tables/services/table.service';
+import { Component, computed, input, linkedSignal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-pagination',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './pagination.component.html',
 })
 export class PaginationComponent {
-  tableService = inject(TableService);
+  pages = input(0);
+  currentPage = input<number>(1);
 
-  page = signal(1);
+  activePage = linkedSignal(this.currentPage);
 
-  setPage(page: number) {
-    if (page < 1) return;
-    if (page > this.tableService.totalPages()) return;
-
-    this.tableService.setPage(page);
-    this.page.set(page);
-  }
+  getPagesList = computed(() => {
+    return Array.from({ length: this.pages() }, (_, i) => i + 1);
+  });
 }

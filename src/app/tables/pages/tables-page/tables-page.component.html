@@ -1,14 +1,17 @@
-<app-table-header-status (status)="selectedStatusFilter.set($event)" />
-<!-- <div class="flex justify-center items-center my-8"></div> -->
+<app-table-header-status (status)="selectedTableStatus.set($event)" />
 
 <app-table-list
   [productTypes]="productTypeResource.value() ?? []"
   [tableStatusEnum]="tableStatusEnum"
-  [tables]="tableResource.value() ?? []"
-  [filterTables]="filterTableResource.value() ?? []"
-  [isEmpty]="tableResource.value()?.length === 0"
-  [isLoading]="tableResource.isLoading()"
-  [filterIsLoading]="filterTableResource.isLoading()"
+  [tables]="tablesResource.value()?.content ?? []"
+  [isEmpty]="(tablesResource.value()?.content?.length ?? 0) === 0"
+  [isLoading]="tablesResource.isLoading()"
+  [activeOrdersByTable]="activeOrdersByTable()"
+  (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
+  (refresh)="onRefresh()"
 />
 
-<app-pagination />
+<app-pagination
+  [pages]="tablesResource.value()?.totalPages ?? 0"
+  [currentPage]="this.paginationService.currentPage()"
+/>

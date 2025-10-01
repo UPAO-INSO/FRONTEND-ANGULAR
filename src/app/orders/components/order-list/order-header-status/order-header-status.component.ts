@@ -1,5 +1,5 @@
 import { Component, output, signal } from '@angular/core';
-import { RestOrderStatus } from 'src/app/orders/interfaces/order.interface';
+import { OrderStatus } from 'src/app/orders/interfaces/order.interface';
 
 @Component({
   selector: 'app-order-header-status',
@@ -7,7 +7,14 @@ import { RestOrderStatus } from 'src/app/orders/interfaces/order.interface';
   templateUrl: './order-header-status.component.html',
 })
 export class OrderStatusComponent {
-  status = output<string>();
+  status = output<OrderStatus | null>();
 
-  orderStatus = RestOrderStatus;
+  orderStatus = OrderStatus;
+
+  selectedStatus = signal<OrderStatus | null>(null);
+
+  selectStatus(newStatus: OrderStatus | null) {
+    this.selectedStatus.set(newStatus);
+    this.status.emit(newStatus);
+  }
 }

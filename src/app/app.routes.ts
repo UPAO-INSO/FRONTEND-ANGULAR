@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import DashboardPageComponent from './shared/pages/dashboard-page/dashboard-page.component';
 import { NotAuthenticatedGuard } from '@auth/guards/not-authenticated.guard';
-import { AuthenticatedGuard } from '@auth/guards/authenticated.guard';
 
 export const routes: Routes = [
   {
@@ -12,7 +11,6 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: DashboardPageComponent,
-    canMatch: [AuthenticatedGuard],
     children: [
       {
         path: 'tables',
@@ -25,6 +23,10 @@ export const routes: Routes = [
       {
         path: 'kitchen',
         loadChildren: () => import('./kitchen/kitchen.routes'),
+      },
+      {
+        path: '**',
+        redirectTo: 'tables',
       },
     ],
   },

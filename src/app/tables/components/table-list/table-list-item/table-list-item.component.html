@@ -3,7 +3,7 @@
   (click)="onTableClick()"
 >
   <!--  -->
-  @if (hasOrders()) {
+  @if (hasCartOrders()) {
   <div
     class="absolute top-4 left-4 w-3 h-3 bg-orange-500 rounded-full z-10 animate-pulse"
   ></div>
@@ -31,29 +31,33 @@
     <div class="flex flex-col items-center justify-center mt-3">
       <span
         class="badge badge-sm bg-gray-700/50 text-sky-500 font-bold border-0"
-        >{{ table().status | titlecase }}</span
+        >{{ getStatus(table().status) | titlecase }}</span
       >
     </div>
-    <!-- <div
+    <div
       aria-label="status"
-      class="status status-lg absolute top-4 right-4"
-    ></div> -->
+      class="status status-lg absolute top-4 right-4 {{
+        activeOrder() ? getOrderInTableStatus(activeOrder()!) : {}
+      }}"
+    ></div>
     } @else{
     <div class="flex flex-col items-center justify-center mt-3">
       <span
         class="badge badge-sm bg-gray-700/50 text-amber-500 font-bold border-0"
-        >{{ table().status | titlecase }}</span
+        >{{ getStatus(table().status) | titlecase }}</span
       >
     </div>
-    <!-- <div
+    <div
       aria-label="status"
-      class="status status-lg absolute top-4 right-4"
-    ></div> -->
+      class="status status-lg absolute top-4 right-4 {{
+        activeOrder() ? getOrderInTableStatus(activeOrder()!) : ''
+      }}"
+    ></div>
     }
 
     <!--  -->
     <div class="flex flex-col items-center justify-center my-3">
-      <h2 class="card-title text-xl font-bold mt-0 text-gray-200">
+      <h2 class="card-title text-2xl font-bold mt-0 text-gray-200">
         Mesa {{ table().number }}
       </h2>
     </div>

@@ -1,7 +1,7 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import {
-  KitchenOrder,
+  ContentKitchen,
   KitchenOrderStatus,
 } from '../../interfaces/kitchen-order.interface';
 
@@ -11,7 +11,7 @@ import {
   templateUrl: './order-card.component.html',
 })
 export class OrderCardComponent {
-  order = input.required<KitchenOrder>();
+  order = input.required<ContentKitchen>();
   changeStatus = output<KitchenOrderStatus>();
 
   orderStatus = KitchenOrderStatus;
@@ -31,7 +31,7 @@ export class OrderCardComponent {
   ];
 
   statusColor = computed(() => {
-    const status = this.order().estado;
+    const status = this.order().orderStatus;
     switch (status) {
       case KitchenOrderStatus.PENDING:
         return 'badge-warning';
@@ -46,7 +46,7 @@ export class OrderCardComponent {
 
   // Computed para el label del estado
   statusLabel = computed(() => {
-    const status = this.order().estado;
+    const status = this.order().orderStatus;
     switch (status) {
       case KitchenOrderStatus.PENDING:
         return 'Pendiente';
@@ -60,10 +60,6 @@ export class OrderCardComponent {
   });
 
   onStatusChange(newStatus: KitchenOrderStatus) {
-    this.changeStatus.emit(newStatus);
-  }
-
-  onManualStatusChange(newStatus: KitchenOrderStatus) {
     this.changeStatus.emit(newStatus);
   }
 }

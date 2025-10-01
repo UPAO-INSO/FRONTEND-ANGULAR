@@ -13,10 +13,6 @@ export const orderRoutes: Routes = [
         component: OrdersPageComponent,
       },
       {
-        path: 'create-order',
-        component: RegisterOrderComponent,
-      },
-      {
         path: '**',
         redirectTo: '',
       },
