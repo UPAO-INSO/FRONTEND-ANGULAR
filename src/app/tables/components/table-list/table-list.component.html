@@ -1,9 +1,9 @@
 <div
-  class="h-[calc(100vh-14rem)] relative overflow-hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-5"
+  class="h-[calc(100vh-14rem)] font-poppins-semibold relative overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-5"
   #groupDiv
 >
   <!--  -->
-  @if (isLoading() || filterIsLoading()) {
+  @if (isLoading()) {
   <div
     class="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg z-10"
   >
@@ -22,32 +22,22 @@
       <span class="text-center">{{ errorMessage() }}</span>
     </div>
   </div>
-  } @else if (filterTables().length > 0) {
-
-  <!-- Filtered tables -->
-  @for (filterTable of filterTables(); track filterTable.id) {
-  <app-table-list-item
-    [table]="filterTable"
-    [tableStatus]="tableStatusEnum()"
-    class="min-h-[200px] max-h-[300px]"
-    (tableSelected)="openRegisterOrder($event)"
-  />
-  } }
+  }
   <!--  -->
   @else if (tables().length > 0) {
 
   <!-- All tables -->
   @for (table of tables(); track table.id) {
   <app-table-list-item
+    class="min-h-[200px] max-h-[300px]"
     [table]="table"
     [tableStatus]="tableStatusEnum()"
-    class="min-h-[200px] max-h-[300px]"
+    [activeOrder]="getActiveOrderByTable(table.id)"
     (tableSelected)="openRegisterOrder($event)"
   />
   }
   <!--  -->
   } @else {
-  <!-- Empty state -->
   <div
     class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg z-10"
   >
@@ -60,17 +50,22 @@
   }
 </div>
 
-<!-- Modal para registro de órdenes -->
 @if (selectedTable()) {
-<div
-  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
->
-  <div class="w-full max-w-7xl max-h-[90vh] overflow-hidden">
-    <app-register-order
-      [selectedTable]="selectedTable()"
-      [productTypes]="productTypes()"
-      (closeModal)="closeRegisterOrder()"
-    />
-  </div>
-</div>
+<!--  -->
+@if(getActiveOrderByTable(selectedTable()?.id!)) {
+
+<app-order-view
+  [selectedTable]="selectedTable()"
+  [activeOrder]="getActiveOrderByTable(selectedTable()?.id!)"
+  (statusChange)="onChangeStatus($event.orderId, $event.newStatus)"
+  (closeModal)="closeRegisterOrder()"
+/>
 }
+<!--  -->
+@else {
+<app-register-order
+  [selectedTable]="selectedTable()"
+  [productTypes]="productTypes()"
+  (closeModal)="closeRegisterOrder()"
+/>
+} }

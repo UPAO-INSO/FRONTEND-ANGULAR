@@ -1,30 +1,49 @@
-<div class="h-screen bg-background text-white flex flex-col">
+<div
+  class="h-screen bg-background text-white font-poppins-medium flex flex-col"
+>
   <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
-    <h1 class="text-3xl font-bold">Active Orders</h1>
+    <label class="input w-40 bg-background">
+      <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
+      <input
+        type="search"
+        required
+        placeholder="N° de mesa"
+        class="text-gray-100 placeholder:text-gray-500"
+      />
+    </label>
+
+    <div class="flex flex-row justify-center">
+      <app-pagination
+        [pages]="ordersResource.value()?.totalPages ?? 0"
+        [currentPage]="paginationService.currentPage()"
+      />
+    </div>
 
     <div class="flex items-center gap-4">
       <button
-        class="btn btn-primary btn-sm"
+        class="btn bg-side-background btn-sm font-bold text-white py-5 shadow-2xl"
         (click)="onRefresh()"
-        [disabled]="isLoading()"
+        [disabled]="ordersResource.isLoading()"
       >
         <span
-          class="fa-solid fa-refresh"
-          [class.animate-spin]="isLoading()"
+          class="fa-solid fa-refresh text-status-to-preparation"
+          [class.animate-spin]="ordersResource.isLoading()"
         ></span>
-        Refresh
+        Recargar
       </button>
 
-      <div class="badge badge-secondary">
-        {{ orders()?.length || 0 }} órdenes activas
+      <div
+        class="badge bg-active-orders text-white rounded-lg font-bold py-4 mr-6.5"
+      >
+        {{ getActiveOrders(ordersResource.value()?.content!) }} órdenes activas
       </div>
     </div>
   </div>
 
   <div class="flex-1 min-h-0 px-6 pb-6">
     <app-kitchen-order-list
-      [orders]="ordersResource.value() ?? []"
-      [isLoading]="isLoading()"
+      [orders]="ordersResource.value()?.content ?? []"
+      [isLoading]="ordersResource.isLoading()"
       [error]="ordersResource.error()"
       (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
       (refresh)="onRefresh()"

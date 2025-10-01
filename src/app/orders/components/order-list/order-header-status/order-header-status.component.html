@@ -1,49 +1,62 @@
-<header class="flex justify-center items-center my-3">
+<header class="flex justify-between items-center my-3">
+  <h1 class="text-3xl font-bold text-gray-100">Pedidos</h1>
   <div class="flex flex-row items-center gap-4 font-semibold">
-    <div class="flex items-center gap-2 cursor-pointer">
-      <span
-        class="badge bg-blue-600 text-white"
-        (click)="status.emit(orderStatus.PREPARING)"
+    <div class="flex gap-2">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
+        [class.text-status-preparing]="
+          selectedStatus() === orderStatus.PREPARING
+        "
+        (click)="selectStatus(orderStatus.PREPARING)"
       >
         Preparando
-      </span>
+      </button>
     </div>
-    <div class="flex items-center gap-2 cursor-pointer">
-      <span
-        class="badge bg-amber-500 text-white"
-        (click)="status.emit(orderStatus.PENDING)"
+    <div class="flex gap-2">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
+        [class.text-status-pending]="selectedStatus() === orderStatus.PENDING"
+        (click)="selectStatus(orderStatus.PENDING)"
       >
         Pendiente
-      </span>
+      </button>
     </div>
-    <div class="flex items-center gap-2 cursor-pointer">
-      <span
-        class="badge bg-purple-700 text-white"
-        (click)="status.emit(orderStatus.PAID)"
+    <div class="flex gap-2">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
+        [class.text-status-paid]="selectedStatus() === orderStatus.PAID"
+        (click)="selectStatus(orderStatus.PAID)"
       >
         Pagado
-      </span>
+      </button>
     </div>
-    <div class="flex items-center gap-2 cursor-pointer">
-      <span
-        class="badge bg-status-cancelled text-white"
-        (click)="status.emit(orderStatus.CANCELLED)"
+    <div class="flex gap-2">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
+        [class.text-status-cancelled]="
+          selectedStatus() === orderStatus.CANCELLED
+        "
+        (click)="selectStatus(orderStatus.CANCELLED)"
       >
         Cancelado
-      </span>
+      </button>
     </div>
-    <div class="flex items-center gap-2 cursor-pointer">
-      <span
-        class="badge bg-status-ready text-white"
-        (click)="status.emit(orderStatus.READY)"
+    <div class="flex gap-2">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
+        [class.text-status-ready]="selectedStatus() === orderStatus.READY"
+        (click)="selectStatus(orderStatus.READY)"
       >
         Listo
-      </span>
+      </button>
     </div>
-    <div class="flex items-center gap-2 cursor-pointer">
-      <span class="badge" (click)="status.emit('')">
+    <div class="flex gap-2 cursor-pointer">
+      <button
+        class="text-white bg-transparent font-bold cursor-pointer"
+        (click)="selectStatus(null)"
+      >
         <i class="fa-solid fa-trash"></i>
-      </span>
+      </button>
     </div>
   </div>
 </header>

@@ -1,17 +1,16 @@
-// src/app/kitchen/mapper/kitchen-order.mapper.ts
 import {
   KitchenOrder,
-  RESTKitchenOrder,
   KitchenOrderStatus,
   KitchenOrderItem,
   RESTProductOrder,
   KitchenOrderEmployee,
   RESTOrderEmployee,
+  ContentKitchen,
 } from '../interfaces/kitchen-order.interface';
 
 export class KitchenOrderMapper {
   static mapRestKitchenOrderToKitchenOrder(
-    restOrder: RESTKitchenOrder
+    restOrder: ContentKitchen
   ): KitchenOrder {
     return {
       id: restOrder.id,
@@ -34,7 +33,7 @@ export class KitchenOrderMapper {
   }
 
   static mapRestOrdersToOrderArray(
-    restOrders: RESTKitchenOrder[]
+    restOrders: ContentKitchen[]
   ): KitchenOrder[] {
     return restOrders.map((order) =>
       this.mapRestKitchenOrderToKitchenOrder(order)

@@ -1,13 +1,13 @@
-<app-order-header-status (status)="orderStatus.set($event)" />
+<app-order-header-status (status)="selectedOrderStatus.set($event)" />
 
 <app-order-list
-  [orders]="orderResource.value() ?? []"
-  [isEmpty]="orderResource.value()?.length === 0"
+  [orders]="orderResource.value()?.content ?? []"
+  [isEmpty]="(orderResource.value()?.content?.length ?? 0) === 0"
   [isLoading]="orderResource.isLoading()"
   [errorMessage]="orderResource.error()"
-  [filterOrders]="filterOrderResource.value() ?? []"
-  [filterIsEmpty]="filterOrderResource.value()?.length === 0"
-  [filterIsLoading]="filterOrderResource.isLoading()"
 />
 
-<app-pagination />
+<app-pagination
+  [pages]="orderResource.value()?.totalPages ?? 0"
+  [currentPage]="this.paginationService.currentPage()"
+/>

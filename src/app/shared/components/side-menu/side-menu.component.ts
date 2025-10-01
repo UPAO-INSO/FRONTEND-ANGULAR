@@ -10,10 +10,4 @@ import { AuthService } from '@auth/services/auth.service';
 })
 export class SideMenuComponent {
   authService = inject(AuthService);
-
-  header = output<string>();
-
-  optionSelect(header: string) {
-    this.header.emit(header);
-  }
 }

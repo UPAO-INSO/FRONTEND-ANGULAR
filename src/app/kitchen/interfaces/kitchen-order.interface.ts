@@ -37,7 +37,7 @@ export interface KitchenOrderEmployee {
 }
 
 // Interfaces REST del backend
-export interface RESTKitchenOrder {
+export interface ContentKitchen {
   id: number;
   orderStatus: string;
   comment: string;
@@ -72,8 +72,8 @@ export interface RESTOrderEmployee {
   employeeLastname: string;
 }
 
-export interface KitchenOrderResponse {
-  content: RESTKitchenOrder[];
+export interface RESTKitchenOrders {
+  content: ContentKitchen[];
   totalPages: number;
   totalElements: number;
   size: number;

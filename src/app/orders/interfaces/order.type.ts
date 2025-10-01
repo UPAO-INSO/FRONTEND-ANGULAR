@@ -1,6 +1,6 @@
-import { RestOrderStatus } from './order.interface';
+import { OrderStatus } from './order.interface';
 
 export type OrderKitchenStatus =
-  | RestOrderStatus.PENDING
-  | RestOrderStatus.PREPARING
-  | RestOrderStatus.READY;
+  | OrderStatus.PENDING
+  | OrderStatus.PREPARING
+  | OrderStatus.READY;

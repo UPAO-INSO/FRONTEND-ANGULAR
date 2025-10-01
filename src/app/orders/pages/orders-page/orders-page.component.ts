@@ -6,6 +6,8 @@ import { OrderService } from '../../services/order.service';
 import { OrderListComponent } from '../../components/order-list/order-list.component';
 import { OrderStatusComponent } from '../../components/order-list/order-header-status/order-header-status.component';
 import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { PaginationService } from '@shared/components/pagination/pagination.service';
+import { OrderStatus } from '../../interfaces/order.interface';
 
 @Component({
   selector: 'app-orders-page',
@@ -14,22 +16,24 @@ import { PaginationComponent } from 'src/app/shared/components/pagination/pagina
 })
 export default class OrdersPageComponent {
   orderService = inject(OrderService);
-  orderStatus = signal('');
+  paginationService = inject(PaginationService);
+
+  selectedOrderStatus = signal<OrderStatus | null>(null);
 
   orderResource = rxResource({
-    stream: () => {
-      const orders = this.orderService.fecthOrders();
-      return orders;
-    },
-  });
-
-  filterOrderResource = rxResource({
-    params: () => ({ query: this.orderStatus() }),
+    params: () => ({
+      status: this.selectedOrderStatus(),
+      page: this.paginationService.currentPage(),
+    }),
 
     stream: ({ params }) => {
-      if (!params.query) return of([]);
+      if (params.status !== null)
+        return this.orderService.fecthOrders({
+          page: params.page,
+          status: params.status,
+        });
 
-      return this.orderService.fetchFilterOrder(params.query);
+      return this.orderService.fecthOrders({ page: params.page });
     },
   });
 }
