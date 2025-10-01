@@ -1,7 +1,7 @@
-import { Component, input } from '@angular/core';
-import { Order } from '../../interfaces/order.interface';
+import { Component, computed, input } from '@angular/core';
 import { ReplaceUnderscorePipe } from 'src/app/shared/pipes/replace-underscore.pipe';
 import { DatePipe, TitleCasePipe } from '@angular/common';
+import { ContentOrder, RESTOrder } from '../../interfaces/order.interface';
 
 @Component({
   selector: 'app-order-list',
@@ -9,15 +9,51 @@ import { DatePipe, TitleCasePipe } from '@angular/common';
   templateUrl: './order-list.component.html',
 })
 export class OrderListComponent {
-  orders = input.required<Order[]>({});
-  filterOrders = input.required<Order[]>({});
+  orders = input.required<ContentOrder[]>({});
 
   isEmpty = input<boolean>(false);
   isLoading = input<boolean>(false);
   errorMessage = input<string | unknown | null>();
 
-  filterIsEmpty = input<boolean>(false);
-  filterIsLoading = input<boolean>(false);
+  getOrderAmPm(order: ContentOrder) {
+    if (!order || !order.createdAt) return '';
+
+    const date = new Date(order.createdAt);
+    const hours = date.getHours();
+
+    return hours >= 12 ? 'PM' : 'AM';
+  }
+
+  getProductsDisplayText(productOrders: any[]): string {
+    if (!productOrders || productOrders.length === 0) {
+      return 'Sin productos';
+    }
+
+    const productNames = productOrders.map(
+      (po) => `${po.quantity}x ${po.productName || 'Producto'}`
+    );
+
+    return productNames.join(', ');
+  }
+
+  getProductsFullText(productOrders: any[]): string {
+    if (!productOrders || productOrders.length === 0) {
+      return 'Sin productos';
+    }
+
+    const productNames = productOrders.map(
+      (po) => `${po.quantity}x ${po.productName || 'Producto'}`
+    );
+
+    return `Productos: ${productNames.join(', ')}`;
+  }
+
+  displayState = computed(() => {
+    if (this.isLoading()) return 'loading';
+    if (this.errorMessage()) return 'error';
+    if (this.orders().length > 0) return 'success';
+    return 'empty';
+  });
 
   getOrderStatus(status: string): { class: string; text: string } {
     switch (status) {

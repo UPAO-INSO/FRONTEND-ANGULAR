@@ -1,25 +1,34 @@
-<header class="flex justify-center items-center my-3">
-  <div class="flex flex-row items-center gap-4">
-    <div class="flex items-center gap-2 pt-4">
-      <span class="badge font-bold cursor-pointer" (click)="status.emit(null)">
-        Todos</span
+<header class="flex justify-between items-between my-3 font-poppins-semibold">
+  <h1 class="text-3xl text-gray-100">Mesas</h1>
+
+  <div class="flex flex-row justify-center items-center gap-4">
+    <div class="flex gap-2">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer transition-all duration-200 px-2 py-1"
+        [class.text-white]="selectedStatus() === null"
+        (click)="selectStatus(null)"
       >
+        Todos
+      </button>
     </div>
-    <div class="flex items-center gap-2 pt-4">
-      <span
-        class="badge text-sky-500 font-bold cursor-pointer"
-        (click)="status.emit(tableStatus.AVAILABLE)"
+    <div class="flex gap-2">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer transition-all duration-200 px-2 py-1"
+        [class.text-sky-400]="selectedStatus() === tableStatus.AVAILABLE"
+        (click)="selectStatus(tableStatus.AVAILABLE)"
       >
         Disponible
-      </span>
+      </button>
     </div>
-    <div class="flex items-center gap-2 pt-4">
-      <span
-        class="badge text-amber-500 font-bold cursor-pointer"
-        (click)="status.emit(tableStatus.OCCUPIED)"
+    <div class="flex gap-2">
+      <button
+        class="bg-transparent border-0 border-b-2 font-bold cursor-pointer transition-all duration-200 px-2 py-1"
+        [class.text-amber-400]="selectedStatus() === tableStatus.OCCUPIED"
+        [class.text-gray-400]="selectedStatus() !== tableStatus.OCCUPIED"
+        (click)="selectStatus(tableStatus.OCCUPIED)"
       >
         Ocupada
-      </span>
+      </button>
     </div>
   </div>
 </header>

@@ -1,39 +1,31 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { tap } from 'rxjs';
 
-import type { KitchenOrderStatus } from '../../interfaces/kitchen-order.interface';
+import {
+  ContentKitchen,
+  KitchenOrderStatus,
+} from '../../interfaces/kitchen-order.interface';
 import { KitchenService } from '../../services/kitchen.service';
 import { KitchenOrderListComponent } from '../../components/order-list/kitchen-order-list.component';
+import { PaginationService } from '@shared/components/pagination/pagination.service';
+import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-kitchen-page',
-  imports: [KitchenOrderListComponent],
+  imports: [KitchenOrderListComponent, PaginationComponent],
   templateUrl: './kitchen-page.component.html',
 })
-export default class KitchenPageComponent implements OnInit, OnDestroy {
+export default class KitchenPageComponent {
   private kitchenService = inject(KitchenService);
-  private refreshInterval?: number;
+  paginationService = inject(PaginationService);
 
-  // Usa rxResource para manejar la carga automática
   ordersResource = rxResource({
-    stream: () => this.kitchenService.fetchActiveOrders(),
+    params: () => ({ page: this.paginationService.currentPage() }),
+
+    stream: ({ params }) => {
+      return this.kitchenService.fetchActiveOrders({ page: params.page }) ?? [];
+    },
   });
-
-  // Computed desde el resource
-  orders = this.ordersResource.value;
-  isLoading = this.ordersResource.isLoading;
-  error = this.ordersResource.error;
-
-  ngOnInit() {
-    this.setupAutoRefresh();
-  }
-
-  ngOnDestroy() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-  }
 
   onStatusChange(orderId: number, newStatus: KitchenOrderStatus) {
     this.kitchenService.updateOrderStatus(orderId, newStatus).subscribe({
@@ -46,15 +38,14 @@ export default class KitchenPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  onRefresh() {
-    this.ordersResource.reload();
+  getActiveOrders(orders: ContentKitchen[]) {
+    return (
+      orders.filter((order) => order.orderStatus !== KitchenOrderStatus.READY)
+        .length ?? 0
+    );
   }
 
-  private setupAutoRefresh() {
-    this.refreshInterval = window.setInterval(() => {
-      if (!this.isLoading()) {
-        this.ordersResource.reload();
-      }
-    }, 30000);
+  onRefresh() {
+    this.ordersResource.reload();
   }
 }

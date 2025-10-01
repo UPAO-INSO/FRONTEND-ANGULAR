@@ -13,10 +13,6 @@ export const tableRoutes: Routes = [
         component: TablesPageComponent,
       },
       {
-        path: 'create-order',
-        component: RegisterOrderComponent,
-      },
-      {
         path: '**',
         redirectTo: '',
       },

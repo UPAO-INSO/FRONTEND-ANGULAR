@@ -5,17 +5,28 @@
 @theme {
   --color-gold: oklch(0.87 0.13 80.5);
   --color-brown: oklch(0.73 0.13 60.5);
+
   --color-background: oklch(0.2101 0.0318 264.66);
   --color-secondary-background: oklch(0.223 0.0313 264.77);
   --color-side-background: oklch(0.2781 0.0296 256.85);
   --color-navbar-background: oklch(0.2522 0.0296 256.85);
+
   --color-status: oklch(0.753 0.1199 228.77);
   --color-status-cancelled: oklch(0.6368 0.2078 25.33);
   --color-status-ready: oklch(0.7227 0.192 149.58);
+  --color-status-preparing: oklch(0.5465 0.2455 262.87);
+  --color-status-paid: oklch(0.4981 0.2634 301.68);
+  --color-status-pending: oklch(0.7724 0.172798 65.367);
+
+  --color-slogan-app: oklch(0.7054 0.1324 255.81);
+  --color-status-to-preparation: oklch(0.6645 0.1566 58.63);
+  --color-status-to-ready: oklch(0.375 0.0717 169.82);
+  --color-active-orders: oklch(0.7674 0.164 70.44);
 
   --color-login-primary: oklch(0.6469 0.2774 303.4);
   --color-login-primary-dark: oklch(0.5869 0.2574 303.4);
   --color-login-primary-light: oklch(0.7069 0.2974 303.4);
+
   --color-overlay: oklch(0.1 0 0);
   --color-backdrop-blur: oklch(0.2522 0.0296 256.85 / 0.5);
 }
@@ -53,6 +64,34 @@
 
   .focus\:ring-login-primary:focus {
     --tw-ring-color: var(--color-login-primary);
+  }
+
+  .font-fira {
+    font-family: "fira-mono", monospace;
+  }
+
+  .font-fira-normal {
+    font-family: "fira-mono", monospace;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .font-fira-bold {
+    font-family: "fira-mono", monospace;
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  .font-poppins-medium {
+    font-family: "poppins", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  .font-poppins-semibold {
+    font-family: "poppins", sans-serif;
+    font-weight: 600;
+    font-style: normal;
   }
 }
 
@@ -93,11 +132,16 @@
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     background: #22223b;
+    border-radius: 8px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #374150;
     border-radius: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
   }
 
   .custom-secondary-scrollbar {

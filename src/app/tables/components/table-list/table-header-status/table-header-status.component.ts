@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, output, signal } from '@angular/core';
 import { Table, TableStatus } from '../../../interfaces/table.interface';
 
 @Component({
@@ -9,5 +9,12 @@ import { Table, TableStatus } from '../../../interfaces/table.interface';
 export class TableHeaderStatusComponent {
   status = output<TableStatus | null>();
 
+  selectedStatus = signal<TableStatus | null>(null);
+
   tableStatus = TableStatus;
+
+  selectStatus(newStatus: TableStatus | null) {
+    this.selectedStatus.set(newStatus);
+    this.status.emit(newStatus);
+  }
 }

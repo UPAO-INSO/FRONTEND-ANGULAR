@@ -1,10 +1,7 @@
 import { HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Tokens } from '@auth/interfaces/auth-response.interface';
 import { AuthService } from '@auth/services/auth.service';
-import { catchError, Observable, throwError } from 'rxjs';
-
-const ongoingRequests = new Map<string, Observable<HttpEvent<unknown>>>();
+import { Observable } from 'rxjs';
 
 export function authInterceptor(
   req: HttpRequest<unknown>,
@@ -17,7 +14,6 @@ export function authInterceptor(
   );
 
   if (isPublicEndpoint) {
-    console.log('🔓 Public endpoint, no auth needed:', req.url);
     return next(req);
   }
 
@@ -26,8 +22,6 @@ export function authInterceptor(
   const accessToken = token?.accessToken;
 
   if (!accessToken) return next(req);
-
-  console.log({ accessToken });
 
   const authReq = req.clone({
     setHeaders: {

@@ -3,7 +3,7 @@ import { Component, input, output } from '@angular/core';
 import { OrderCardComponent } from '../order-card/order-card.component';
 
 import {
-  KitchenOrder,
+  ContentKitchen,
   KitchenOrderStatus,
 } from '../../interfaces/kitchen-order.interface';
 
@@ -13,7 +13,7 @@ import {
   templateUrl: './kitchen-order-list.component.html',
 })
 export class KitchenOrderListComponent {
-  orders = input.required<KitchenOrder[]>();
+  orders = input.required<ContentKitchen[]>();
   isLoading = input<boolean>(false);
   error = input<Error | undefined>();
 

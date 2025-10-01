@@ -7,14 +7,6 @@ export interface Order {
   createdAt: Date;
 }
 
-export enum OrderStatus {
-  PENDIENTE = 'PENDIENTE',
-  EN_PREPARACION = 'EN_PREPARACION',
-  TERMINADO = 'TERMINADO',
-  LISTO = 'LISTO',
-  CANCELADO = 'CANCELADO',
-}
-
 export interface RESTOrder {
   content: ContentOrder[];
   totalPages: number;
@@ -51,7 +43,7 @@ export interface OrderEmployee {
 
 export interface ProductOrder {
   id: number;
-  name: string;
+  productName: string;
   quantity: number;
   unitPrice: number;
   subtotal: number;
@@ -59,10 +51,11 @@ export interface ProductOrder {
   productId: number;
 }
 
-export enum RestOrderStatus {
+export enum OrderStatus {
   PENDING = 'PENDING',
   PREPARING = 'PREPARING',
   READY = 'READY',
   CANCELLED = 'CANCELLED',
   PAID = 'PAID',
+  COMPLETED = 'COMPLETED',
 }
