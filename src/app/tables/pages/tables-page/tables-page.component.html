@@ -8,6 +8,7 @@
   [isLoading]="tablesResource.isLoading()"
   [activeOrdersByTable]="activeOrdersByTable()"
   (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
+  (orderCreated)="onOrderCreated($event)"
   (refresh)="onRefresh()"
 />
 

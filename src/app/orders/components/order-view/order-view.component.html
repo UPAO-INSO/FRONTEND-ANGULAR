@@ -2,7 +2,7 @@
   class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
 >
   <div
-    class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar rounded-2xl text-white"
+    class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-dropdown-scrollbar rounded-2xl text-white"
   >
     <button
       class="absolute top-7 right-5 z-10 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer transition-colors"
@@ -145,9 +145,17 @@
               </div>
             </div>
           </div>
-          <div
-            class="pt-6 border-t border-background-dark/10 dark:border-background-light/10"
-          >
+          @if (activeOrder()?.orderStatus !== orderStatus.READY) {
+          <div class="pt-6 border-t">
+            <button
+              disabled
+              class="w-full h-12 px-6 bg-gray-700 text-gray-500 font-bold rounded-lg"
+            >
+              Completar Orden
+            </button>
+          </div>
+          } @else {
+          <div class="pt-6 border-t">
             <button
               class="w-full h-12 px-6 bg-red-500 text-white font-bold rounded-lg hover:bg-red-500/80 cursor-pointer"
               (click)="
@@ -157,6 +165,7 @@
               Completar Orden
             </button>
           </div>
+          }
         </div>
       </div>
     </div>
