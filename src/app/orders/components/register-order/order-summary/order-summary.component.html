@@ -54,10 +54,10 @@
         placeholder="Ej: Sin cebolla, extra picante, bien cocido..."
         rows="3"
         maxlength="200"
-        [(ngModel)]="orderComment"
+        [(ngModel)]="comment"
       ></textarea>
       <div class="absolute bottom-2 right-3 text-xs text-gray-500">
-        {{ orderComment.length || 0 }}/200
+        {{ commentLength() }}/200
       </div>
     </div>
   </div>
@@ -66,4 +66,20 @@
   <div>
     <app-order-summary-total [cartItems]="cartItems()" />
   </div>
+
+  @if (carItemsLength() !== 0) {
+  <button
+    class="w-full bg-red-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-red-700 transition-colors cursor-pointer"
+    (click)="onSubmitOrder()"
+  >
+    Crear Orden
+  </button>
+  } @else {
+  <button
+    class="w-full bg-gray-400 text-gray-600 font-bold py-3 rounded-lg mt-6"
+    disabled
+  >
+    Crear Orden
+  </button>
+  }
 </div>
