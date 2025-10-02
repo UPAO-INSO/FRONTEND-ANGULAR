@@ -59,3 +59,20 @@ export enum OrderStatus {
   PAID = 'PAID',
   COMPLETED = 'COMPLETED',
 }
+
+export interface RequestOrder {
+  comment: string;
+  tableId: number;
+  clientId: number;
+  productOrders: RequestProductOrder[];
+  orderEmployees: RequestOrderEmployee[];
+}
+
+export interface RequestOrderEmployee {
+  employeeId: number;
+}
+
+export interface RequestProductOrder {
+  productId: number;
+  quantity: number;
+}

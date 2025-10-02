@@ -24,7 +24,7 @@
       <button
         class="bg-transparent border-0 border-b-2 font-bold cursor-pointer transition-all duration-200 px-2 py-1"
         [class.text-amber-400]="selectedStatus() === tableStatus.OCCUPIED"
-        [class.text-gray-400]="selectedStatus() !== tableStatus.OCCUPIED"
+        [class.text-gray-500]="selectedStatus() !== tableStatus.OCCUPIED"
         (click)="selectStatus(tableStatus.OCCUPIED)"
       >
         Ocupada

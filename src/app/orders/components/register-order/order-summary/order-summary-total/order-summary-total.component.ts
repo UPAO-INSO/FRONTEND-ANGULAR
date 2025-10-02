@@ -17,8 +17,4 @@ export class OrderSummaryTotalComponent {
   subtotal = this.orderCartService.subtotal;
   tax = this.orderCartService.tax;
   total = this.orderCartService.total;
-
-  onCreateOrder() {
-    this.orderCartService.createOrder();
-  }
 }

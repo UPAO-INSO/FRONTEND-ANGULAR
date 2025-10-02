@@ -13,6 +13,7 @@ import { OrderService } from 'src/app/orders/services/order.service';
 import {
   ContentOrder,
   OrderStatus,
+  RequestOrder,
 } from 'src/app/orders/interfaces/order.interface';
 
 @Component({
@@ -128,20 +129,26 @@ export class TablesPageComponent {
     this.activeOrdersResource.reload();
   }
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
-    console.log('🎯 Tables Page - Updating order status:', {
-      orderId,
-      newStatus,
-    });
-
-    this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
-      next: (resp) => {
-        console.log('✅ Order status updated successfully:', resp);
-
+  onOrderCreated(orderData: RequestOrder) {
+    this.orderService.createOrder(orderData).subscribe({
+      next: (response) => {
+        console.log('Order created successfully:', response);
         this.refreshResources();
       },
       error: (error) => {
-        console.error('❌ Error updating order status:', error);
+        console.error('Error creating order:', error);
+      },
+    });
+  }
+
+  onStatusChange(orderId: number, newStatus: OrderStatus) {
+    this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
+      next: (response) => {
+        console.log('Order status change successfully:', response);
+        this.refreshResources();
+      },
+      error: (error) => {
+        console.error('Error change order:', error);
       },
     });
   }

@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { catchError, map, Observable, of, throwError } from 'rxjs';
+import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import {
   ContentOrder,
   OrderStatus,
+  RequestOrder,
   RESTOrder,
 } from '../interfaces/order.interface';
 import { environment } from '@environments/environment';
@@ -21,6 +22,23 @@ export class OrderService {
   private http = inject(HttpClient);
 
   envs = environment;
+
+  createOrder(order: RequestOrder): Observable<ContentOrder> {
+    console.log(order);
+    console.log('API URL:', `${this.envs.API_URL}/orders`);
+
+    return this.http
+      .post<ContentOrder>(`${this.envs.API_URL}/orders`, {
+        ...order,
+      })
+      .pipe(
+        tap((resp) => console.log('OrderService response:', resp)),
+        catchError((error) => {
+          console.error('❌ OrderService error:', error);
+          return throwError(() => 'No se pudo crear ordenes');
+        })
+      );
+  }
 
   fetchOrderByTablesIds(
     tableIds: number[],
@@ -72,6 +90,7 @@ export class OrderService {
         },
       })
       .pipe(
+        tap(),
         catchError((error) => {
           console.log({ error });
 

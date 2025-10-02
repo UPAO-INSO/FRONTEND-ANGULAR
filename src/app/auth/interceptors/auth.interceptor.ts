@@ -29,5 +29,7 @@ export function authInterceptor(
     },
   });
 
+  console.log({ url: authReq.url });
+
   return next(authReq);
 }

@@ -121,8 +121,6 @@ export class OrderCartService {
     const tableId = this._currentTableId();
     if (!tableId) return;
 
-    // Aquí harías la petición para crear la orden
-    // Después de crear exitosamente, limpiar el carrito
     this.clearCurrentTableCart();
   }
 
