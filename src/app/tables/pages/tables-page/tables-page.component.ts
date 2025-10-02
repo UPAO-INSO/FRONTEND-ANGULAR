@@ -99,8 +99,6 @@ export class TablesPageComponent {
       ordersByTable.set(order.tableId, order);
     });
 
-    console.log({ ordersByTable });
-
     return ordersByTable;
   });
 
@@ -158,7 +156,6 @@ export class TablesPageComponent {
       this.tablesResource.reload();
       this.activeOrdersResource.reload();
     } catch (error) {
-      console.log('Using fallback refresh method');
       this.refreshResources();
     }
   }
