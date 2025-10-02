@@ -24,17 +24,13 @@ export class OrderService {
   envs = environment;
 
   createOrder(order: RequestOrder): Observable<ContentOrder> {
-    console.log(order);
-    console.log('API URL:', `${this.envs.API_URL}/orders`);
-
     return this.http
-      .post<ContentOrder>(`${this.envs.API_URL}/orders`, {
+      .post<ContentOrder>(`${this.envs.API_URL}/orders/create`, {
         ...order,
       })
       .pipe(
-        tap((resp) => console.log('OrderService response:', resp)),
         catchError((error) => {
-          console.error('❌ OrderService error:', error);
+          console.error('OrderService error:', error);
           return throwError(() => 'No se pudo crear ordenes');
         })
       );
@@ -126,8 +122,6 @@ export class OrderService {
     orderId: number,
     status: OrderStatus
   ): Observable<ContentOrder[]> {
-    console.log({ orderId, status });
-
     return this.http
       .patch<any>(`${this.envs.API_URL}/orders/status`, { status, orderId })
       .pipe(

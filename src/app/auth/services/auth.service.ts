@@ -27,7 +27,6 @@ export class AuthService {
 
   private initializationEffect = effect(() => {
     if (!this._initialized()) {
-      console.log('Initializing auth from storage...');
       this.initializeFromStorage();
       this._initialized.set(true);
     }
@@ -60,12 +59,6 @@ export class AuthService {
       const accessToken = localStorage.getItem(this.ACCESS_TOKEN_KEY);
       const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
       const userData = localStorage.getItem(this.USER_KEY);
-
-      console.log('Storage data:', {
-        hasToken: !!accessToken,
-        hasRefresh: !!refreshToken,
-        hasUser: !!userData,
-      });
 
       if (accessToken && userData) {
         const user = JSON.parse(userData);
