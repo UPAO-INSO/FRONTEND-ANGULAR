@@ -1,4 +1,9 @@
-import { ContentOrder, Order } from '../interfaces/order.interface';
+import {
+  ContentOrder,
+  Order,
+  RequestProductOrder,
+} from '../interfaces/order.interface';
+import { CartItem } from '../services/order-cart.service';
 
 export class OrderMapper {
   static mapRestOrderToOrder(restOrder: ContentOrder): Order {
@@ -14,5 +19,20 @@ export class OrderMapper {
 
   static mapRestOrdersToOrdersArray(restOrders: ContentOrder[]) {
     return restOrders.map(OrderMapper.mapRestOrderToOrder);
+  }
+
+  static mapCartItemToRequestProductOrder(
+    cartItem: CartItem
+  ): RequestProductOrder {
+    return {
+      productId: cartItem.product.id,
+      quantity: cartItem.quantity,
+    };
+  }
+
+  static mapCartItemsToRequestProductsOrder(
+    cartItems: CartItem[]
+  ): RequestProductOrder[] {
+    return cartItems.map(OrderMapper.mapCartItemToRequestProductOrder);
   }
 }

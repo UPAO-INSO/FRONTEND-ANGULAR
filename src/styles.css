@@ -137,7 +137,6 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #374150;
-    border-radius: 8px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -150,13 +149,16 @@
   }
 
   .custom-secondary-scrollbar::-webkit-scrollbar {
-    width: 8px;
     background: #22223b;
   }
 
   .custom-secondary-scrollbar::-webkit-scrollbar-thumb {
     background: #374150;
-    border-radius: 8px;
+  }
+
+  .custom-dropdown-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: #374150 #ffffff00;
   }
 
   .bg-login-primary-blur {

@@ -1,18 +1,17 @@
 import { Component, input, output, signal } from '@angular/core';
-import { NgClass } from '@angular/common';
 
 import { TableListItemComponent } from './table-list-item/table-list-item.component';
 import { RegisterOrderComponent } from 'src/app/orders/components/register-order/register-order.component';
 
 import type {
   ContentTable,
-  RESTTable,
   Table,
   TableStatus,
 } from '../../interfaces/table.interface';
 import {
   ContentOrder,
   OrderStatus,
+  RequestOrder,
 } from 'src/app/orders/interfaces/order.interface';
 import { ProductType } from 'src/app/products/interfaces/product.type';
 import { OrderViewComponent } from 'src/app/orders/components/order-view/order-view.component';
@@ -37,12 +36,17 @@ export class TableListComponent {
 
   statusChange = output<{ orderId: number; newStatus: OrderStatus }>();
   refresh = output<void>();
+  orderCreated = output<RequestOrder>();
 
   selectedTable = signal<Table | null>(null);
   selectedProductCategory = signal<ProductType | null>(null);
 
   onChangeStatus(orderId: number, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
+  }
+
+  onOrderCreated(orderData: RequestOrder) {
+    this.orderCreated.emit(orderData);
   }
 
   openRegisterOrder(table: Table) {
