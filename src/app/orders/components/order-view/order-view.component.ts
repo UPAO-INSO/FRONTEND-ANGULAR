@@ -22,7 +22,7 @@ export class OrderViewComponent {
 
   showConfirmModal = signal<boolean>(false);
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
+  onStatusChange() {
     this.showConfirmModal.set(true);
   }
 

@@ -3,6 +3,11 @@ export interface ProductType {
   name: string;
 }
 
+export interface PartialProductUpdate {
+  id: number;
+  available: boolean;
+}
+
 export interface RESTProductType {
   content: RestProductTypeContent[];
   totalPages: number;
@@ -23,6 +28,7 @@ export interface Product {
   price: number;
   description: string;
   active: boolean;
+  available: boolean;
   productTypeId: number;
 }
 

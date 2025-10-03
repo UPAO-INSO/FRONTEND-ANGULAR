@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   effect,
   inject,
   input,
@@ -30,6 +31,12 @@ export class OrderProductsComponent {
   closeModal = output<void>();
 
   selectedCategoryId = signal<number | null>(null);
+
+  products = computed(() => {
+    return this.filteredProducts
+      .value()
+      ?.filter((product) => product.available);
+  });
 
   constructor() {
     effect(() => {
