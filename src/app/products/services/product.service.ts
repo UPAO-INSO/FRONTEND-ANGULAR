@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '@environments/environment';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 
 import {
+  PartialProductUpdate,
   Product,
   ProductType,
   RESTProduct,
@@ -23,6 +24,24 @@ export class ProductService {
   page = signal(1);
   totalPage = signal(1);
   private limit = signal(10);
+
+  updateProduct(partialProduct: PartialProductUpdate) {
+    const { id, available } = partialProduct;
+
+    console.log(partialProduct);
+
+    return this.http
+      .patch(`${this.envs.API_URL}/products/partial/${id}`, {
+        available,
+      })
+      .pipe(
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => 'No se pudo actualizar ordenes');
+        })
+      );
+  }
 
   fetchProducts(): Observable<Product[]> {
     return this.http

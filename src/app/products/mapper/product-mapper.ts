@@ -13,6 +13,7 @@ export class ProductMapper {
       price: content.price,
       description: content.description,
       active: content.active,
+      available: content.available,
       productTypeId: content.productTypeId,
     };
   }

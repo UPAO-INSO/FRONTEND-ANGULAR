@@ -4,39 +4,44 @@
   <div
     class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-dropdown-scrollbar rounded-2xl text-white"
   >
-    <button
-      class="absolute top-7 right-5 z-10 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer transition-colors"
-      (click)="onCloseModal()"
-    >
-      <span class="fa-solid fa-xmark text-xl"></span>
-    </button>
     <div class="bg-side-background">
       <div
         class="bg-background-light dark:bg-background-dark/50 rounded-lg shadow-md"
       >
-        <div class="p-6 border-b">
+        <header
+          class="p-6 border-b border-gray-500 sticky top-0 z-10 bg-side-background/95 backdrop-blur-sm transition-all duration-200 shadow-sm"
+        >
           <h2 class="text-2xl font-bold">
-            Table {{ selectedTable()?.id }} - Detalle de Orden
+            Table {{ selectedTable()?.id }} - Detalle
           </h2>
-          <p class="text-sm mt-1">Order #{{ activeOrder()?.id }}</p>
-        </div>
-        <div class="p-6 space-y-6">
-          <div>
+          <p class="text-sm mt-1 text-gray-400">
+            Order #{{ activeOrder()?.id }}
+          </p>
+          <button
+            class="absolute top-7 right-5 z-20 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer transition-colors"
+            (click)="onCloseModal()"
+          >
+            <span class="fa-solid fa-xmark text-xl"></span>
+          </button>
+        </header>
+        <main class="p-6 space-y-6">
+          <section class="bg-gray-900/40 rounded-xl p-8">
             <h3 class="text-lg font-semibold mb-4">Resumen</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div class="flex justify-between">
-                <span class="font-medium">Estado:</span>
+              <div class="flex justify-start">
+                <span class="text-gray-400 font-medium mr-10">Estado:</span>
                 <span
                   class="badge font-semibold text-white {{
                     activeOrder()
                       ? getColorOrderInTableStatus(activeOrder()!)
                       : {}
                   }}"
-                  >{{ getOrderStatusText(activeOrder()) }}</span
+                >
+                  {{ getOrderStatusText(activeOrder()) }}</span
                 >
               </div>
-              <div class="flex justify-between">
-                <span class="font-medium">Hora:</span>
+              <div class="flex justify-start">
+                <span class="text-gray-400 font-medium mr-10">Hora:</span>
                 <span class="badge badge-soft font-semibold text-gray-300"
                   >{{ activeOrder()?.createdAt | date : "HH:mm" }}
                   {{ getOrderAmPm(activeOrder()!) }}
@@ -44,18 +49,24 @@
               </div>
               <div class="col-span-1 sm:col-span-2 flex gap-2 justify-start">
                 <span
-                  class="font-medium text-background-dark/60 dark:text-background-light/60"
+                  class="text-gray-400 font-medium text-background-dark/60 dark:text-background-light/60"
                   >Comentario:</span
                 >
-                <p class="text-yellow-400">{{ activeOrder()?.comment }}</p>
+                @if (activeOrder()?.comment?.length === 0) {
+                <p class="text-gray-400 ml-2 italic">No hay comentarios</p>
+                } @else {
+                <p class="text-gray-200 italic">
+                  {{ activeOrder()?.comment }}
+                </p>
+                }
               </div>
             </div>
-          </div>
-          <div class="border-t border-gray-400 pt-4">
+          </section>
+          <section class="rounded-xl px-10 py-2">
             <div class="flow-root">
               <table class="min-w-full text-sm">
                 <thead
-                  class="border-b border-background-dark/10 dark:border-background-light/10"
+                  class="border-b border-gray-400 border-background-dark/10 dark:border-background-light/10"
                 >
                   <tr>
                     <th
@@ -90,22 +101,22 @@
                   product.id) {
                   <tr>
                     <td
-                      class="py-4 pl-4 pr-3 text-background-dark dark:text-background-light sm:pl-0"
+                      class="py-4 pl-4 pr-3 font-medium text-background-dark dark:text-background-light sm:pl-0"
                     >
                       {{ product.productName | titlecase }}
                     </td>
                     <td
-                      class="px-3 py-4 text-center text-background-dark/80 dark:text-background-light/80"
+                      class="px-3 py-4 text-center text-gray-400 font-medium text-background-dark/80 dark:text-background-light/80"
                     >
                       {{ product.quantity }}
                     </td>
                     <td
-                      class="px-3 py-4 text-right text-background-dark/80 dark:text-background-light/80"
+                      class="px-3 py-4 text-right text-gray-400 font-medium text-background-dark/80 dark:text-background-light/80"
                     >
                       S/ {{ product.unitPrice }}
                     </td>
                     <td
-                      class="py-4 pl-3 pr-4 text-right text-background-dark/80 dark:text-background-light/80 sm:pr-0"
+                      class="py-4 pl-3 pr-4 text-right font-bold text-background-dark/80 dark:text-background-light/80 sm:pr-0"
                     >
                       S/ {{ product.subtotal }}
                     </td>
@@ -114,10 +125,11 @@
                 </tbody>
               </table>
             </div>
-          </div>
-          <div class="border-t pt-3">
-            <div class="space-y-3 text-sm">
-              <div class="flex justify-between">
+          </section>
+          <div class="border border-gray-500"></div>
+          <section class="px-5 py-3 justify-items-end">
+            <div class="space-y-3 text-sm flex flex-col min-w-70">
+              <div class="flex flex-row text-gray-400 justify-between">
                 <span
                   class="text-background-dark/60 dark:text-background-light/60"
                   >Subtotal</span
@@ -126,16 +138,18 @@
                   >S/ {{ calcSubtotal() }}</span
                 >
               </div>
-              <div class="flex justify-between">
+              <div class="flex flex-row text-gray-400 justify-between">
                 <span
                   class="text-background-dark/60 dark:text-background-light/60"
-                  >Igv (18%)</span
+                  >IGV (18%)</span
                 >
                 <span class="text-background-dark dark:text-background-light"
                   >S/ {{ calcTax() }}</span
                 >
               </div>
-              <div class="flex justify-between font-bold text-base">
+              <div
+                class="flex font-bold text-white text-lg border-t border-gray-400 justify-between pt-1"
+              >
                 <span class="text-background-dark dark:text-background-light"
                   >Total</span
                 >
@@ -144,29 +158,25 @@
                 >
               </div>
             </div>
-          </div>
-          @if (activeOrder()?.orderStatus !== orderStatus.READY) {
-          <div class="pt-6 border-t">
+          </section>
+          <div class="">
+            @if (activeOrder()?.orderStatus !== orderStatus.READY) {
             <button
               disabled
               class="w-full h-12 px-6 bg-gray-700 text-gray-500 font-bold rounded-lg"
             >
               Completar Orden
             </button>
-          </div>
-          } @else {
-          <div class="pt-6 border-t">
+            } @else {
             <button
               class="w-full h-12 px-6 bg-red-500 text-white font-bold rounded-lg hover:bg-red-500/80 cursor-pointer"
-              (click)="
-                onStatusChange(activeOrder()?.id!, orderStatus.COMPLETED)
-              "
+              (click)="onStatusChange()"
             >
               Completar Orden
             </button>
+            }
           </div>
-          }
-        </div>
+        </main>
       </div>
     </div>
   </div>
