@@ -1,12 +1,16 @@
 <div
-  class="border border-gray-200 font-poppins-medium rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow relative group cursor-pointer"
+  class="border border-gray-200 font-poppins-medium rounded-lg overflow-hidden shadow-sm relative group"
 >
   <img
     [alt]="product().name"
-    class="w-full h-32 object-cover group-hover:opacity-30 transition-opacity duration-300"
+    class="w-full h-32 object-cover"
+    [class.group-hover:opacity-30]="!isKitchen()"
+    [class.duration-300]="!isKitchen()"
+    [class.transition-opacity]="!isKitchen()"
     src="https://lh3.googleusercontent.com/aida-public/AB6AXuArr8YlVyZU0vwnMlylp53O7qh2SNZPUIvqsT6FWs5gwQ6Z7TmyHtvsQOqMzjVoKjH2kj_alwVpqKiapFe3A5t1fAy8T9lpScigCM5qDG0Kl1UXgAoyeJfJX1QleYQPEu3MsYO1HvX_X98sUyD8KUSkG5nKtAqsvXpRyo-wICO4FMZIO7kQACf6FgivDb5scXNltNBc-eSNcFSpLILYn8y8qEyee7pYWcRlsMoUnCfHPNcjkvnOcyDV-2iQrxfvShFt0ekAkf-wCaJ9"
   />
   <!--  -->
+  @if (!isKitchen()) {
   <div
     class="absolute inset-0 bg-gray-900/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4"
   >
@@ -17,9 +21,30 @@
       </p>
     </div>
   </div>
+  }
 
   <div class="p-4">
-    <h3 class="font-semibold text-white">{{ product().name | titlecase }}</h3>
-    <p class="text-white">S/. {{ product().price.toFixed(2) }}</p>
+    <h3 class="font-semibold text-white" [class.text-sm]="isKitchen()">
+      {{ product().name | titlecase }}
+    </h3>
+    <p class="text-white" [class.text-sm]="isKitchen()">
+      S/. {{ product().price.toFixed(2) }}
+    </p>
   </div>
+
+  @if (isKitchen()) {
+  <div class="flex flex-col p-5">
+    <span class="text-[15px] {{ getColorProductStatus() }}">{{
+      textStatusProduct()
+    }}</span>
+    <div class="relative cursor-pointer">
+      <input
+        type="checkbox"
+        [checked]="product().available"
+        class="toggle absolute right-0 bottom-0"
+        (change)="onSubmitProductStatus()"
+      />
+    </div>
+  </div>
+  }
 </div>

@@ -1,46 +1,20 @@
 <div
   class="h-screen bg-background text-white font-poppins-medium flex flex-col"
 >
-  <div class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
-    <label class="input w-40 bg-background">
-      <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
-      <input
-        type="search"
-        required
-        placeholder="N° de mesa"
-        class="text-gray-100 placeholder:text-gray-500"
-      />
-    </label>
+  <nav>
+    <app-kitchen-nav
+      [productTypes]="productTypeResource.value() ?? []"
+      [orders]="ordersResource.value()?.content ?? []"
+      [currentPage]="paginationService.currentPage()"
+      [totalPages]="ordersResource.value()?.totalPages"
+      [error]="ordersResource.error()"
+      [isLoading]="ordersResource.isLoading()"
+      [refreshTrigger]="refreshProductsTrigger()"
+      (updatedProductStaus)="onProductStatusUpdated($event)"
+    />
+  </nav>
 
-    <div class="flex flex-row justify-center">
-      <app-pagination
-        [pages]="ordersResource.value()?.totalPages ?? 0"
-        [currentPage]="paginationService.currentPage()"
-      />
-    </div>
-
-    <div class="flex items-center gap-4">
-      <button
-        class="btn bg-side-background btn-sm font-bold text-white py-5 shadow-2xl"
-        (click)="onRefresh()"
-        [disabled]="ordersResource.isLoading()"
-      >
-        <span
-          class="fa-solid fa-refresh text-status-to-preparation"
-          [class.animate-spin]="ordersResource.isLoading()"
-        ></span>
-        Recargar
-      </button>
-
-      <div
-        class="badge bg-active-orders text-white rounded-lg font-bold py-4 mr-6.5"
-      >
-        {{ getActiveOrders(ordersResource.value()?.content!) }} órdenes activas
-      </div>
-    </div>
-  </div>
-
-  <div class="flex-1 min-h-0 px-6 pb-6">
+  <main class="overflow-y-auto">
     <app-kitchen-order-list
       [orders]="ordersResource.value()?.content ?? []"
       [isLoading]="ordersResource.isLoading()"
@@ -48,5 +22,5 @@
       (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
       (refresh)="onRefresh()"
     />
-  </div>
+  </main>
 </div>
