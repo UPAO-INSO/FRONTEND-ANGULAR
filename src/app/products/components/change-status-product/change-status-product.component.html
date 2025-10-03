@@ -1,7 +1,5 @@
 <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
-  <h1 class="text-2xl font-bold text-white">
-    Crear Orden - Mesa {{ selectedTable()?.id }}
-  </h1>
+  <h1 class="text-2xl font-bold text-white">Gestion de productos</h1>
   <button
     class="text-gray-500 hover:text-gray-700 cursor-pointer"
     (click)="onCloseModal()"
@@ -14,15 +12,17 @@
     class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-white"
   ></span>
   <input
-    class="w-full pl-10 pr-4 py-2 border text-gray-300 border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+    class="w-full pl-10 pr-4 py-2 border text-gray-300 border-gray-300 rounded-md focus:placeholder:text-gray-500"
     placeholder="Buscar por productos"
     type="text"
   />
 </div>
-<app-order-product-tabs
-  [productCategories]="productTypes()"
-  (categorySelected)="onCategorySelected($event)"
-/>
+<div class="border-0">
+  <app-order-product-tabs
+    [productCategories]="productTypes()"
+    (categorySelected)="onCategorySelected($event)"
+  />
+</div>
 <div
   class="overflow-y-auto max-h-[calc(100vh-23rem)] px-2 sm:px-4 custom-scrollbar"
 >
@@ -42,13 +42,14 @@
 
   <!-- Products grid -->
   @else if (filteredProducts.value()) {
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-    @for (product of products(); track product.id) {
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
+  >
+    @for (product of filteredProducts.value(); track product.id) {
     <app-order-product-item
-      (click)="onProductClick(product)"
       [product]="product"
-      [isKitchen]="false"
-      class="cursor-pointer transition-all duration-200 hover:scale-[0.96] hover:shadow-lg hover:-translate-y-1 transform animate-fade-in"
+      [isKitchen]="true"
+      (updateProductStatus)="onProductStatusUpdated($event)"
     />
     }
   </div>
