@@ -1,13 +1,18 @@
 <app-order-header-status (status)="selectedOrderStatus.set($event)" />
 
-<app-order-list
-  [orders]="orderResource.value()?.content ?? []"
-  [isEmpty]="(orderResource.value()?.content?.length ?? 0) === 0"
-  [isLoading]="orderResource.isLoading()"
-  [errorMessage]="orderResource.error()"
-/>
-
-<app-pagination
-  [pages]="orderResource.value()?.totalPages ?? 0"
-  [currentPage]="this.paginationService.currentPage()"
-/>
+<main class="h-[calc(100vh-200px)]">
+  <app-order-list
+    [orders]="orderResource.value()?.content ?? []"
+    [isEmpty]="(orderResource.value()?.content?.length ?? 0) === 0"
+    [isLoading]="orderResource.isLoading()"
+    [errorMessage]="orderResource.error()"
+  />
+</main>
+<div
+  class="flex items-center justify-center bg-transparent border-t border-gray-700/30"
+>
+  <app-pagination
+    [pages]="orderResource.value()?.totalPages ?? 0"
+    [currentPage]="this.paginationService.currentPage()"
+  />
+</div>
