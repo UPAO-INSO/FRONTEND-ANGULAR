@@ -1,11 +1,11 @@
-import { Component, computed, input } from '@angular/core';
-import { DatePipe, TitleCasePipe } from '@angular/common';
-import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
+import { Component, computed, input, signal } from '@angular/core';
+import { ContentOrder } from '../../interfaces/order.interface';
 import { OrderListItemComponent } from './order-list-item/order-list-item.component';
+import { OrderViewComponent } from '../order-view/order-view.component';
 
 @Component({
   selector: 'app-order-list',
-  imports: [OrderListItemComponent],
+  imports: [OrderListItemComponent, OrderViewComponent],
   templateUrl: './order-list.component.html',
 })
 export class OrderListComponent {
@@ -14,6 +14,16 @@ export class OrderListComponent {
   isEmpty = input<boolean>(false);
   isLoading = input<boolean>(false);
   errorMessage = input<string | unknown | null>();
+
+  selectedOrder = signal<ContentOrder | null>(null);
+
+  openViewOrder(order: ContentOrder) {
+    this.selectedOrder.set(order);
+  }
+
+  closeViewOrder() {
+    this.selectedOrder.set(null);
+  }
 
   displayState = computed(() => {
     if (this.isLoading()) return 'loading';
