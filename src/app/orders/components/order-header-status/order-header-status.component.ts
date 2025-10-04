@@ -1,5 +1,6 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, effect, output, signal } from '@angular/core';
 import { OrderStatus } from 'src/app/orders/interfaces/order.interface';
+import { SearchInputComponent } from 'src/app/tables/components/search-input/search-input.component';
 
 interface StatusFilter {
   status: OrderStatus | null;
@@ -10,15 +11,21 @@ interface StatusFilter {
 
 @Component({
   selector: 'app-order-header-status',
-  imports: [],
+  imports: [SearchInputComponent],
   templateUrl: './order-header-status.component.html',
 })
 export class OrderStatusComponent {
   status = output<OrderStatus | null>();
+  value = output<number>();
 
   orderStatus = OrderStatus;
 
   selectedStatus = signal<OrderStatus | null>(null);
+  inputValue = signal<number | null>(null);
+
+  tableNumberValue(number: number) {
+    this.value.emit(number);
+  }
 
   selectStatus(newStatus: OrderStatus | null) {
     this.selectedStatus.set(newStatus);
