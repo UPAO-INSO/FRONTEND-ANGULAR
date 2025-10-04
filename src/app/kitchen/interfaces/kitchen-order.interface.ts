@@ -36,7 +36,6 @@ export interface KitchenOrderEmployee {
   minutesSpent: number;
 }
 
-// Interfaces REST del backend
 export interface ContentKitchen {
   id: number;
   orderStatus: string;

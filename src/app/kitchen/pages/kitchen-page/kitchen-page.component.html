@@ -11,6 +11,7 @@
       [isLoading]="ordersResource.isLoading()"
       [refreshTrigger]="refreshProductsTrigger()"
       (updatedProductStaus)="onProductStatusUpdated($event)"
+      (value)="tableNumber.set($event)"
     />
   </nav>
 

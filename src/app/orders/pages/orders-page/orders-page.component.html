@@ -1,4 +1,7 @@
-<app-order-header-status (status)="selectedOrderStatus.set($event)" />
+<app-order-header-status
+  (status)="selectedOrderStatus.set($event)"
+  (value)="tableNumber.set($event)"
+/>
 
 <app-order-list
   [orders]="orderResource.value()?.content ?? []"

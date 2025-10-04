@@ -1,10 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { of } from 'rxjs';
 
 import { OrderService } from '../../services/order.service';
 import { OrderListComponent } from '../../components/order-list/order-list.component';
-import { OrderStatusComponent } from '../../components/order-list/order-header-status/order-header-status.component';
+import { OrderStatusComponent } from '../../components/order-header-status/order-header-status.component';
 import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 import { OrderStatus } from '../../interfaces/order.interface';
@@ -19,14 +18,24 @@ export default class OrdersPageComponent {
   paginationService = inject(PaginationService);
 
   selectedOrderStatus = signal<OrderStatus | null>(null);
+  tableNumber = signal<number | null>(null);
 
   orderResource = rxResource({
     params: () => ({
       status: this.selectedOrderStatus(),
       page: this.paginationService.currentPage(),
+      tableNumber: this.tableNumber(),
     }),
 
     stream: ({ params }) => {
+      console.log({ params });
+
+      if (params.tableNumber !== null && params.tableNumber !== 0)
+        return this.orderService.searchByTableNumber(
+          { page: params.page, limit: 5 },
+          params.tableNumber
+        );
+
       if (params.status !== null)
         return this.orderService.fecthOrders({
           page: params.page,

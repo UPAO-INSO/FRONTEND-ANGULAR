@@ -2,12 +2,7 @@
   <div class="flex flex-row gap-5">
     <label class="input w-40 bg-side-background">
       <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
-      <input
-        type="search"
-        required
-        placeholder="N° de mesa"
-        class="text-gray-100 placeholder:text-gray-500"
-      />
+      <app-search-table-input (value)="tableNumberValue($event)" />
     </label>
     <!--  -->
     <button

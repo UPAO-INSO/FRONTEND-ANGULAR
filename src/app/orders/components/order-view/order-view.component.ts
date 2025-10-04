@@ -2,6 +2,7 @@ import { Component, inject, input, output, signal } from '@angular/core';
 import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Table } from 'src/app/tables/interfaces/table.interface';
+import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-order-view',
@@ -13,7 +14,10 @@ export class OrderViewComponent {
   selectedTable = input<Table | null>();
   textConfirm = input.required<string>();
 
-  statusChange = output<{ orderId: number; newStatus: OrderStatus }>();
+  statusChange = output<{
+    orderId: number;
+    newStatus: OrderStatus | KitchenOrderStatus;
+  }>();
   orderStatus = OrderStatus;
 
   closeModal = output<void>();
@@ -24,7 +28,7 @@ export class OrderViewComponent {
     this.showConfirmModal.set(true);
   }
 
-  confirmStatusChange(status: OrderStatus) {
+  confirmStatusChange(status: OrderStatus | KitchenOrderStatus) {
     const orderId = this.activeOrder()?.id;
     if (orderId) {
       this.statusChange.emit({ orderId, newStatus: status });
@@ -83,10 +87,12 @@ export class OrderViewComponent {
         return 'bg-status-completed';
       case OrderStatus.PAID:
         return 'bg-status-paid';
+      default:
+        return '';
     }
   }
 
-  getOrderStatusText(order: ContentOrder | null): string {
+  getOrderStatusText(order: ContentOrder | null) {
     if (!order) return '';
 
     switch (order.orderStatus) {
@@ -102,6 +108,8 @@ export class OrderViewComponent {
         return 'Completado';
       case OrderStatus.PAID:
         return 'Pagado';
+      default:
+        return '';
     }
   }
 }

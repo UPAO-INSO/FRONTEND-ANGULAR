@@ -1,52 +1,51 @@
-import {
-  Component,
-  computed,
-  input,
-  output,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
+
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
+import { ChangeStatusProductComponent } from '@products/components/change-status-product/change-status-product.component';
+import {
+  ProductType,
+  PartialProductUpdate,
+} from '@products/interfaces/product.type';
+
 import {
   ContentKitchen,
   KitchenOrderStatus,
-  RESTKitchenOrders,
 } from '../../interfaces/kitchen-order.interface';
-import { OrderProductsComponent } from 'src/app/orders/components/register-order/order-products/order-products.component';
-import {
-  PartialProductUpdate,
-  ProductType,
-} from 'src/app/products/interfaces/product.type';
-import { ChangeStatusProductComponent } from 'src/app/products/components/change-status-product/change-status-product.component';
+import { SearchInputComponent } from 'src/app/tables/components/search-input/search-input.component';
+import { ContentOrder } from '@orders/interfaces/order.interface';
 
 @Component({
   selector: 'app-kitchen-nav',
-  imports: [PaginationComponent, ChangeStatusProductComponent],
+  imports: [
+    PaginationComponent,
+    ChangeStatusProductComponent,
+    SearchInputComponent,
+  ],
   templateUrl: './kitchen-nav.component.html',
 })
 export class KitchenNavComponent {
-  orders = input<ContentKitchen[]>();
+  orders = input<ContentOrder[]>();
   isLoading = input<boolean>(false);
   error = input<Error | undefined>();
-
   currentPage = input<number>();
   totalPages = input<number>();
+  refreshTrigger = input<number>(0);
 
   productTypes = input.required<ProductType[]>();
 
-  updatedProductStaus = output<PartialProductUpdate>();
-
   selectedButtonProducts = signal<boolean>(false);
 
-  refreshTrigger = input<number>(0);
-
-  // changeStatusProductComponent = viewChild(ChangeStatusProductComponent);
-
+  updatedProductStaus = output<PartialProductUpdate>();
   statusChange = output<{ orderId: number; newStatus: KitchenOrderStatus }>();
   refresh = output<void>();
   closeModal = output<void>();
+  value = output<number>();
 
   modalStatus = computed(() => this.selectedButtonProducts());
+
+  tableNumberValue(number: number) {
+    this.value.emit(number);
+  }
 
   onProductStatusUpdated(product: PartialProductUpdate) {
     this.updatedProductStaus.emit(product);
@@ -61,7 +60,7 @@ export class KitchenNavComponent {
     this.closeModal.emit();
   }
 
-  getActiveOrders(orders: ContentKitchen[]) {
+  getActiveOrders(orders: ContentOrder[]) {
     if (!orders) return;
 
     return (
@@ -76,9 +75,5 @@ export class KitchenNavComponent {
 
   onRefresh() {
     this.refresh.emit();
-  }
-
-  onRefreshFilteredProducts() {
-    // this.changeStatusProductComponent()?.onRefresh();
   }
 }
