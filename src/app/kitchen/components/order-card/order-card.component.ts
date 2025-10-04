@@ -4,6 +4,7 @@ import {
   ContentKitchen,
   KitchenOrderStatus,
 } from '../../interfaces/kitchen-order.interface';
+import { ContentOrder } from '@orders/interfaces/order.interface';
 
 @Component({
   selector: 'app-order-card',
@@ -11,7 +12,7 @@ import {
   templateUrl: './order-card.component.html',
 })
 export class OrderCardComponent {
-  order = input.required<ContentKitchen>();
+  order = input.required<ContentOrder>();
   changeStatus = output<KitchenOrderStatus>();
 
   orderStatus = KitchenOrderStatus;

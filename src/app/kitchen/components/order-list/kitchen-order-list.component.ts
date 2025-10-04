@@ -2,10 +2,8 @@ import { Component, input, output } from '@angular/core';
 
 import { OrderCardComponent } from '../order-card/order-card.component';
 
-import {
-  ContentKitchen,
-  KitchenOrderStatus,
-} from '../../interfaces/kitchen-order.interface';
+import { KitchenOrderStatus } from '../../interfaces/kitchen-order.interface';
+import { ContentOrder } from '@orders/interfaces/order.interface';
 
 @Component({
   selector: 'app-kitchen-order-list',
@@ -13,7 +11,7 @@ import {
   templateUrl: './kitchen-order-list.component.html',
 })
 export class KitchenOrderListComponent {
-  orders = input.required<ContentKitchen[]>();
+  orders = input.required<ContentOrder[]>();
   isLoading = input<boolean>(false);
   error = input<Error | undefined>();
 

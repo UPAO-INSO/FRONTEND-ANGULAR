@@ -36,6 +36,28 @@ export class OrderService {
       );
   }
 
+  searchByTableNumber(options: Options, number: number) {
+    const { limit = 8, page = 1, status = '' } = options;
+
+    console.log({ number });
+
+    return this.http
+      .get<RESTOrder>(`${this.envs.API_URL}/orders/by-tableId/${number}`, {
+        params: {
+          page,
+          limit,
+        },
+      })
+      .pipe(
+        tap((resp) => console.log({ resp })),
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => new Error('Error al cargar las mesas'));
+        })
+      );
+  }
+
   fetchOrderByTablesIds(
     tableIds: number[],
     options: Options

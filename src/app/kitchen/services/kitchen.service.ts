@@ -9,7 +9,10 @@ import {
   ContentKitchen,
 } from '../interfaces/kitchen-order.interface';
 import { KitchenOrderMapper } from '../mapper/kitchen-order.mapper';
-import { OrderStatus } from 'src/app/orders/interfaces/order.interface';
+import {
+  OrderStatus,
+  RESTOrder,
+} from 'src/app/orders/interfaces/order.interface';
 
 interface Options {
   limit?: number;
@@ -31,11 +34,11 @@ export class KitchenService {
 
   envs = environment;
 
-  fetchActiveOrders(options: Options): Observable<RESTKitchenOrders> {
+  fetchActiveOrders(options: Options): Observable<RESTOrder> {
     const { page = 1, limit = 6, status = kitchenStatus } = options;
 
     return this.http
-      .post<RESTKitchenOrders>(
+      .post<RESTOrder>(
         `${this.envs.API_URL}/orders/filter-array-status`,
         [...status],
         {
