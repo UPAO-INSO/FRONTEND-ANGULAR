@@ -4,14 +4,15 @@
   }} cursor-pointer overflow-hidden group"
   (click)="onOrderClick()"
 >
-  <!-- Pseudo-elemento para el efecto hover -->
   <div
     class="absolute inset-[-5px] w-[calc(100vh/5)] {{
       getHoverBackgroundColor(order().orderStatus)
-    }} -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out rounded-lg"
+    }} -translate-x-full group-hover:translate-x-0 transition-all duration-300 ease-out rounded-lg"
   ></div>
 
-  <div class="relative z-10 flex justify-between items-start text-white gap-4">
+  <div
+    class="relative z-10 flex justify-between items-start text-white gap-4 duration-500 ease-out active:scale-[0.98]"
+  >
     <div class="flex-1 min-w-0 flex items-start gap-6">
       <div class="flex-shrink-0">
         <h3 class="font-bold text-lg">Orden #{{ order().id }}</h3>
