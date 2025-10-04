@@ -2,7 +2,6 @@ import { Component, inject, input, output, signal } from '@angular/core';
 import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Table } from 'src/app/tables/interfaces/table.interface';
-import { OrderService } from '../../services/order.service';
 
 @Component({
   selector: 'app-order-view',
@@ -10,10 +9,9 @@ import { OrderService } from '../../services/order.service';
   templateUrl: './order-view.component.html',
 })
 export class OrderViewComponent {
-  orderService = inject(OrderService);
-
   activeOrder = input<ContentOrder | null>(null);
   selectedTable = input<Table | null>();
+  textConfirm = input.required<string>();
 
   statusChange = output<{ orderId: number; newStatus: OrderStatus }>();
   orderStatus = OrderStatus;
@@ -26,10 +24,10 @@ export class OrderViewComponent {
     this.showConfirmModal.set(true);
   }
 
-  confirmStatusChange() {
+  confirmStatusChange(status: OrderStatus) {
     const orderId = this.activeOrder()?.id;
     if (orderId) {
-      this.statusChange.emit({ orderId, newStatus: OrderStatus.COMPLETED });
+      this.statusChange.emit({ orderId, newStatus: status });
       this.showConfirmModal.set(false);
       this.closeModal.emit();
     }
@@ -79,8 +77,12 @@ export class OrderViewComponent {
         return 'bg-status-pending';
       case OrderStatus.READY:
         return 'bg-status-ready';
-      default:
-        return '';
+      case OrderStatus.CANCELLED:
+        return 'bg-status-cancelled';
+      case OrderStatus.COMPLETED:
+        return 'bg-status-completed';
+      case OrderStatus.PAID:
+        return 'bg-status-paid';
     }
   }
 
@@ -94,8 +96,12 @@ export class OrderViewComponent {
         return 'Pendiente';
       case OrderStatus.READY:
         return 'Listo';
-      default:
-        return '';
+      case OrderStatus.CANCELLED:
+        return 'Cancelado';
+      case OrderStatus.COMPLETED:
+        return 'Completado';
+      case OrderStatus.PAID:
+        return 'Pagado';
     }
   }
 }

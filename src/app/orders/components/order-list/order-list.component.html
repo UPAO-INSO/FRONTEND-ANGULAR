@@ -27,8 +27,18 @@
   @else if (orders().length > 0) {
   <div class="px-6 pt-6 border-t">
     @for (order of orders(); track order.id) {
-    <app-order-list-item [order]="order" class="flex flex-col mb-4" />
+    <app-order-list-item
+      class="flex flex-col mb-4"
+      [order]="order"
+      (orderSelected)="openViewOrder($event)"
+    />
     }
   </div>
+  } @if (selectedOrder()) {
+  <app-order-view
+    [activeOrder]="selectedOrder()"
+    [textConfirm]="'Marcar como Pagado'"
+    (closeModal)="closeViewOrder()"
+  />
   }
 </div>
