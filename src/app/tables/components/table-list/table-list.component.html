@@ -57,6 +57,7 @@
 <app-order-view
   [selectedTable]="selectedTable()"
   [activeOrder]="getActiveOrderByTable(selectedTable()?.id!)"
+  [textConfirm]="'Completar Orden'"
   (statusChange)="onChangeStatus($event.orderId, $event.newStatus)"
   (closeModal)="closeRegisterOrder()"
 />
@@ -66,7 +67,7 @@
 <app-register-order
   [selectedTable]="selectedTable()"
   [productTypes]="productTypes()"
-  (closeModal)="closeRegisterOrder()"
   (orderCreated)="onOrderCreated($event)"
+  (closeModal)="closeRegisterOrder()"
 />
 } }

@@ -2,6 +2,7 @@
   class="relative bg-side-background text-gray-500 rounded-lg shadow-2xl p-4 border-l-4 {{
     getBorderOrderStatus(order().orderStatus)
   }} cursor-pointer overflow-hidden group"
+  (click)="onOrderClick()"
 >
   <!-- Pseudo-elemento para el efecto hover -->
   <div
