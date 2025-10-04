@@ -1,6 +1,13 @@
 import { Component, output, signal } from '@angular/core';
 import { OrderStatus } from 'src/app/orders/interfaces/order.interface';
 
+interface StatusFilter {
+  status: OrderStatus | null;
+  label: string;
+  colorClass: string;
+  icon?: string;
+}
+
 @Component({
   selector: 'app-order-header-status',
   imports: [],
@@ -17,4 +24,42 @@ export class OrderStatusComponent {
     this.selectedStatus.set(newStatus);
     this.status.emit(newStatus);
   }
+
+  isStatusSelected(status: OrderStatus): boolean {
+    return this.selectedStatus() === status;
+  }
+
+  statusFilters: StatusFilter[] = [
+    {
+      status: null,
+      label: 'Todos',
+      colorClass: 'text-white',
+      icon: 'fa-solid fa-list',
+    },
+    {
+      status: OrderStatus.PREPARING,
+      label: 'Preparando',
+      colorClass: 'text-status-preparing',
+    },
+    {
+      status: OrderStatus.PENDING,
+      label: 'Pendiente',
+      colorClass: 'text-status-pending',
+    },
+    {
+      status: OrderStatus.PAID,
+      label: 'Pagado',
+      colorClass: 'text-status-paid',
+    },
+    {
+      status: OrderStatus.CANCELLED,
+      label: 'Cancelado',
+      colorClass: 'text-status-cancelled',
+    },
+    {
+      status: OrderStatus.READY,
+      label: 'Listo',
+      colorClass: 'text-status-ready',
+    },
+  ];
 }
