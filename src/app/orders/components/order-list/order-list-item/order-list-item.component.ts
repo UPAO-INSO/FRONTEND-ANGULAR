@@ -1,5 +1,5 @@
 import { DatePipe, TitleCasePipe } from '@angular/common';
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import {
   ContentOrder,
   OrderStatus,
@@ -14,6 +14,12 @@ export class OrderListItemComponent {
   order = input.required<ContentOrder>();
 
   colorStatus = computed;
+
+  orderSelected = output<ContentOrder>();
+
+  onOrderClick() {
+    this.orderSelected.emit(this.order());
+  }
 
   getOrderAmPm(order: ContentOrder) {
     if (!order || !order.createdAt) return '';
@@ -78,7 +84,7 @@ export class OrderListItemComponent {
       case OrderStatus.PAID:
         return 'bg-gradient-to-r from-status-paid to-transparent';
       default:
-        return 'bg-gradient-to-r from-gray-500 to-transparent';
+        return 'bg-gradient-to-r from-status-completed to-transparent';
     }
   }
 
@@ -101,7 +107,7 @@ export class OrderListItemComponent {
           text: status,
         };
       default:
-        return { class: 'text-gray-400 font-bold', text: status };
+        return { class: 'text-status-completed font-bold', text: status };
     }
   }
 
@@ -117,8 +123,8 @@ export class OrderListItemComponent {
         return ' border-status-ready';
       case OrderStatus.CANCELLED:
         return 'border-status-cancelled';
-      default:
-        return 'bg-gray-400';
+      case OrderStatus.COMPLETED:
+        return 'border-status-completed';
     }
   }
 }
