@@ -57,8 +57,9 @@
     </div>
     <div class="flex gap-2 cursor-pointer">
       <button
-        class="text-white bg-transparent font-bold cursor-pointer"
+        class="text-gray-500 bg-transparent font-bold cursor-pointer"
         (click)="selectStatus(null)"
+        [class.text-white]="selectedStatus() === null"
       >
         <i class="fa-solid fa-trash"></i>
       </button>
