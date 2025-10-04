@@ -12,11 +12,12 @@
   --color-navbar-background: oklch(0.2522 0.0296 256.85);
 
   --color-status: oklch(0.753 0.1199 228.77);
-  --color-status-cancelled: oklch(0.6368 0.2078 25.33);
-  --color-status-ready: oklch(0.7227 0.192 149.58);
-  --color-status-preparing: oklch(0.5465 0.2455 262.87);
-  --color-status-paid: oklch(0.4981 0.2634 301.68);
-  --color-status-pending: oklch(0.7724 0.172798 65.367);
+  --color-status-cancelled: oklch(0.6577 0.0706 336.05);
+  --color-status-ready: oklch(0.5923 0.0879 177.13);
+  --color-status-preparing: oklch(0.6391 0.1002 255.68);
+  --color-status-paid: oklch(0.7419 0.1421 288.87);
+  --color-status-pending: oklch(0.7635 0.1426 86.78);
+  --color-status-completed: oklch(0.5923 0.0879 177.13);
 
   --color-slogan-app: oklch(0.7054 0.1324 255.81);
   --color-status-to-preparation: oklch(0.6645 0.1566 58.63);

@@ -18,7 +18,7 @@ export interface RESTOrder {
 
 export interface ContentOrder {
   id: number;
-  orderStatus: string;
+  orderStatus: OrderStatus;
   comment: string;
   paid: boolean;
   tableId: number;
