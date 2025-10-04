@@ -1,11 +1,10 @@
 import { Component, computed, input } from '@angular/core';
-import { ReplaceUnderscorePipe } from 'src/app/shared/pipes/replace-underscore.pipe';
 import { DatePipe, TitleCasePipe } from '@angular/common';
-import { ContentOrder, RESTOrder } from '../../interfaces/order.interface';
+import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
 
 @Component({
   selector: 'app-order-list',
-  imports: [ReplaceUnderscorePipe, TitleCasePipe, DatePipe],
+  imports: [TitleCasePipe, DatePipe],
   templateUrl: './order-list.component.html',
 })
 export class OrderListComponent {
@@ -55,26 +54,60 @@ export class OrderListComponent {
     return 'empty';
   });
 
-  getOrderStatus(status: string): { class: string; text: string } {
+  getTextStatus(status: OrderStatus) {
     switch (status) {
-      case 'PENDING':
-        return { class: 'badge bg-amber-500 text-white', text: status };
-      case 'PREPARING':
+      case OrderStatus.PENDING:
+        return 'Pendiente';
+      case OrderStatus.PREPARING:
+        return 'Preparando';
+      case OrderStatus.READY:
+        return 'Listo';
+      case OrderStatus.PAID:
+        return 'Pagado';
+      case OrderStatus.COMPLETED:
+        return 'Completado';
+      case OrderStatus.CANCELLED:
+        return 'Cancelado';
+    }
+  }
+
+  getOrderStatus(status: OrderStatus): { class: string; text: string } {
+    switch (status) {
+      case OrderStatus.PENDING:
+        return { class: 'text-status-pending font-bold', text: status };
+      case OrderStatus.PREPARING:
         return {
-          class: 'badge bg-blue-600 text-white',
+          class: 'text-status-preparing font-bold',
           text: status,
         };
-      case 'PAID':
-        return { class: 'badge bg-purple-700 text-white', text: status };
-      case 'READY':
-        return { class: 'badge bg-status-ready text-white', text: status };
-      case 'CANCELLED':
+      case OrderStatus.PAID:
+        return { class: ' text-status-paid font-bold', text: status };
+      case OrderStatus.READY:
+        return { class: ' text-status-ready font-bold', text: status };
+      case OrderStatus.CANCELLED:
         return {
-          class: 'badge bg-status-cancelled text-white',
+          class: 'text-status-cancelled font-bold',
           text: status,
         };
       default:
-        return { class: 'badge bg-gray-500 text-white', text: status };
+        return { class: 'text-gray-400 font-bold', text: status };
+    }
+  }
+
+  getBorderOrderStatus(status: OrderStatus) {
+    switch (status) {
+      case OrderStatus.PENDING:
+        return 'border-status-pending ';
+      case OrderStatus.PREPARING:
+        return 'border-status-preparing';
+      case OrderStatus.PAID:
+        return ' border-status-paid ';
+      case OrderStatus.READY:
+        return ' border-status-ready';
+      case OrderStatus.CANCELLED:
+        return 'border-status-cancelled';
+      default:
+        return { class: 'bg-gray-300', text: status };
     }
   }
 }
