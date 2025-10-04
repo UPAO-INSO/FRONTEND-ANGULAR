@@ -1,3 +1,5 @@
+import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
+
 export interface Order {
   id: number;
   mesa: number;
@@ -18,7 +20,7 @@ export interface RESTOrder {
 
 export interface ContentOrder {
   id: number;
-  orderStatus: OrderStatus;
+  orderStatus: OrderStatus | KitchenOrderStatus;
   comment: string;
   paid: boolean;
   tableId: number;
