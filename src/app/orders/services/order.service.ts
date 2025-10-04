@@ -75,7 +75,7 @@ export class OrderService {
   }
 
   fecthOrders(options: Options): Observable<RESTOrder> {
-    const { page = 1, limit = 10, status = '' } = options;
+    const { page = 1, limit = 5, status = '' } = options;
 
     return this.http
       .get<RESTOrder>(`${this.envs.API_URL}/orders`, {

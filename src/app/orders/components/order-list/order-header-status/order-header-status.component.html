@@ -1,12 +1,13 @@
-<header class="flex justify-between items-center my-3">
+<header class="flex flex-col gap-6 items-start my-3">
   <h1 class="text-3xl font-bold text-gray-100">Pedidos</h1>
   <div class="flex flex-row items-center gap-4 font-semibold">
     <div class="flex gap-2">
       <button
-        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
+        class="bg-transparent text-gray-500 font-bold cursor-pointer"
         [class.text-status-preparing]="
           selectedStatus() === orderStatus.PREPARING
         "
+        [class.border-b-2]="selectedStatus() === orderStatus.PREPARING"
         (click)="selectStatus(orderStatus.PREPARING)"
       >
         Preparando
@@ -16,6 +17,7 @@
       <button
         class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
         [class.text-status-pending]="selectedStatus() === orderStatus.PENDING"
+        [class.border-b-2]="selectedStatus() === orderStatus.PENDING"
         (click)="selectStatus(orderStatus.PENDING)"
       >
         Pendiente
@@ -25,6 +27,7 @@
       <button
         class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
         [class.text-status-paid]="selectedStatus() === orderStatus.PAID"
+        [class.border-b-2]="selectedStatus() === orderStatus.PAID"
         (click)="selectStatus(orderStatus.PAID)"
       >
         Pagado
@@ -36,6 +39,7 @@
         [class.text-status-cancelled]="
           selectedStatus() === orderStatus.CANCELLED
         "
+        [class.border-b-2]="selectedStatus() === orderStatus.CANCELLED"
         (click)="selectStatus(orderStatus.CANCELLED)"
       >
         Cancelado
@@ -45,6 +49,7 @@
       <button
         class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer"
         [class.text-status-ready]="selectedStatus() === orderStatus.READY"
+        [class.border-b-2]="selectedStatus() === orderStatus.READY"
         (click)="selectStatus(orderStatus.READY)"
       >
         Listo
@@ -52,8 +57,9 @@
     </div>
     <div class="flex gap-2 cursor-pointer">
       <button
-        class="text-white bg-transparent font-bold cursor-pointer"
+        class="text-gray-500 bg-transparent font-bold cursor-pointer"
         (click)="selectStatus(null)"
+        [class.text-white]="selectedStatus() === null"
       >
         <i class="fa-solid fa-trash"></i>
       </button>
