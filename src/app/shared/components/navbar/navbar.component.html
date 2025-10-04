@@ -8,24 +8,22 @@
     </h1>
   </div>
 
-  <div class="navbar-end">
+  <section class="navbar-end">
     <div class="dropdown dropdown-end dropdown-bottom">
       <div
-        class="flex items-center text-white cursor-pointer hover:text-gray-300 transition-colors gap-4 px-6"
+        class="flex items-center text-white hover:text-gray-300 transition-colors gap-4 px-6"
       >
-        <section
-          class="flex flex-row items-center gap-2 border-0 hover:bg-gray-500/10 rounded-md py-1.5 px-2"
-        >
+        <div>
           <button
             popovertarget="side-menu"
             role="button"
-            class="flex items-center gap-2"
+            class="flex flex-row gap-1.5 px-3 pb-1 justify-center items-center bg-gray-900/50 border-0 hover:bg-gray-600 text-gray-100 rounded-md cursor-pointer"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-6 w-6"
               fill="none"
-              viewBox="0 0 24 24"
+              viewBox="0 0 24 20"
               stroke="currentColor"
             >
               <path
@@ -35,9 +33,9 @@
                 d="M4 6h16M4 12h16M4 18h7"
               />
             </svg>
-            <p class="text-lg">Menu</p>
+            <p class="text-lg pt-2">Menu</p>
           </button>
-        </section>
+        </div>
         <ul
           id="side-menu"
           class="menu menu-md dropdown-content bg-base-100 rounded-box border-1 border-gray-900 z-1 mt-3 w-70 p-2 shadow-lg"
@@ -53,23 +51,40 @@
       </div>
     </div>
 
-    @if (authService.authStatus() === 'authenticated') {
-    <a
-      href="/auth/login"
-      class="btn btn-md rounded-md bg-gray-900/50 border-0 hover:bg-gray-600 text-gray-100 text-lg"
-      (click)="authService.logout()"
-    >
-      Salir
-    </a>
-    } @else if (authService.authStatus() === 'not-authenticated') {
-    <a
-      href="/auth/login"
-      class="btn btn-md rounded-md bg-gray-900/50 border-0 hover:bg-gray-600 text-gray-100"
-    >
-      Iniciar Sesión
-    </a>
-    } @else {
-    <a class="btn btn-ghost rounded-md text-white">...</a>
-    }
-  </div>
+    <div>
+      @if (authService.authStatus() === 'authenticated') {
+      <a
+        href="/auth/login"
+        class="btn btn-md rounded-md pt-1 bg-gray-900/50 border-0 hover:bg-gray-600 text-gray-100 text-lg"
+        (click)="authService.logout()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="23"
+          height="23"
+          viewBox="0 2 24 24"
+        >
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="m12 15l3-3m0 0l-3-3m3 3H4m0-4.752V7.2c0-1.12 0-1.68.218-2.108c.192-.377.497-.682.874-.874C5.52 4 6.08 4 7.2 4h9.6c1.12 0 1.68 0 2.107.218c.377.192.683.497.875.874c.218.427.218.987.218 2.105v9.607c0 1.118 0 1.677-.218 2.104a2 2 0 0 1-.875.874c-.427.218-.986.218-2.104.218H7.197c-1.118 0-1.678 0-2.105-.218a2 2 0 0 1-.874-.874C4 18.48 4 17.92 4 16.8v-.05"
+          />
+        </svg>
+        Salir
+      </a>
+      } @else if (authService.authStatus() === 'not-authenticated') {
+      <a
+        href="/auth/login"
+        class="btn btn-md rounded-md bg-gray-900/50 border-0 hover:bg-gray-600 text-gray-100"
+      >
+        Iniciar Sesión
+      </a>
+      } @else {
+      <a class="btn btn-ghost rounded-md text-white">...</a>
+      }
+    </div>
+  </section>
 </div>
