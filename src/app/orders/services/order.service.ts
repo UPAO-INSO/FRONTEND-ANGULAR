@@ -8,6 +8,7 @@ import {
   RESTOrder,
 } from '../interfaces/order.interface';
 import { environment } from '@environments/environment';
+import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 interface Options {
   limit?: number;
@@ -142,7 +143,7 @@ export class OrderService {
 
   updateOrderStatus(
     orderId: number,
-    status: OrderStatus
+    status: OrderStatus | KitchenOrderStatus
   ): Observable<ContentOrder[]> {
     return this.http
       .patch<any>(`${this.envs.API_URL}/orders/status`, { status, orderId })
