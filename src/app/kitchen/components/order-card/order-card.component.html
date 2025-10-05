@@ -1,45 +1,55 @@
 <div
   class="bg-side-background rounded-xl font-poppins-medium shadow-md p-4 w-full min-w-[280px] h-[calc(50vh-40px)] flex flex-col gap-3 hover:shadow-lg transition-shadow"
 >
-  <div class="grid grid-cols-2 items-center-safe flex-shrink-0">
-    <span class="font-fira-bold text-2xl">Mesa {{ order().tableId }}</span>
+  <div class="flex flex-row justify-between flex-shrink-0">
+    <div class="items-start">
+      <span class="font-fira-bold text-2xl">Mesa {{ order().tableId }}</span>
+    </div>
 
-    <span class="text-xs text-gray-500 text-right">
-      {{ order().createdAt | date : "HH:mm" }}
-    </span>
+    <div class="flex flex-row items-end gap-3 mb-1">
+      <span
+        class="badge pt-1 text-gray-200 font-semibold {{ statusColor() }}"
+        >{{ statusLabel() }}</span
+      >
+      <span class="text-xs pb-0.5 text-gray-500 text-right">
+        {{ order().createdAt | date : "HH:mm" }}
+      </span>
+    </div>
   </div>
 
-  <div class="flex-1 overflow-hidden">
-    <div class="text-xs text-gray-400 mb-1">
+  <div class="flex-1 overflow-hidden flex flex-col">
+    <div class="text-xs text-gray-400 mb-2 flex-shrink-0">
       {{ order().totalItems }} productos:
     </div>
+
+    <!-- ✅ Lista con altura calculada dinámicamente -->
     <ul
-      class="text-sm text-gray-300 font-poppins-semibold space-y-1 h-full max-h-30 overflow-y-auto custom-scrollbar pr-2"
+      class="text-sm text-gray-300 font-poppins-semibold space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-2"
     >
       @for (prod of order().productOrders; track prod.id) {
       <li class="flex justify-between text-sm">
-        <span class="truncate mr-2"
-          >{{ prod.quantity }}x - {{ prod.productName | titlecase }}</span
-        >
+        <span class="truncate mr-2">
+          {{ prod.quantity }}x - {{ prod.productName | titlecase }}
+        </span>
       </li>
       }
     </ul>
   </div>
 
-  <div class="flex-shrink-0 space-y-2">
-    <div class="text-sm text-yellow-500">Comentario: {{ order().comment }}</div>
+  <div class="flex-shrink-0 space-y-2 pt-2 border-t border-gray-600/30">
+    <div class="text-sm text-yellow-500 italic">
+      Comentario: {{ order().comment }}
+    </div>
+
     @if (order().orderEmployees.length > 0) {
-    <!--  -->
     <div class="pb-2 flex flex-row gap-3">
       <span class="fa-solid fa-user text-xs text-gray-400"></span>
-      @for (employee of order().orderEmployees; track $index) {
       <div class="text-xs text-gray-400">
         <span class="truncate text-xs">
-          {{ order().orderEmployees[$index].employeeName | titlecase }}
-          {{ order().orderEmployees[$index].employeeLastname | titlecase }}
+          {{ order().orderEmployees[0].employeeName | titlecase }}
+          {{ order().orderEmployees[0].employeeLastname | titlecase }}
         </span>
       </div>
-      }
     </div>
     }
 
