@@ -12,7 +12,7 @@ import {
   KitchenOrderStatus,
 } from '../../interfaces/kitchen-order.interface';
 import { SearchInputComponent } from 'src/app/tables/components/search-input/search-input.component';
-import { ContentOrder } from '@orders/interfaces/order.interface';
+import { ContentOrder, OrderStatus } from '@orders/interfaces/order.interface';
 
 @Component({
   selector: 'app-kitchen-nav',
@@ -43,6 +43,19 @@ export class KitchenNavComponent {
 
   modalStatus = computed(() => this.selectedButtonProducts());
 
+  activeOrdersCount = computed(() => {
+    const ordersList = this.orders();
+    if (!ordersList) return 0;
+
+    return ordersList.filter(
+      (order) =>
+        order.orderStatus === KitchenOrderStatus.PREPARING ||
+        order.orderStatus === KitchenOrderStatus.PENDING ||
+        order.orderStatus === OrderStatus.PENDING ||
+        order.orderStatus === OrderStatus.PREPARING
+    ).length;
+  });
+
   tableNumberValue(number: number) {
     this.value.emit(number);
   }
@@ -58,15 +71,6 @@ export class KitchenNavComponent {
   onCloseModal() {
     this.selectedButtonProducts.set(false);
     this.closeModal.emit();
-  }
-
-  getActiveOrders(orders: ContentOrder[]) {
-    if (!orders) return;
-
-    return (
-      orders.filter((order) => order.orderStatus !== KitchenOrderStatus.READY)
-        .length ?? 0
-    );
   }
 
   onStatusChange(orderId: number, newStatus: KitchenOrderStatus) {
