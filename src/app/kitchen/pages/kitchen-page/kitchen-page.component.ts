@@ -34,8 +34,6 @@ export default class KitchenPageComponent {
     }),
 
     stream: ({ params }) => {
-      console.log({ params });
-
       if (params.tableNumber !== null && params.tableNumber !== 0)
         return this.ordersService.searchByTableNumber(
           { page: params.page },
