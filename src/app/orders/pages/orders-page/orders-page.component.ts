@@ -28,8 +28,6 @@ export default class OrdersPageComponent {
     }),
 
     stream: ({ params }) => {
-      console.log({ params });
-
       if (params.tableNumber !== null && params.tableNumber !== 0)
         return this.orderService.searchByTableNumber(
           { page: params.page, limit: 5 },

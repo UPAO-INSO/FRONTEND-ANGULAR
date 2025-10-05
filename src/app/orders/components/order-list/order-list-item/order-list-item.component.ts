@@ -1,6 +1,10 @@
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 import {
+  KitchenOrder,
+  KitchenOrderStatus,
+} from '@kitchen/interfaces/kitchen-order.interface';
+import {
   ContentOrder,
   OrderStatus,
 } from 'src/app/orders/interfaces/order.interface';
@@ -21,7 +25,7 @@ export class OrderListItemComponent {
     this.orderSelected.emit(this.order());
   }
 
-  getOrderAmPm(order: ContentOrder) {
+  getOrderAmPm(order: ContentOrder | KitchenOrder) {
     if (!order || !order.createdAt) return '';
 
     const date = new Date(order.createdAt);
@@ -54,7 +58,7 @@ export class OrderListItemComponent {
     return `Productos: ${productNames.join(', ')}`;
   }
 
-  getTextStatus(status: OrderStatus) {
+  getTextStatus(status: OrderStatus | KitchenOrderStatus) {
     switch (status) {
       case OrderStatus.PENDING:
         return 'Pendiente';
@@ -68,10 +72,12 @@ export class OrderListItemComponent {
         return 'Completado';
       case OrderStatus.CANCELLED:
         return 'Cancelado';
+      default:
+        return '';
     }
   }
 
-  getHoverBackgroundColor(status: OrderStatus): string {
+  getHoverBackgroundColor(status: OrderStatus | KitchenOrderStatus): string {
     switch (status) {
       case OrderStatus.PENDING:
         return 'bg-gradient-to-r from-status-pending to-side-background';
@@ -88,7 +94,10 @@ export class OrderListItemComponent {
     }
   }
 
-  getOrderStatus(status: OrderStatus): { class: string; text: string } {
+  getOrderStatus(status: OrderStatus | KitchenOrderStatus): {
+    class: string;
+    text: string;
+  } {
     switch (status) {
       case OrderStatus.PENDING:
         return { class: 'text-status-pending font-bold', text: status };
@@ -111,7 +120,7 @@ export class OrderListItemComponent {
     }
   }
 
-  getBorderOrderStatus(status: OrderStatus) {
+  getBorderOrderStatus(status: OrderStatus | KitchenOrderStatus) {
     switch (status) {
       case OrderStatus.PENDING:
         return 'border-status-pending ';
@@ -125,6 +134,8 @@ export class OrderListItemComponent {
         return 'border-status-cancelled';
       case OrderStatus.COMPLETED:
         return 'border-status-completed';
+      default:
+        return '';
     }
   }
 }
