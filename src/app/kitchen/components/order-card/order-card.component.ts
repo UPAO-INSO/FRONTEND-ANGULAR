@@ -21,31 +21,34 @@ export class OrderCardComponent {
     {
       value: KitchenOrderStatus.PENDING,
       label: 'Pendiente',
-      color: 'badge-warning',
+      color: 'bg-status-pending',
     },
     {
       value: KitchenOrderStatus.PREPARING,
       label: 'Preparando',
-      color: 'badge-info',
+      color: 'bg-status-preparing',
     },
-    { value: KitchenOrderStatus.READY, label: 'Listo', color: 'badge-success' },
+    {
+      value: KitchenOrderStatus.READY,
+      label: 'Listo',
+      color: 'bg-status-ready',
+    },
   ];
 
   statusColor = computed(() => {
     const status = this.order().orderStatus;
     switch (status) {
       case KitchenOrderStatus.PENDING:
-        return 'badge-warning';
+        return 'bg-status-pending';
       case KitchenOrderStatus.PREPARING:
-        return 'badge-info';
+        return 'bg-status-preparing';
       case KitchenOrderStatus.READY:
-        return 'badge-success';
+        return 'bg-status-ready';
       default:
-        return 'badge-neutral';
+        return 'bg-gray-400';
     }
   });
 
-  // Computed para el label del estado
   statusLabel = computed(() => {
     const status = this.order().orderStatus;
     switch (status) {
