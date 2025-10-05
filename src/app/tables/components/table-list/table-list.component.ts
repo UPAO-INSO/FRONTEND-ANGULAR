@@ -15,6 +15,7 @@ import {
 } from 'src/app/orders/interfaces/order.interface';
 import { ProductType } from 'src/app/products/interfaces/product.type';
 import { OrderViewComponent } from 'src/app/orders/components/order-view/order-view.component';
+import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-table-list',
@@ -34,14 +35,17 @@ export class TableListComponent {
   orderStatus = input<OrderStatus>();
   tableStatusEnum = input.required<typeof TableStatus>();
 
-  statusChange = output<{ orderId: number; newStatus: OrderStatus }>();
+  statusChange = output<{
+    orderId: number;
+    newStatus: OrderStatus | KitchenOrderStatus;
+  }>();
   refresh = output<void>();
   orderCreated = output<RequestOrder>();
 
   selectedTable = signal<Table | null>(null);
   selectedProductCategory = signal<ProductType | null>(null);
 
-  onChangeStatus(orderId: number, newStatus: OrderStatus) {
+  onChangeStatus(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 
