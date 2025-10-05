@@ -15,6 +15,7 @@ import {
   OrderStatus,
   RequestOrder,
 } from 'src/app/orders/interfaces/order.interface';
+import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-orders-page',
@@ -139,7 +140,7 @@ export class TablesPageComponent {
     });
   }
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
+  onStatusChange(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
         console.log('Order status change successfully:', response);
