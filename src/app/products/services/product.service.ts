@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, OnInit, signal } from '@angular/core';
 import { environment } from '@environments/environment';
-import { catchError, map, Observable, throwError } from 'rxjs';
+import { catchError, map, Observable, tap, throwError } from 'rxjs';
 
 import {
   PartialProductUpdate,
@@ -11,30 +11,124 @@ import {
   RESTProductType,
 } from '../interfaces/product.type';
 import { ProductMapper, ProductTypeMapper } from '../mapper/product-mapper';
+import { WebSocketService } from '@shared/services/websocket.service';
+import { WebSocketMessage } from '@shared/interfaces/websocket-message.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
   private http = inject(HttpClient);
+  private wsService = inject(WebSocketService);
 
   envs = environment;
   token = localStorage.getItem('access-token');
+  userId = signal('');
 
   page = signal(1);
   totalPage = signal(1);
   private limit = signal(10);
 
+  private refreshTrigger = signal(0);
+
+  refreshTrigger$ = this.refreshTrigger.asReadonly();
+
+  constructor() {
+    // ✅ Extraer userId del localStorage al inicializar
+    this.initializeUserId();
+
+    // ✅ Configurar WebSocket
+    this.setupWebSocketConnection();
+  }
+
+  private initializeUserId() {
+    try {
+      const userData = localStorage.getItem('user-data');
+      if (userData) {
+        const parsedUserData = JSON.parse(userData);
+
+        // ✅ Extraer el primer atributo del JSON (asumiendo que es el userId)
+        const firstKey = Object.keys(parsedUserData)[0];
+        const userId = parsedUserData[firstKey];
+
+        this.userId.set(userId?.toString() || '');
+
+        console.log('👤 User ID extracted from localStorage:', this.userId());
+        console.log('📄 Full user data:', parsedUserData);
+      } else {
+        console.warn('⚠️ No user-data found in localStorage');
+        this.userId.set('anonymous');
+      }
+    } catch (error) {
+      console.error('❌ Error parsing user-data from localStorage:', error);
+      this.userId.set('error');
+    }
+  }
+
+  private setupWebSocketConnection() {
+    effect(() => {
+      const currentUserId = this.userId();
+      if (currentUserId && currentUserId !== '') {
+        console.log('🔗 Joining WebSocket room with userId:', currentUserId);
+        this.wsService.joinRoom('pds-room');
+
+        this.setupProductUpdateListener();
+      }
+    });
+  }
+
+  private setupProductUpdateListener() {
+    this.wsService.productUpdates$.subscribe((update) => {
+      if (update && update.type === 'PRODUCT_UPDATE') {
+        console.log('Product update received from another device:', update);
+
+        // ✅ Solo refrescar si la actualización no es del usuario actual
+        if (update.updatedBy !== this.userId()) {
+          console.log('🔄 Triggering refresh for external product update');
+          this.triggerRefresh();
+        }
+      }
+    });
+  }
+
+  sendMessage() {
+    const message: WebSocketMessage = {
+      content: 'WEBSOCKET-MESSAGE',
+      sender: this.userId(),
+    };
+    this.wsService.sendMessage('pds-room', message);
+  }
+
+  sendProductUpdate(productId: number, available: boolean) {
+    const success = this.wsService.sendProductUpdate(
+      productId,
+      available,
+      this.userId()
+    );
+    if (success) {
+      console.log('Product update sent successfully via WebSocket');
+    } else {
+      console.warn('Failed to send product update via WebSocket');
+    }
+    return success;
+  }
+
+  triggerRefresh() {
+    this.refreshTrigger.set(this.refreshTrigger() + 1);
+  }
+
   updateProduct(partialProduct: PartialProductUpdate) {
     const { id, available } = partialProduct;
-
-    console.log(partialProduct);
 
     return this.http
       .patch(`${this.envs.API_URL}/products/partial/${id}`, {
         available,
       })
       .pipe(
+        tap(() => {
+          this.sendProductUpdate(id, available);
+          this.triggerRefresh();
+        }),
         catchError((error) => {
           console.log({ error });
 
@@ -89,5 +183,24 @@ export class ProductService {
           ProductMapper.mapRestProductsToProductArray(content)
         )
       );
+  }
+
+  getCurrentUserId(): string {
+    return this.userId();
+  }
+
+  // ✅ Método para refrescar userId si cambia el usuario
+  refreshUserId() {
+    this.initializeUserId();
+  }
+
+  getUserData() {
+    try {
+      const userData = localStorage.getItem('user-data');
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error('Error getting user data:', error);
+      return null;
+    }
   }
 }

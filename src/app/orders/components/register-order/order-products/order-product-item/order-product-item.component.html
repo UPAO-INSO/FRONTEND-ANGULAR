@@ -10,7 +10,7 @@
     src="https://lh3.googleusercontent.com/aida-public/AB6AXuArr8YlVyZU0vwnMlylp53O7qh2SNZPUIvqsT6FWs5gwQ6Z7TmyHtvsQOqMzjVoKjH2kj_alwVpqKiapFe3A5t1fAy8T9lpScigCM5qDG0Kl1UXgAoyeJfJX1QleYQPEu3MsYO1HvX_X98sUyD8KUSkG5nKtAqsvXpRyo-wICO4FMZIO7kQACf6FgivDb5scXNltNBc-eSNcFSpLILYn8y8qEyee7pYWcRlsMoUnCfHPNcjkvnOcyDV-2iQrxfvShFt0ekAkf-wCaJ9"
   />
   <!--  -->
-  @if (!isKitchen()) {
+  @if (!isKitchen() && isProductAvailable()) {
   <div
     class="absolute inset-0 bg-gray-900/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4"
   >
@@ -23,6 +23,21 @@
   </div>
   }
 
+  <!--  -->
+  @if (!isProductAvailable() && !isKitchen()) {
+  <div
+    class="absolute inset-0 bg-red-950/80 flex items-center justify-center z-10"
+  >
+    <div class="text-center text-white p-4">
+      <div class="mb-2">
+        <i class="fa-solid fa-ban text-3xl text-red-300"></i>
+      </div>
+      <h4 class="font-bold text-lg mb-1">NO DISPONIBLE</h4>
+      <p class="text-sm text-red-200">Producto temporalmente agotado</p>
+    </div>
+  </div>
+  }
+
   <div class="p-4">
     <h3 class="font-semibold text-white" [class.text-sm]="isKitchen()">
       {{ product().name | titlecase }}
@@ -31,7 +46,7 @@
       S/. {{ product().price.toFixed(2) }}
     </p>
   </div>
-
+  <!--  -->
   @if (isKitchen()) {
   <div class="flex flex-col p-5">
     <span class="text-[15px] {{ getColorProductStatus() }}">{{

@@ -26,6 +26,8 @@ export class OrderProductItemComponent {
 
   localAvailable = signal<boolean>(true);
 
+  isProductAvailable = computed(() => this.product().available);
+
   constructor() {
     effect(() => {
       const currentProduct = this.product();
@@ -52,9 +54,6 @@ export class OrderProductItemComponent {
   onSubmitProductStatus() {
     const currentProduct = this.product();
     const newStatus = !currentProduct.available;
-
-    console.log({ currentProduct });
-    console.log({ newStatus });
 
     const update: PartialProductUpdate = {
       id: currentProduct.id,

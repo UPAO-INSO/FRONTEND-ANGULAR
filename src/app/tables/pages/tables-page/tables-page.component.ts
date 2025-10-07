@@ -131,7 +131,6 @@ export class TablesPageComponent {
   onOrderCreated(orderData: RequestOrder) {
     this.orderService.createOrder(orderData).subscribe({
       next: (response) => {
-        console.log('Order created successfully:', response);
         this.refreshResources();
       },
       error: (error) => {
@@ -143,7 +142,6 @@ export class TablesPageComponent {
   onStatusChange(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
-        console.log('Order status change successfully:', response);
         this.refreshResources();
       },
       error: (error) => {
