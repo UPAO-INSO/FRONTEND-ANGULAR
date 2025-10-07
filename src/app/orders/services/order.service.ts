@@ -40,8 +40,6 @@ export class OrderService {
   searchByTableNumber(options: Options, number: number) {
     const { limit = 8, page = 1, status = '' } = options;
 
-    console.log({ number });
-
     return this.http
       .get<RESTOrder>(`${this.envs.API_URL}/orders/by-tableId/${number}`, {
         params: {
@@ -50,7 +48,7 @@ export class OrderService {
         },
       })
       .pipe(
-        tap((resp) => console.log({ resp })),
+        // tap((resp) => console.log({ resp })),
         catchError((error) => {
           console.log({ error });
 
