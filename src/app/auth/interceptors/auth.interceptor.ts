@@ -26,6 +26,7 @@ export function authInterceptor(
   const authReq = req.clone({
     setHeaders: {
       Authorization: `Bearer ${accessToken}`,
+      'ngrok-skip-browser-warning': 'true',
     },
   });
 
