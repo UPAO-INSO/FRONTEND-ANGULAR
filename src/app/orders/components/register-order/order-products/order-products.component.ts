@@ -33,9 +33,7 @@ export class OrderProductsComponent {
   selectedCategoryId = signal<number | null>(null);
 
   products = computed(() => {
-    return this.filteredProducts
-      .value()
-      ?.filter((product) => product.available);
+    return this.filteredProducts.value();
   });
 
   constructor() {
@@ -48,7 +46,10 @@ export class OrderProductsComponent {
   }
 
   filteredProducts = rxResource({
-    params: () => ({ categoryId: this.selectedCategoryId() }),
+    params: () => ({
+      categoryId: this.selectedCategoryId(),
+      refreshTrigger: this.productService.refreshTrigger$(),
+    }),
     stream: ({ params }) => {
       if (!params.categoryId) return of([]);
       return this.productService.fetchProductsByTypeId(params.categoryId);
@@ -60,6 +61,8 @@ export class OrderProductsComponent {
   }
 
   onProductClick(product: Product) {
+    if (!product.available) return;
+
     this.orderCartService.addProduct(product);
   }
 

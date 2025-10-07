@@ -19,9 +19,7 @@ export class KitchenOrderListComponent {
   refresh = output<void>();
 
   filterOrders() {
-    console.log({ orders: this.orders() });
-
-    const filter = this.orders().filter(
+    return this.orders().filter(
       (order) =>
         order.orderStatus === KitchenOrderStatus.PENDING ||
         order.orderStatus === KitchenOrderStatus.PREPARING ||
@@ -30,10 +28,6 @@ export class KitchenOrderListComponent {
         order.orderStatus === OrderStatus.PREPARING ||
         order.orderStatus === OrderStatus.READY
     );
-
-    console.log({ filter });
-
-    return filter;
   }
 
   onStatusChange(orderId: number, newStatus: KitchenOrderStatus) {
