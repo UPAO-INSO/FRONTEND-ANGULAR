@@ -56,6 +56,7 @@ export default class KitchenPageComponent {
     this.productService.updateProduct(product).subscribe({
       next: () => {
         this.refreshProductsTrigger.set(this.refreshProductsTrigger() + 1);
+        this.productService.sendMessage();
       },
       error: (error) => {
         console.error('Error updating product status:', error);
