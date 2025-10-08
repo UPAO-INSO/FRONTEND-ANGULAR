@@ -7,6 +7,5 @@ export const environment = {
   API_URL: 'http://localhost:8080/api',
   WS_URL: '//localhost:8080',
   // API_URL: 'https://abominably-undeclared-dionne.ngrok-free.dev/api',
-  // WS_URL: '//abominably-undeclared-dionne.ngrok-free.devt:8080',
-  // API_URL: 'https://pleasant-adventure-production.up.railway.app/api',
+  // WS_URL: '//abominably-undeclared-dionne.ngrok-free.devt',
 };
