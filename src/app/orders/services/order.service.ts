@@ -10,6 +10,19 @@ import {
 import { environment } from '@environments/environment';
 import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
+const kitchenStatus = [
+  KitchenOrderStatus.PENDING,
+  KitchenOrderStatus.PREPARING,
+  KitchenOrderStatus.READY,
+];
+
+const atmStatus = [
+  OrderStatus.PENDING,
+  OrderStatus.PREPARING,
+  OrderStatus.READY,
+  OrderStatus.PAID,
+];
+
 interface Options {
   limit?: number;
   page?: number;
@@ -117,12 +130,35 @@ export class OrderService {
   }
 
   fetchKitchenOrders(options: Options): Observable<RESTOrder> {
-    const { page = 1, limit = 11, status = [] } = options;
+    const { page = 1, limit = 11 } = options;
 
     return this.http
       .post<RESTOrder>(
         `${this.envs.API_URL}/orders/filter-array-status`,
-        [...status],
+        [...kitchenStatus],
+        {
+          params: {
+            page,
+            limit,
+          },
+        }
+      )
+      .pipe(
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => new Error('No se pudo obtener ordenes'));
+        })
+      );
+  }
+
+  fetchAtmOrders(options: Options): Observable<RESTOrder> {
+    const { page = 1, limit = 5 } = options;
+
+    return this.http
+      .post<RESTOrder>(
+        `${this.envs.API_URL}/orders/filter-array-status`,
+        [...atmStatus],
         {
           params: {
             page,

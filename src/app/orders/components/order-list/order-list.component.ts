@@ -1,7 +1,8 @@
-import { Component, computed, input, signal } from '@angular/core';
-import { ContentOrder } from '../../interfaces/order.interface';
+import { Component, computed, input, output, signal } from '@angular/core';
+import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
 import { OrderListItemComponent } from './order-list-item/order-list-item.component';
 import { OrderViewComponent } from '../order-view/order-view.component';
+import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-order-list',
@@ -16,6 +17,15 @@ export class OrderListComponent {
   errorMessage = input<string | unknown | null>();
 
   selectedOrder = signal<ContentOrder | null>(null);
+
+  statusChange = output<{
+    orderId: number;
+    newStatus: OrderStatus | KitchenOrderStatus;
+  }>();
+
+  onChangeStatus(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
+    this.statusChange.emit({ orderId, newStatus });
+  }
 
   openViewOrder(order: ContentOrder) {
     this.selectedOrder.set(order);

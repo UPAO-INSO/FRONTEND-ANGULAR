@@ -34,6 +34,7 @@ export class TablesPageComponent {
 
   tableStatusEnum = TableStatus;
   selectedTableStatus = signal<TableStatus | null>(null);
+  productNameQuery = signal<string | null>(null);
 
   private currentTableIds = signal<number[]>([]);
 
@@ -104,7 +105,12 @@ export class TablesPageComponent {
   });
 
   productResource = rxResource({
-    stream: () => {
+    params: () => ({ name: this.productNameQuery() }),
+
+    stream: ({ params }) => {
+      if (params.name !== null)
+        return this.productService.fetchProductsByNameContainig(params.name);
+
       return this.productService
         .fetchProducts()
         .pipe(tap((products) => products));

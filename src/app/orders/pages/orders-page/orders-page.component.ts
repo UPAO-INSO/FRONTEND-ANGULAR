@@ -7,6 +7,7 @@ import { OrderStatusComponent } from '../../components/order-header-status/order
 import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 import { OrderStatus } from '../../interfaces/order.interface';
+import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-orders-page',
@@ -19,6 +20,21 @@ export default class OrdersPageComponent {
 
   selectedOrderStatus = signal<OrderStatus | null>(null);
   tableNumber = signal<number | null>(null);
+
+  onStatusChange(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
+    this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
+      next: (response) => {
+        this.refreshResources();
+      },
+      error: (error) => {
+        console.error('Error change order:', error);
+      },
+    });
+  }
+
+  refreshResources() {
+    this.orderResource.reload();
+  }
 
   orderResource = rxResource({
     params: () => ({
@@ -40,7 +56,7 @@ export default class OrdersPageComponent {
           status: params.status,
         });
 
-      return this.orderService.fecthOrders({ page: params.page });
+      return this.orderService.fetchAtmOrders({ page: params.page });
     },
   });
 }
