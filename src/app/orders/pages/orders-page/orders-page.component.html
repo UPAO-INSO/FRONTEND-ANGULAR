@@ -8,6 +8,7 @@
   [isEmpty]="(orderResource.value()?.content?.length ?? 0) === 0"
   [isLoading]="orderResource.isLoading()"
   [errorMessage]="orderResource.error()"
+  (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
 />
 
 <app-pagination
