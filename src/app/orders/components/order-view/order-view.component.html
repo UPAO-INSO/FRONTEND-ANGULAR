@@ -213,14 +213,14 @@
 
       <div class="flex gap-3 justify-end">
         <button
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
           (click)="cancelStatusChange()"
         >
           Cancelar
         </button>
         <button
-          class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 transition-colors"
-          (click)="confirmStatusChange(activeOrder()?.orderStatus!)"
+          class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+          (click)="confirmStatusChange(orderStatus.PAID)"
         >
           Sí, {{ textConfirm() }}
         </button>

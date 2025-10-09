@@ -58,11 +58,11 @@ export class OrderStatusComponent {
       label: 'Pagado',
       colorClass: 'text-status-paid',
     },
-    {
-      status: OrderStatus.CANCELLED,
-      label: 'Cancelado',
-      colorClass: 'text-status-cancelled',
-    },
+    // {
+    //   status: OrderStatus.CANCELLED,
+    //   label: 'Cancelado',
+    //   colorClass: 'text-status-cancelled',
+    // },
     {
       status: OrderStatus.READY,
       label: 'Listo',

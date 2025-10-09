@@ -34,10 +34,8 @@ export class ProductService {
   refreshTrigger$ = this.refreshTrigger.asReadonly();
 
   constructor() {
-    // ✅ Extraer userId del localStorage al inicializar
     this.initializeUserId();
 
-    // ✅ Configurar WebSocket
     this.setupWebSocketConnection();
   }
 
@@ -47,20 +45,19 @@ export class ProductService {
       if (userData) {
         const parsedUserData = JSON.parse(userData);
 
-        // ✅ Extraer el primer atributo del JSON (asumiendo que es el userId)
         const firstKey = Object.keys(parsedUserData)[0];
         const userId = parsedUserData[firstKey];
 
         this.userId.set(userId?.toString() || '');
 
-        console.log('👤 User ID extracted from localStorage:', this.userId());
-        console.log('📄 Full user data:', parsedUserData);
+        console.log('User ID extracted from localStorage:', this.userId());
+        console.log('Full user data:', parsedUserData);
       } else {
-        console.warn('⚠️ No user-data found in localStorage');
+        console.warn('No user-data found in localStorage');
         this.userId.set('anonymous');
       }
     } catch (error) {
-      console.error('❌ Error parsing user-data from localStorage:', error);
+      console.error('Error parsing user-data from localStorage:', error);
       this.userId.set('error');
     }
   }
@@ -69,7 +66,7 @@ export class ProductService {
     effect(() => {
       const currentUserId = this.userId();
       if (currentUserId && currentUserId !== '') {
-        console.log('🔗 Joining WebSocket room with userId:', currentUserId);
+        console.log('Joining WebSocket room with userId:', currentUserId);
         this.wsService.joinRoom('pds-room');
 
         this.setupProductUpdateListener();
@@ -82,9 +79,8 @@ export class ProductService {
       if (update && update.type === 'PRODUCT_UPDATE') {
         console.log('Product update received from another device:', update);
 
-        // ✅ Solo refrescar si la actualización no es del usuario actual
         if (update.updatedBy !== this.userId()) {
-          console.log('🔄 Triggering refresh for external product update');
+          console.log('Triggering refresh for external product update');
           this.triggerRefresh();
         }
       }
@@ -152,6 +148,26 @@ export class ProductService {
       );
   }
 
+  fetchProductsByNameContainig(name: string): Observable<Product[]> {
+    console.log(name);
+
+    return this.http
+      .get<Product[]>(`${this.envs.API_URL}/products/name-contains/${name}`, {
+        params: {
+          page: this.page(),
+          limit: this.limit(),
+        },
+      })
+      .pipe(
+        tap((resp) => console.log({ resp })),
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => 'No se encontró producto');
+        })
+      );
+  }
+
   fetchProductsType(): Observable<ProductType[]> {
     return this.http
       .get<RESTProductType>(`${this.envs.API_URL}/products-types`, {
@@ -189,7 +205,6 @@ export class ProductService {
     return this.userId();
   }
 
-  // ✅ Método para refrescar userId si cambia el usuario
   refreshUserId() {
     this.initializeUserId();
   }

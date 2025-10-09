@@ -17,11 +17,16 @@ export class RegisterOrderComponent {
   orderCreated = output<RequestOrder>();
 
   closeModal = output<void>();
+  nameProductQuery = output<string>();
 
   showCreateConfirmModal = signal<boolean>(false);
   pendingOrderData = signal<RequestOrder | null>(null);
 
   orderSummary = viewChild(OrderSummaryComponent);
+
+  nameProductValue(name: string) {
+    return this.nameProductQuery.emit(name);
+  }
 
   onCreateOrder(orderData: RequestOrder) {
     this.pendingOrderData.set(orderData);
