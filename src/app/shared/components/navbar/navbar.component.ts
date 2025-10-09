@@ -83,16 +83,14 @@ export class NavbarComponent {
     const currentJobTitle = this.userJobTitle().toLowerCase();
 
     if (!currentJobTitle) {
-      return []; // No mostrar nada si no hay jobTitle
+      return [];
     }
 
     return this.allMenuOptions.filter((option) => {
-      // Si no tiene allowedRoles definidos, lo muestra a todos
       if (!option.allowedRoles || option.allowedRoles.length === 0) {
         return true;
       }
 
-      // Verificar si el jobTitle actual está en los roles permitidos
       return option.allowedRoles.some(
         (role) =>
           role.toLowerCase() === currentJobTitle ||
@@ -102,42 +100,31 @@ export class NavbarComponent {
   });
 
   constructor() {
-    // ✅ Extraer jobTitle del localStorage al inicializar
     this.loadUserJobTitle();
   }
 
-  // ✅ Método para extraer jobTitle del localStorage
   private loadUserJobTitle() {
     try {
       const userData = localStorage.getItem('user-data');
       if (userData) {
         const parsedUserData: UserData = JSON.parse(userData);
 
-        // ✅ Extraer jobTitle
         const jobTitle = parsedUserData.jobTitle || parsedUserData.role || '';
         this.userJobTitle.set(jobTitle);
-
-        console.log('👤 User jobTitle loaded:', jobTitle);
-        console.log(
-          '📋 Available menu options:',
-          this.menuOptions().map((opt) => opt.label)
-        );
       } else {
-        console.warn('⚠️ No user-data found in localStorage');
+        console.warn('No user-data found in localStorage');
         this.userJobTitle.set('');
       }
     } catch (error) {
-      console.error('❌ Error parsing user-data from localStorage:', error);
+      console.error('Error parsing user-data from localStorage:', error);
       this.userJobTitle.set('');
     }
   }
 
-  // ✅ Método para refrescar datos del usuario (útil si cambia la sesión)
   refreshUserData() {
     this.loadUserJobTitle();
   }
 
-  // ✅ Método para obtener información del usuario actual
   getCurrentUserInfo() {
     try {
       const userData = localStorage.getItem('user-data');
@@ -148,7 +135,6 @@ export class NavbarComponent {
     }
   }
 
-  // ✅ Getter para usar en el template si necesitas mostrar info del usuario
   get currentUser(): UserData | null {
     return this.getCurrentUserInfo();
   }
