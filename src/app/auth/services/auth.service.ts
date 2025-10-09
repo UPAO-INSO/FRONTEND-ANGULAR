@@ -3,9 +3,8 @@ import { User } from '../interfaces/user.interfaces';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '@environments/environment';
 import { AuthResponse, Tokens } from '../interfaces/auth-response.interface';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
 
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
 const baseUrl = environment.API_URL;
@@ -130,7 +129,16 @@ export class AuthService {
 
     this.clearStorage();
 
-    this.http.post(`${baseUrl}/auth/logout`, {});
+    this.http.post(`${baseUrl}/auth/logout`, {}).pipe(
+      tap((resp) => {
+        console.log({ resp });
+      }),
+      catchError((error) => {
+        console.log({ error });
+
+        return throwError(() => 'No se puedo usar logout');
+      })
+    );
   }
 
   private handleAuthSuccess({ tokens, user }: AuthResponse): boolean {

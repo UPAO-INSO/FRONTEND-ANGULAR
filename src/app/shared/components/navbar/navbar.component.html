@@ -40,11 +40,22 @@
           id="side-menu"
           class="menu menu-md dropdown-content bg-base-100 rounded-box border-1 border-gray-900 z-1 mt-3 w-70 p-2 shadow-lg"
         >
-          @for (option of menuOptions; track $index) {
+          @for (option of menuOptions(); track $index) {
           <li>
-            <a [routerLink]="option.route"
-              ><i [class]="option.icon"></i>{{ option.label }}</a
-            >
+            <a [routerLink]="option.route" class="flex items-center gap-3 py-2">
+              <i [class]="option.icon"></i>
+              <div class="flex flex-col">
+                <span class="font-medium">{{ option.label }}</span>
+                <!-- <span class="text-xs text-gray-500">{{ option.sublabel }}</span> -->
+              </div>
+            </a>
+          </li>
+          }
+
+          <!-- ✅ OPCIONAL: Mensaje cuando no hay opciones disponibles -->
+          @if (menuOptions().length === 0) {
+          <li class="text-center py-4 text-gray-500">
+            <span class="text-sm">No hay opciones disponibles para tu rol</span>
           </li>
           }
         </ul>
