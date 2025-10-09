@@ -5,5 +5,5 @@ export const environment = {
   companySlogan: 'Gestiona tus pedidos',
 
   API_URL: 'https://abominably-undeclared-dionne.ngrok-free.dev/api',
-  WS_URL: '//abominably-undeclared-dionne.ngrok-free.devt',
+  WS_URL: '//abominably-undeclared-dionne.ngrok-free.dev',
 };

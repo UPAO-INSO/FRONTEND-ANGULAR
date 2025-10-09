@@ -9,6 +9,7 @@
   [activeOrdersByTable]="activeOrdersByTable()"
   (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
   (orderCreated)="onOrderCreated($event)"
+  (productNameQuery)="productNameQuery.set($event)"
   (refresh)="onRefresh()"
 />
 

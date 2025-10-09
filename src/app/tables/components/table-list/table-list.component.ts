@@ -41,9 +41,14 @@ export class TableListComponent {
   }>();
   refresh = output<void>();
   orderCreated = output<RequestOrder>();
+  productNameQuery = output<string>();
 
   selectedTable = signal<Table | null>(null);
   selectedProductCategory = signal<ProductType | null>(null);
+
+  productName(name: string) {
+    this.productNameQuery.emit(name);
+  }
 
   onChangeStatus(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
     this.statusChange.emit({ orderId, newStatus });

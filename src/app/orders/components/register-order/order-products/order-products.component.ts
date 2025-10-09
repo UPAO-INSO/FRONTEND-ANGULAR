@@ -14,7 +14,7 @@ import { Product, ProductType } from 'src/app/products/interfaces/product.type';
 import { OrderCartService } from 'src/app/orders/services/order-cart.service';
 import { ProductService } from 'src/app/products/services/product.service';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { of } from 'rxjs';
+import { debounceTime, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-order-products',
@@ -29,8 +29,31 @@ export class OrderProductsComponent {
   productTypes = input.required<ProductType[]>({});
 
   closeModal = output<void>();
-
   selectedCategoryId = signal<number | null>(null);
+
+  // TODO: REFACTORIZAR
+  value = output<string>();
+
+  inputValue = signal<string | null>(null);
+  debouncedSearch = signal<string | null>(null);
+
+  debounceEffect = effect((onCleanUp) => {
+    const value = this.inputValue();
+
+    const timeout = setTimeout(() => {
+      if (value !== null) {
+        this.debouncedSearch.set(value);
+        this.value.emit(value);
+      }
+
+      return;
+    }, 500);
+
+    onCleanUp(() => {
+      clearTimeout(timeout);
+    });
+  });
+  //
 
   products = computed(() => {
     return this.filteredProducts.value();
@@ -49,9 +72,20 @@ export class OrderProductsComponent {
     params: () => ({
       categoryId: this.selectedCategoryId(),
       refreshTrigger: this.productService.refreshTrigger$(),
+      // usar el valor debounced en lugar del valor inmediato del input
+      search: this.debouncedSearch(),
     }),
     stream: ({ params }) => {
       if (!params.categoryId) return of([]);
+
+      const search = (params.search ?? '').toString().trim();
+
+      if (search.length > 0) {
+        // usar directamente el servicio de búsqueda (ya hay debounce en debounceEffect)
+        return this.productService.fetchProductsByNameContainig(search);
+      }
+
+      // Sin texto: devolver por categoría
       return this.productService.fetchProductsByTypeId(params.categoryId);
     },
   });
