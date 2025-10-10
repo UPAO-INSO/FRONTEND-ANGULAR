@@ -2,20 +2,22 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { of, tap } from 'rxjs';
 
-import { TableListComponent } from '../../components/table-list/table-list.component';
-import { TableHeaderStatusComponent } from '../../components/table-list/table-header-status/table-header-status.component';
-import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
-import { TableService } from '../../services/table.service';
-import { ProductService } from 'src/app/products/services/product.service';
-import { TableStatus } from '../../interfaces/table.interface';
-import { PaginationService } from '@shared/components/pagination/pagination.service';
-import { OrderService } from 'src/app/orders/services/order.service';
+import { PaginationComponent } from '@src/app/shared/components/pagination/pagination.component';
+import { ProductService } from '@src/app/products/services/product.service';
+import { OrderService } from '@src/app/orders/services/order.service';
 import {
   ContentOrder,
   OrderStatus,
   RequestOrder,
-} from 'src/app/orders/interfaces/order.interface';
+} from '@src/app/orders/interfaces/order.interface';
+
 import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
+import { PaginationService } from '@shared/components/pagination/pagination.service';
+
+import { TableService } from '../../services/table.service';
+import { TableStatus } from '../../interfaces/table.interface';
+import { TableListComponent } from '../../components/table-list/table-list.component';
+import { TableHeaderStatusComponent } from '../../components/table-list/table-header-status/table-header-status.component';
 
 @Component({
   selector: 'app-orders-page',

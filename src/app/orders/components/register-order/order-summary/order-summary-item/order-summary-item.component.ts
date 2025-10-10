@@ -1,6 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
 import { Component, input, output } from '@angular/core';
-import { CartItem } from 'src/app/orders/services/order-cart.service';
+import { CartItem } from '@src/app/orders/services/order-cart.service';
 
 @Component({
   selector: 'app-order-summary-item',

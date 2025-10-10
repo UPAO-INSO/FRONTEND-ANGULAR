@@ -10,9 +10,9 @@ import {
 import {
   ContentOrder,
   OrderStatus,
-} from 'src/app/orders/interfaces/order.interface';
-import { OrderCartService } from 'src/app/orders/services/order-cart.service';
-import { Table, TableStatus } from 'src/app/tables/interfaces/table.interface';
+} from '@src/app/orders/interfaces/order.interface';
+import { OrderCartService } from '@src/app/orders/services/order-cart.service';
+import { Table, TableStatus } from '@src/app/tables/interfaces/table.interface';
 
 @Component({
   selector: 'app-table-list-item',

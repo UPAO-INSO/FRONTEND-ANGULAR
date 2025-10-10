@@ -1,4 +1,3 @@
-// src/app/shared/services/anti-spam.service.ts
 import { Injectable, signal, computed } from '@angular/core';
 import {
   Observable,

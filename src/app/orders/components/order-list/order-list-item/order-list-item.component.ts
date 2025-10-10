@@ -7,7 +7,7 @@ import {
 import {
   ContentOrder,
   OrderStatus,
-} from 'src/app/orders/interfaces/order.interface';
+} from '@src/app/orders/interfaces/order.interface';
 
 @Component({
   selector: 'app-order-list-item',

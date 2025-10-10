@@ -8,16 +8,16 @@ import {
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
-import { OrderCartService } from 'src/app/orders/services/order-cart.service';
-import { Table } from 'src/app/tables/interfaces/table.interface';
+
+import { Table } from '@src/app/tables/interfaces/table.interface';
+import { OrderProductTabsComponent } from '@src/app/orders/components/register-order/order-products/order-product-tabs/order-product-tabs.component';
+import { OrderProductItemComponent } from '@src/app/orders/components/register-order/order-products/order-product-item/order-product-item.component';
+
 import {
   ProductType,
-  Product,
   PartialProductUpdate,
 } from '../../interfaces/product.type';
 import { ProductService } from '../../services/product.service';
-import { OrderProductTabsComponent } from 'src/app/orders/components/register-order/order-products/order-product-tabs/order-product-tabs.component';
-import { OrderProductItemComponent } from 'src/app/orders/components/register-order/order-products/order-product-item/order-product-item.component';
 
 @Component({
   selector: 'app-change-status-product',

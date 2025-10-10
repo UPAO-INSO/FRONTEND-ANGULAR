@@ -10,7 +10,7 @@ import {
 import {
   PartialProductUpdate,
   Product,
-} from 'src/app/products/interfaces/product.type';
+} from '@src/app/products/interfaces/product.type';
 
 @Component({
   selector: 'app-order-product-item',

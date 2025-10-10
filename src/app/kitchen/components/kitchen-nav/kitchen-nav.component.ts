@@ -11,8 +11,8 @@ import {
   ContentKitchen,
   KitchenOrderStatus,
 } from '../../interfaces/kitchen-order.interface';
-import { SearchInputComponent } from 'src/app/tables/components/search-input/search-input.component';
 import { ContentOrder, OrderStatus } from '@orders/interfaces/order.interface';
+import { SearchInputComponent } from '@src/app/tables/components/search-input/search-input.component';
 
 @Component({
   selector: 'app-kitchen-nav',

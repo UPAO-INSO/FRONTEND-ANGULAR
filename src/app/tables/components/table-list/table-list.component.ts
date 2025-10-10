@@ -1,21 +1,21 @@
 import { Component, input, output, signal } from '@angular/core';
 
-import { TableListItemComponent } from './table-list-item/table-list-item.component';
-import { RegisterOrderComponent } from 'src/app/orders/components/register-order/register-order.component';
+import { RegisterOrderComponent } from '@src/app/orders/components/register-order/register-order.component';
+import { ProductType } from '@src/app/products/interfaces/product.type';
+import { OrderViewComponent } from '@src/app/orders/components/order-view/order-view.component';
+import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
+import {
+  ContentOrder,
+  OrderStatus,
+  RequestOrder,
+} from '@src/app/orders/interfaces/order.interface';
 
 import type {
   ContentTable,
   Table,
   TableStatus,
 } from '../../interfaces/table.interface';
-import {
-  ContentOrder,
-  OrderStatus,
-  RequestOrder,
-} from 'src/app/orders/interfaces/order.interface';
-import { ProductType } from 'src/app/products/interfaces/product.type';
-import { OrderViewComponent } from 'src/app/orders/components/order-view/order-view.component';
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
+import { TableListItemComponent } from './table-list-item/table-list-item.component';
 
 @Component({
   selector: 'app-table-list',
