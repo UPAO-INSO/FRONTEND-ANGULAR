@@ -1,18 +1,15 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '@environments/environment';
-import { Observable, map, tap, catchError, throwError } from 'rxjs';
+import { Observable, map, catchError, throwError } from 'rxjs';
 import {
   KitchenOrder,
-  RESTKitchenOrders,
   KitchenOrderStatus,
-  ContentKitchen,
 } from '../interfaces/kitchen-order.interface';
-import { KitchenOrderMapper } from '../mapper/kitchen-order.mapper';
 import {
   OrderStatus,
   RESTOrder,
-} from 'src/app/orders/interfaces/order.interface';
+} from '@src/app/orders/interfaces/order.interface';
 
 interface Options {
   limit?: number;

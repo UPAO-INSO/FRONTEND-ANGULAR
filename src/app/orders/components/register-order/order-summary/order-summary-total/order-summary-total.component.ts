@@ -1,8 +1,8 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import {
   OrderCartService,
   CartItem,
-} from 'src/app/orders/services/order-cart.service';
+} from '@src/app/orders/services/order-cart.service';
 
 @Component({
   selector: 'app-order-summary-total',

@@ -1,6 +1,6 @@
-import { Component, effect, output, signal } from '@angular/core';
-import { OrderStatus } from 'src/app/orders/interfaces/order.interface';
-import { SearchInputComponent } from 'src/app/tables/components/search-input/search-input.component';
+import { Component, output, signal } from '@angular/core';
+import { OrderStatus } from '@src/app/orders/interfaces/order.interface';
+import { SearchInputComponent } from '@src/app/tables/components/search-input/search-input.component';
 
 interface StatusFilter {
   status: OrderStatus | null;
