@@ -7,7 +7,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { ProductType } from 'src/app/products/interfaces/product.type';
+import { ProductType } from '@src/app/products/interfaces/product.type';
 
 @Component({
   selector: 'app-order-product-tabs',

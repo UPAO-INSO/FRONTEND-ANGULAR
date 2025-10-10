@@ -1,8 +1,8 @@
 import { Component, input, output, signal, viewChild } from '@angular/core';
 import { OrderProductsComponent } from './order-products/order-products.component';
 import { OrderSummaryComponent } from './order-summary/order-summary.component';
-import { Table } from 'src/app/tables/interfaces/table.interface';
-import { ProductType } from 'src/app/products/interfaces/product.type';
+import { Table } from '@src/app/tables/interfaces/table.interface';
+import { ProductType } from '@src/app/products/interfaces/product.type';
 import { RequestOrder } from '../../interfaces/order.interface';
 
 @Component({

@@ -8,19 +8,17 @@ import {
 } from '@angular/core';
 import { OrderSummaryItemComponent } from './order-summary-item/order-summary-item.component';
 import { OrderSummaryTotalComponent } from './order-summary-total/order-summary-total.component';
-import { Table } from 'src/app/tables/interfaces/table.interface';
-import { OrderCartService } from 'src/app/orders/services/order-cart.service';
+import { Table } from '@src/app/tables/interfaces/table.interface';
+import { OrderCartService } from '@src/app/orders/services/order-cart.service';
 import { TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   RequestOrder,
   RequestOrderEmployee,
   RequestProductOrder,
-} from 'src/app/orders/interfaces/order.interface';
-import { OrderEmployee } from '../../../interfaces/order.interface';
-import { OrderMapper } from 'src/app/orders/mapper/order.mapper';
+} from '@src/app/orders/interfaces/order.interface';
+import { OrderMapper } from '@src/app/orders/mapper/order.mapper';
 import { User } from '@auth/interfaces/user.interfaces';
-import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-order-summary',

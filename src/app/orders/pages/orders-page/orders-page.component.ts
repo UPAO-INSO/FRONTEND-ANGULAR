@@ -4,7 +4,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { OrderService } from '../../services/order.service';
 import { OrderListComponent } from '../../components/order-list/order-list.component';
 import { OrderStatusComponent } from '../../components/order-header-status/order-header-status.component';
-import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { PaginationComponent } from '@src/app/shared/components/pagination/pagination.component';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 import { OrderStatus } from '../../interfaces/order.interface';
 import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';

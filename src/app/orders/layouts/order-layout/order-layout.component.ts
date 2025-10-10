@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HeaderStateService } from 'src/app/shared/services/header-state.service';
+import { HeaderStateService } from '@src/app/shared/services/header-state.service';
 
 @Component({
   selector: 'app-order-layout',
