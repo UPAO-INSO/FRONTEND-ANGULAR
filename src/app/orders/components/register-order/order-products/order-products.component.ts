@@ -9,12 +9,15 @@ import {
 } from '@angular/core';
 import { OrderProductItemComponent } from './order-product-item/order-product-item.component';
 import { OrderProductTabsComponent } from './order-product-tabs/order-product-tabs.component';
-import { Table } from 'src/app/tables/interfaces/table.interface';
-import { Product, ProductType } from 'src/app/products/interfaces/product.type';
-import { OrderCartService } from 'src/app/orders/services/order-cart.service';
-import { ProductService } from 'src/app/products/services/product.service';
+import { Table } from '@src/app/tables/interfaces/table.interface';
+import {
+  Product,
+  ProductType,
+} from '@src/app/products/interfaces/product.type';
+import { OrderCartService } from '@src/app/orders/services/order-cart.service';
+import { ProductService } from '@src/app/products/services/product.service';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { debounceTime, of, switchMap } from 'rxjs';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-order-products',

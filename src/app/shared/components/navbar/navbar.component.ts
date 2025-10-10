@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
 import { environment } from '@environments/environment';
@@ -19,8 +19,6 @@ export interface UserData {
   jobTitle: string;
   role?: string;
   isActive: boolean;
-
-  // otros campos...
 }
 
 @Component({

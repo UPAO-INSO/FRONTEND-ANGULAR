@@ -1,6 +1,5 @@
-// src/app/orders/services/order-cart.service.ts
 import { Injectable, signal, computed } from '@angular/core';
-import { Product } from 'src/app/products/interfaces/product.type';
+import { Product } from '@src/app/products/interfaces/product.type';
 
 export interface CartItem {
   product: Product;

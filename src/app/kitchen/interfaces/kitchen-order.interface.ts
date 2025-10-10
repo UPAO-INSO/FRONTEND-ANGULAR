@@ -1,4 +1,3 @@
-// src/app/kitchen/interfaces/kitchen-order.interface.ts
 export enum KitchenOrderStatus {
   PENDING = 'PENDING',
   PREPARING = 'PREPARING',
