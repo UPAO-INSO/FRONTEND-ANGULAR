@@ -32,7 +32,7 @@ export class TableListComponent {
   isLoading = input<boolean>(false);
   errorMessage = input<string | unknown | null>();
 
-  orderStatus = input<OrderStatus>();
+  orderStatus = OrderStatus;
   tableStatusEnum = input.required<typeof TableStatus>();
 
   statusChange = output<{

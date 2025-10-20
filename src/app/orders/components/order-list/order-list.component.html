@@ -38,6 +38,7 @@
   <app-order-view
     [activeOrder]="selectedOrder()"
     [textConfirm]="'Marcar como Pagado'"
+    [changeStatusQuery]="orderStatus.PAID"
     (statusChange)="onChangeStatus($event.orderId, $event.newStatus)"
     (closeModal)="closeViewOrder()"
   />

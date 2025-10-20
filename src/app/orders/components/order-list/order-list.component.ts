@@ -23,6 +23,8 @@ export class OrderListComponent {
     newStatus: OrderStatus | KitchenOrderStatus;
   }>();
 
+  orderStatus = OrderStatus;
+
   onChangeStatus(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }

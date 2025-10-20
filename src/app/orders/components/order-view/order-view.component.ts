@@ -13,6 +13,7 @@ export class OrderViewComponent {
   activeOrder = input<ContentOrder | null>(null);
   selectedTable = input<Table | null>();
   textConfirm = input.required<string>();
+  changeStatusQuery = input.required<OrderStatus | KitchenOrderStatus>();
 
   statusChange = output<{
     orderId: number;
