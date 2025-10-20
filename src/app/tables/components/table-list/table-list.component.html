@@ -57,7 +57,8 @@
 <app-order-view
   [selectedTable]="selectedTable()"
   [activeOrder]="getActiveOrderByTable(selectedTable()?.id!)"
-  [textConfirm]="'Completar Orden'"
+  [textConfirm]="'Completar Pedido'"
+  [changeStatusQuery]="orderStatus.COMPLETED"
   (statusChange)="onChangeStatus($event.orderId, $event.newStatus)"
   (closeModal)="closeRegisterOrder()"
 />
