@@ -10,6 +10,7 @@
       [error]="ordersResource.error()"
       [isLoading]="ordersResource.isLoading()"
       [refreshTrigger]="refreshProductsTrigger()"
+      (refresh)="onRefresh()"
       (updatedProductStaus)="onProductStatusUpdated($event)"
       (value)="tableNumber.set($event)"
     />

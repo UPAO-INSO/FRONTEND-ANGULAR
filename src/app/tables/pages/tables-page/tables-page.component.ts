@@ -11,7 +11,6 @@ import {
   RequestOrder,
 } from '@src/app/orders/interfaces/order.interface';
 
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 
 import { TableService } from '../../services/table.service';
@@ -147,7 +146,7 @@ export class TablesPageComponent {
     });
   }
 
-  onStatusChange(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
+  onStatusChange(orderId: number, newStatus: OrderStatus) {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
         this.refreshResources();

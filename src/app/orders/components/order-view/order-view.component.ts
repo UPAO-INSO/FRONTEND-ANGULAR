@@ -2,7 +2,6 @@ import { Component, inject, input, output, signal } from '@angular/core';
 import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Table } from '@src/app/tables/interfaces/table.interface';
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-order-view',
@@ -13,11 +12,11 @@ export class OrderViewComponent {
   activeOrder = input<ContentOrder | null>(null);
   selectedTable = input<Table | null>();
   textConfirm = input.required<string>();
-  changeStatusQuery = input.required<OrderStatus | KitchenOrderStatus>();
+  changeStatusQuery = input.required<OrderStatus>();
 
   statusChange = output<{
     orderId: number;
-    newStatus: OrderStatus | KitchenOrderStatus;
+    newStatus: OrderStatus;
   }>();
   orderStatus = OrderStatus;
 
@@ -29,7 +28,7 @@ export class OrderViewComponent {
     this.showConfirmModal.set(true);
   }
 
-  confirmStatusChange(status: OrderStatus | KitchenOrderStatus) {
+  confirmStatusChange(status: OrderStatus) {
     const orderId = this.activeOrder()?.id;
     if (orderId) {
       this.statusChange.emit({ orderId, newStatus: status });
@@ -93,9 +92,7 @@ export class OrderViewComponent {
     }
   }
 
-  getOrderStatusText(order: ContentOrder | null) {
-    if (!order) return '';
-
+  getOrderStatusText(order: ContentOrder) {
     switch (order.orderStatus) {
       case OrderStatus.PREPARING:
         return 'Preparando';

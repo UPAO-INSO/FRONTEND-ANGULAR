@@ -3,7 +3,6 @@ import { Component, input, output, signal } from '@angular/core';
 import { RegisterOrderComponent } from '@src/app/orders/components/register-order/register-order.component';
 import { ProductType } from '@src/app/products/interfaces/product.type';
 import { OrderViewComponent } from '@src/app/orders/components/order-view/order-view.component';
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 import {
   ContentOrder,
   OrderStatus,
@@ -37,7 +36,7 @@ export class TableListComponent {
 
   statusChange = output<{
     orderId: number;
-    newStatus: OrderStatus | KitchenOrderStatus;
+    newStatus: OrderStatus;
   }>();
   refresh = output<void>();
   orderCreated = output<RequestOrder>();
@@ -50,7 +49,7 @@ export class TableListComponent {
     this.productNameQuery.emit(name);
   }
 
-  onChangeStatus(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
+  onChangeStatus(orderId: number, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 

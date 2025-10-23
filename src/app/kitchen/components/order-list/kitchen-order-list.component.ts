@@ -1,8 +1,7 @@
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 import { OrderCardComponent } from '../order-card/order-card.component';
 
-import { KitchenOrderStatus } from '../../interfaces/kitchen-order.interface';
 import { ContentOrder, OrderStatus } from '@orders/interfaces/order.interface';
 
 @Component({
@@ -15,22 +14,41 @@ export class KitchenOrderListComponent {
   isLoading = input<boolean>(false);
   error = input<Error | undefined>();
 
-  statusChange = output<{ orderId: number; newStatus: KitchenOrderStatus }>();
+  statusChange = output<{ orderId: number; newStatus: OrderStatus }>();
   refresh = output<void>();
 
-  filterOrders() {
-    return this.orders().filter(
+  filteredOrders = computed(() => {
+    const filtered = this.orders().filter(
       (order) =>
-        order.orderStatus === KitchenOrderStatus.PENDING ||
-        order.orderStatus === KitchenOrderStatus.PREPARING ||
-        order.orderStatus === KitchenOrderStatus.READY ||
         order.orderStatus === OrderStatus.PENDING ||
         order.orderStatus === OrderStatus.PREPARING ||
         order.orderStatus === OrderStatus.READY
     );
-  }
 
-  onStatusChange(orderId: number, newStatus: KitchenOrderStatus) {
+    const readyOrders = filtered.filter(
+      (order) => order.orderStatus === OrderStatus.READY
+    );
+
+    const nonReadyOrders = filtered.filter(
+      (order) => order.orderStatus !== OrderStatus.READY
+    );
+
+    const sortedNonReady = nonReadyOrders.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
+    });
+
+    const sortedReady = readyOrders.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
+    });
+
+    return [...sortedNonReady, ...sortedReady];
+  });
+
+  onStatusChange(orderId: number, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 
