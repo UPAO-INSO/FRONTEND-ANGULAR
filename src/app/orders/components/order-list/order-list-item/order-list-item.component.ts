@@ -1,9 +1,6 @@
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
-import {
-  KitchenOrder,
-  KitchenOrderStatus,
-} from '@kitchen/interfaces/kitchen-order.interface';
+
 import {
   ContentOrder,
   OrderStatus,
@@ -25,7 +22,7 @@ export class OrderListItemComponent {
     this.orderSelected.emit(this.order());
   }
 
-  getOrderAmPm(order: ContentOrder | KitchenOrder) {
+  getOrderAmPm(order: ContentOrder) {
     if (!order || !order.createdAt) return '';
 
     const date = new Date(order.createdAt);
@@ -58,7 +55,7 @@ export class OrderListItemComponent {
     return `Productos: ${productNames.join(', ')}`;
   }
 
-  getTextStatus(status: OrderStatus | KitchenOrderStatus) {
+  getTextStatus(status: OrderStatus) {
     switch (status) {
       case OrderStatus.PENDING:
         return 'Pendiente';
@@ -77,7 +74,7 @@ export class OrderListItemComponent {
     }
   }
 
-  getHoverBackgroundColor(status: OrderStatus | KitchenOrderStatus): string {
+  getHoverBackgroundColor(status: OrderStatus): string {
     switch (status) {
       case OrderStatus.PENDING:
         return 'bg-gradient-to-r from-status-pending to-side-background';
@@ -94,7 +91,7 @@ export class OrderListItemComponent {
     }
   }
 
-  getOrderStatus(status: OrderStatus | KitchenOrderStatus): {
+  getTextOrderStatus(status: OrderStatus): {
     class: string;
     text: string;
   } {
@@ -120,7 +117,7 @@ export class OrderListItemComponent {
     }
   }
 
-  getBorderOrderStatus(status: OrderStatus | KitchenOrderStatus) {
+  getBorderOrderStatus(status: OrderStatus) {
     switch (status) {
       case OrderStatus.PENDING:
         return 'border-status-pending ';

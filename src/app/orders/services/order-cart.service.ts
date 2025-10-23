@@ -1,5 +1,8 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Product } from '@src/app/products/interfaces/product.type';
+import {
+  Product,
+  ProductsType,
+} from '@src/app/products/interfaces/product.type';
 
 export interface CartItem {
   product: Product;
@@ -20,17 +23,82 @@ export class OrderCartService {
     return tableId ? carts.get(tableId) || [] : [];
   });
 
+  cartSecondItems = computed(() =>
+    this.cartItems().filter(
+      (item) => item.product.productTypeName === ProductsType.SEGUNDOS
+    )
+  );
+
+  cartStarterItems = computed(() =>
+    this.cartItems().filter(
+      (item) => item.product.productTypeName === ProductsType.ENTRADAS
+    )
+  );
+
   totalItems = computed(() =>
     this.cartItems().reduce((acc, item) => acc + item.quantity, 0)
   );
 
-  subtotal = computed(() =>
-    this.cartItems().reduce((acc, item) => acc + item.subtotal, 0)
+  totalSeconds = computed(() =>
+    this.cartSecondItems().reduce((acc, item) => acc + item.quantity, 0)
   );
+
+  totalStarters = computed(() =>
+    this.cartStarterItems().reduce((acc, item) => acc + item.quantity, 0)
+  );
+
+  subtotal = computed(() => {
+    const starters = this.cartStarterItems();
+    const seconds = this.cartSecondItems();
+    const totalStarters = this.totalStarters();
+    const totalSeconds = this.totalSeconds();
+
+    const secondsTotal = seconds.reduce((acc, item) => acc + item.subtotal, 0);
+
+    if (totalStarters === totalSeconds) {
+      return secondsTotal;
+    }
+
+    if (totalStarters > totalSeconds) {
+      const excessStarters = totalStarters - totalSeconds;
+
+      let startersExcessTotal = 0;
+      let remainingExcess = excessStarters;
+
+      for (const starter of starters) {
+        if (remainingExcess <= 0) break;
+
+        const itemsToCharge = Math.min(starter.quantity, remainingExcess);
+        startersExcessTotal += starter.product.price * itemsToCharge;
+        remainingExcess -= itemsToCharge;
+      }
+
+      return secondsTotal + startersExcessTotal;
+    }
+
+    return secondsTotal;
+  });
 
   tax = computed(() => this.subtotal() * 0.18);
 
   total = computed(() => this.subtotal() + this.tax());
+
+  menuBreakdown = computed(() => {
+    const totalStarters = this.totalStarters();
+    const totalSeconds = this.totalSeconds();
+
+    const menusIncluded = Math.min(totalStarters, totalSeconds);
+    const extraStarters = Math.max(0, totalStarters - totalSeconds);
+    const secondsWithoutStarter = Math.max(0, totalSeconds - totalStarters);
+
+    return {
+      menusIncluded,
+      extraStarters,
+      secondsWithoutStarter,
+      totalStarters,
+      totalSeconds,
+    };
+  });
 
   setCurrentTable(tableId: number) {
     this._currentTableId.set(tableId);

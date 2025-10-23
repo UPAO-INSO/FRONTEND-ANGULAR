@@ -15,6 +15,7 @@ export class ProductMapper {
       active: content.active,
       available: content.available,
       productTypeId: content.productTypeId,
+      productTypeName: content.productTypeName,
     };
   }
 

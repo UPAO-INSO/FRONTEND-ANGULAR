@@ -1,4 +1,16 @@
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
+export interface PersonResponse {
+  id: number;
+  name: string;
+  lastname: string;
+  phone: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PersonByFullName {
+  name: string;
+  lastname: string;
+}
 
 export interface Order {
   id: number;
@@ -20,11 +32,10 @@ export interface RESTOrder {
 
 export interface ContentOrder {
   id: number;
-  orderStatus: OrderStatus | KitchenOrderStatus;
+  orderStatus: OrderStatus;
   comment: string;
   paid: boolean;
   tableId: number;
-  clientId: number;
   totalItems: number;
   totalPrice: number;
   createdAt: Date;
@@ -65,7 +76,6 @@ export enum OrderStatus {
 export interface RequestOrder {
   comment: string;
   tableId: number;
-  clientId: number;
   productOrders: RequestProductOrder[];
   orderEmployees: RequestOrderEmployee[];
 }

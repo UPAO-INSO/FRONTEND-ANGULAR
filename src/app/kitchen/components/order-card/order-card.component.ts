@@ -1,10 +1,7 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { DatePipe, TitleCasePipe } from '@angular/common';
-import {
-  ContentKitchen,
-  KitchenOrderStatus,
-} from '../../interfaces/kitchen-order.interface';
-import { ContentOrder } from '@orders/interfaces/order.interface';
+
+import { ContentOrder, OrderStatus } from '@orders/interfaces/order.interface';
 
 @Component({
   selector: 'app-order-card',
@@ -13,23 +10,23 @@ import { ContentOrder } from '@orders/interfaces/order.interface';
 })
 export class OrderCardComponent {
   order = input.required<ContentOrder>();
-  changeStatus = output<KitchenOrderStatus>();
+  changeStatus = output<OrderStatus>();
 
-  orderStatus = KitchenOrderStatus;
+  orderStatus = OrderStatus;
 
   allStatuses = [
     {
-      value: KitchenOrderStatus.PENDING,
+      value: OrderStatus.PENDING,
       label: 'Pendiente',
       color: 'bg-status-pending',
     },
     {
-      value: KitchenOrderStatus.PREPARING,
+      value: OrderStatus.PREPARING,
       label: 'Preparando',
       color: 'bg-status-preparing',
     },
     {
-      value: KitchenOrderStatus.READY,
+      value: OrderStatus.READY,
       label: 'Listo',
       color: 'bg-status-ready',
     },
@@ -38,11 +35,11 @@ export class OrderCardComponent {
   statusColor = computed(() => {
     const status = this.order().orderStatus;
     switch (status) {
-      case KitchenOrderStatus.PENDING:
+      case OrderStatus.PENDING:
         return 'bg-status-pending';
-      case KitchenOrderStatus.PREPARING:
+      case OrderStatus.PREPARING:
         return 'bg-status-preparing';
-      case KitchenOrderStatus.READY:
+      case OrderStatus.READY:
         return 'bg-status-ready';
       default:
         return 'bg-gray-400';
@@ -50,20 +47,18 @@ export class OrderCardComponent {
   });
 
   statusLabel = computed(() => {
-    const status = this.order().orderStatus;
-    switch (status) {
-      case KitchenOrderStatus.PENDING:
-        return 'Pendiente';
-      case KitchenOrderStatus.PREPARING:
-        return 'Preparando';
-      case KitchenOrderStatus.READY:
-        return 'Listo';
-      default:
-        return 'Desconocido';
-    }
+    const currentStatus = this.order().orderStatus;
+
+    const STATUS: Partial<Record<OrderStatus, string>> = {
+      [OrderStatus.PENDING]: 'Pendiente',
+      [OrderStatus.PREPARING]: 'Preparando',
+      [OrderStatus.READY]: 'Listo',
+    };
+
+    return STATUS[currentStatus] ?? '';
   });
 
-  onStatusChange(newStatus: KitchenOrderStatus) {
+  onStatusChange(newStatus: OrderStatus) {
     this.changeStatus.emit(newStatus);
   }
 }

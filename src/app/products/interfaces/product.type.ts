@@ -1,3 +1,11 @@
+export enum ProductsType {
+  ENTRADAS = 'ENTRADAS',
+  BEBIDAS = 'BEBIDAS',
+  DESCARTABLES = 'DESCARTABLES',
+  SEGUNDOS = 'SEGUNDOS',
+  CARTA = 'CARTA',
+}
+
 export interface ProductType {
   id: number;
   name: string;
@@ -30,6 +38,7 @@ export interface Product {
   active: boolean;
   available: boolean;
   productTypeId: number;
+  productTypeName: string;
 }
 
 export interface RESTProduct {
