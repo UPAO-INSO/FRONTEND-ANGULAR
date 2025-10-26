@@ -3,6 +3,7 @@ import {
   Product,
   ProductsType,
 } from '@src/app/products/interfaces/product.type';
+import { ProductOrder } from '../interfaces/order.interface';
 
 export interface CartItem {
   product: Product;
@@ -139,6 +140,34 @@ export class OrderCartService {
         product,
         quantity: 1,
         subtotal: product.price,
+      };
+      this.updateTableCart(tableId, [...currentItems, newItem]);
+    }
+  }
+
+  addProductWithQuantity(product: Product, quantity: number) {
+    const tableId = this._currentTableId();
+    if (!tableId || quantity <= 0) return;
+
+    const currentItems = this.getTableCart(tableId);
+    const existingItemIndex = currentItems.findIndex(
+      (item) => item.product.id === product.id
+    );
+
+    if (existingItemIndex >= 0) {
+      const updatedItems = [...currentItems];
+      const newQuantity = updatedItems[existingItemIndex].quantity + quantity;
+      updatedItems[existingItemIndex] = {
+        ...updatedItems[existingItemIndex],
+        quantity: newQuantity,
+        subtotal: updatedItems[existingItemIndex].product.price * newQuantity,
+      };
+      this.updateTableCart(tableId, updatedItems);
+    } else {
+      const newItem: CartItem = {
+        product,
+        quantity,
+        subtotal: product.price * quantity,
       };
       this.updateTableCart(tableId, [...currentItems, newItem]);
     }

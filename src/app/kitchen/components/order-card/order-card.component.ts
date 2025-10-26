@@ -34,16 +34,14 @@ export class OrderCardComponent {
 
   statusColor = computed(() => {
     const status = this.order().orderStatus;
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'bg-status-pending';
-      case OrderStatus.PREPARING:
-        return 'bg-status-preparing';
-      case OrderStatus.READY:
-        return 'bg-status-ready';
-      default:
-        return 'bg-gray-400';
-    }
+
+    const STATUS: Partial<Record<OrderStatus, string>> = {
+      [OrderStatus.PENDING]: 'bg-status-pending',
+      [OrderStatus.PREPARING]: 'bg-status-preparing',
+      [OrderStatus.READY]: 'bg-status-ready',
+    };
+
+    return STATUS[status] ?? 'bg-gray-400';
   });
 
   statusLabel = computed(() => {
