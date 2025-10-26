@@ -29,7 +29,7 @@ export class ProductService {
   totalPage = signal(1);
   private limit = signal(10);
 
-  private refreshTrigger = signal(0);
+  private refreshTrigger = signal(false);
 
   refreshTrigger$ = this.refreshTrigger.asReadonly();
 
@@ -110,7 +110,7 @@ export class ProductService {
   }
 
   triggerRefresh() {
-    this.refreshTrigger.set(this.refreshTrigger() + 1);
+    this.refreshTrigger.set(true);
   }
 
   updateProduct(partialProduct: PartialProductUpdate) {
@@ -128,7 +128,7 @@ export class ProductService {
         catchError((error) => {
           console.log({ error });
 
-          return throwError(() => 'No se pudo actualizar ordenes');
+          return throwError(() => 'No se pudo actualizar el producto');
         })
       );
   }
@@ -144,7 +144,24 @@ export class ProductService {
       .pipe(
         map(({ content }) =>
           ProductMapper.mapRestProductsToProductArray(content)
-        )
+        ),
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => Error('No se pudo obtener los productos'));
+        })
+      );
+  }
+
+  fetchProductsByIds(ids: number[]): Observable<Product[]> {
+    return this.http
+      .post<Product[]>(`${this.envs.API_URL}/products/find-by-ids`, ids)
+      .pipe(
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => Error('No se pudo obtener los productos'));
+        })
       );
   }
 

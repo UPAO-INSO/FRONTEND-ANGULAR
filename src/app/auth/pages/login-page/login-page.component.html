@@ -11,7 +11,7 @@
 
 <!-- Login form -->
 <div
-  class="relative z-10 w-full max-w-md p-8 mx-4 bg-side-background/80 rounded-xl"
+  class="relative z-10 w-full max-w-md p-8 mx-4 bg-side-background/80 rounded-xl transition-all duration-500 ease-in-out"
 >
   <div class="text-center mb-8">
     <!-- Logo and title -->
@@ -32,13 +32,41 @@
     <p class="text-gray-300 text-sm">Bienvenido de nuevo</p>
   </div>
 
-  <form class="space-y-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <!--  -->
+  <form
+    class="space-y-6 transition-all duration-300"
+    [formGroup]="loginForm"
+    (ngSubmit)="onSubmit()"
+  >
+    <!-- Error Inputs -->
+    @if (hasError()) {
+    <div
+      role="alert"
+      class="alert alert-error bg-purple-900/20 text-white border border-purple-500/50 rounded-lg animate-fade-in"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6 shrink-0 stroke-current text-red-400"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <span>Por favor verifique la información ingresada.</span>
+    </div>
+    }
+
+    <!-- Input Usuario  -->
     <div class="form-control">
       <div class="relative">
         <div
           class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
         >
+          <!-- Icono usuario -->
           <svg
             class="h-5 w-5 text-gray-400"
             xmlns="http://www.w3.org/2000/svg"
@@ -59,8 +87,9 @@
           class="input input-bordered w-full h-12 px-12 bg-gray-800/60 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-200"
         />
 
+        <!-- Tooltip Usuario -->
         <div
-          class="absolute inset-y-0 right-0 pr-3 flex items-center tooltip tooltip-bottom"
+          class="absolute inset-y-0 right-0 z-10 pr-3 flex items-center tooltip tooltip-bottom"
           data-tip="Debe tener entre 4 y 30 caracteres, solo letras, números o guión"
         >
           <svg
@@ -105,18 +134,18 @@
         </div>
 
         <input
-          [type]="showPassword ? 'text' : 'password'"
+          [type]="showPassword() ? 'text' : 'password'"
           placeholder="Contraseña"
           formControlName="password"
-          class="input input-bordered w-full h-12 px-12 bg-gray-800/60 border-gray-600 text-white placeholder-gray-400"
+          class="input input-bordered w-full h-12 px-12 bg-gray-800/60 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-200"
         />
         <button
           type="button"
-          class="absolute inset-y-0 right-10 flex items-center px-2 focus:outline-none"
+          class="absolute inset-y-0 right-10 z-10 flex items-center px-2 focus:outline-none"
           (click)="togglePasswordVisibility()"
           aria-label="Mostrar/Ocultar contraseña"
         >
-          @if (!showPassword) {
+          @if (!showPassword()) {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -134,7 +163,7 @@
               <path d="M12 17a3 3 0 1 1 0-6a3 3 0 0 1 0 6" />
             </g>
           </svg>
-          } @if (showPassword) {
+          } @if (showPassword()) {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -149,8 +178,9 @@
           }
         </button>
 
+        <!-- Tooltip Password -->
         <div
-          class="absolute inset-y-0 right-0 pr-3 flex items-center tooltip tooltip-bottom"
+          class="absolute inset-y-0 right-0 z-10 pr-3 flex items-center tooltip tooltip-bottom"
           data-tip="Mínimo 8 caracteres, debe incluir mayúscula, minúscula, número y caracter especial"
         >
           <svg
@@ -195,29 +225,3 @@
     </button>
   </form>
 </div>
-
-<!--  -->
-@if (hasError()) {
-<div
-  role="alert"
-  class="alert alert-error bg-side-background/80 text-white border-none fixed bottom-5 right-6 animate-fade-in"
->
-  <div class="text-red-400">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="h-6 w-6 shrink-0 stroke-current"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  </div>
-  <span>Por favor verifique la información ingresada.</span>
-</div>
-
-}

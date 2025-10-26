@@ -4,10 +4,10 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { OrderService } from '../../services/order.service';
 import { OrderListComponent } from '../../components/order-list/order-list.component';
 import { OrderStatusComponent } from '../../components/order-header-status/order-header-status.component';
+import { OrderStatus } from '../../interfaces/order.interface';
+
 import { PaginationComponent } from '@src/app/shared/components/pagination/pagination.component';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
-import { OrderStatus } from '../../interfaces/order.interface';
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-orders-page',
@@ -21,7 +21,7 @@ export default class OrdersPageComponent {
   selectedOrderStatus = signal<OrderStatus | null>(null);
   tableNumber = signal<number | null>(null);
 
-  onStatusChange(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
+  onStatusChange(orderId: number, newStatus: OrderStatus) {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
         this.refreshResources();

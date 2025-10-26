@@ -52,12 +52,15 @@
 
 @if (selectedTable()) {
 <!--  -->
-@if(getActiveOrderByTable(selectedTable()?.id!)) {
+@if(getActiveOrderByTable(selectedTable()?.id!) && !modifyStatus()) {
 
 <app-order-view
   [selectedTable]="selectedTable()"
-  [activeOrder]="getActiveOrderByTable(selectedTable()?.id!)"
-  [textConfirm]="'Completar Orden'"
+  [activeOrder]="getActiveOrderByTable(selectedTable()?.id!)!"
+  [isAtm]="false"
+  [textConfirm]="'Completar Pedido'"
+  [changeStatusQuery]="orderStatus.COMPLETED"
+  (statusModifyModalChange)="onChangeModifyStatus($event)"
   (statusChange)="onChangeStatus($event.orderId, $event.newStatus)"
   (closeModal)="closeRegisterOrder()"
 />
@@ -67,8 +70,11 @@
 <app-register-order
   [selectedTable]="selectedTable()"
   [productTypes]="productTypes()"
+  [activeOrder]="getActiveOrderByTable(selectedTable()?.id!)"
   (orderCreated)="onOrderCreated($event)"
+  (orderUpdated)="onOrderUpdated($event.id, $event.order)"
   (closeModal)="closeRegisterOrder()"
+  (statusModifyModalChange)="onChangeModifyStatus($event)"
   (nameProductQuery)="productName($event)"
 />
 } }

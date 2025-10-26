@@ -12,6 +12,8 @@ export class LoginPageComponent {
   fb = inject(FormBuilder);
   hasError = signal(false);
   isPosting = signal(false);
+  showPassword = signal(false);
+  cleanInput = signal(false);
 
   private authService = inject(AuthService);
   router = inject(Router);
@@ -20,10 +22,9 @@ export class LoginPageComponent {
     username: ['', [Validators.required, Validators.minLength(4)]],
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
-  showPassword = false;
 
   togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
+    this.showPassword.set(!this.showPassword());
   }
 
   onSubmit() {
@@ -46,6 +47,7 @@ export class LoginPageComponent {
         }
 
         this.hasError.set(true);
+        this.loginForm.patchValue({ password: '' });
         setTimeout(() => {
           this.hasError.set(false);
         }, 2000);

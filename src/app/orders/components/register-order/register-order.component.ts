@@ -1,9 +1,10 @@
 import { Component, input, output, signal, viewChild } from '@angular/core';
 import { OrderProductsComponent } from './order-products/order-products.component';
 import { OrderSummaryComponent } from './order-summary/order-summary.component';
+import { ContentOrder, RequestOrder } from '../../interfaces/order.interface';
+
 import { Table } from '@src/app/tables/interfaces/table.interface';
 import { ProductType } from '@src/app/products/interfaces/product.type';
-import { RequestOrder } from '../../interfaces/order.interface';
 
 @Component({
   selector: 'app-register-order',
@@ -13,14 +14,17 @@ import { RequestOrder } from '../../interfaces/order.interface';
 export class RegisterOrderComponent {
   selectedTable = input<Table | null>();
   productTypes = input.required<ProductType[]>({});
+  modifyStatus = input<boolean>();
+  activeOrder = input<ContentOrder | null>();
 
   orderCreated = output<RequestOrder>();
-
+  orderUpdated = output<{ id: number; order: ContentOrder }>();
   closeModal = output<void>();
   nameProductQuery = output<string>();
+  statusModifyModalChange = output<boolean>();
 
   showCreateConfirmModal = signal<boolean>(false);
-  pendingOrderData = signal<RequestOrder | null>(null);
+  pendingOrderData = signal<RequestOrder | ContentOrder | null>(null);
 
   orderSummary = viewChild(OrderSummaryComponent);
 
@@ -33,16 +37,34 @@ export class RegisterOrderComponent {
     this.showCreateConfirmModal.set(true);
   }
 
+  onUpdateOrder(id: number, order: RequestOrder) {
+    this.pendingOrderData.set(order);
+    this.showCreateConfirmModal.set(true);
+  }
+
   confirmCreateOrder() {
     const orderData = this.pendingOrderData();
+    const activeOrder = this.activeOrder();
     if (orderData) {
-      this.orderCreated.emit(orderData);
+      if (activeOrder !== null && activeOrder !== undefined) {
+        const order = {
+          ...activeOrder,
+          ...orderData,
+        };
+
+        this.orderUpdated.emit({
+          id: this.activeOrder()?.id!,
+          order: order as ContentOrder,
+        });
+      } else {
+        this.orderCreated.emit(orderData as RequestOrder);
+      }
 
       this.orderSummary()?.clearCart();
 
       this.pendingOrderData.set(null);
       this.showCreateConfirmModal.set(false);
-      this.closeModal.emit();
+      this.onCloseModal();
     }
   }
 
@@ -53,5 +75,6 @@ export class RegisterOrderComponent {
 
   onCloseModal() {
     this.closeModal.emit();
+    this.statusModifyModalChange.emit(false);
   }
 }
