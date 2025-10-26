@@ -40,6 +40,8 @@ export class OrderService {
   envs = environment;
 
   createOrder(order: RequestOrder): Observable<ContentOrder> {
+    console.log('create order');
+
     return this.http
       .post<ContentOrder>(`${this.envs.API_URL}/orders/create`, {
         ...order,
@@ -177,6 +179,18 @@ export class OrderService {
           return throwError(
             () => new Error('Error al actualizar el estado de la orden')
           );
+        })
+      );
+  }
+
+  updateOrder(id: number, order: ContentOrder): Observable<ContentOrder> {
+    return this.http
+      .put<ContentOrder>(`${this.envs.API_URL}/orders/${id}`, order)
+      .pipe(
+        catchError((error) => {
+          console.error({ error });
+
+          return throwError(() => new Error('Error al actualizar la orden'));
         })
       );
   }

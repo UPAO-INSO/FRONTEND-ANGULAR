@@ -1,6 +1,7 @@
 import {
   ContentOrder,
   Order,
+  RequestOrder,
   RequestProductOrder,
 } from '../interfaces/order.interface';
 import { CartItem } from '../services/order-cart.service';
@@ -22,17 +23,26 @@ export class OrderMapper {
   }
 
   static mapCartItemToRequestProductOrder(
+    orderId: number,
     cartItem: CartItem
   ): RequestProductOrder {
     return {
+      orderId,
+      subtotal: cartItem.subtotal,
+      unitPrice: cartItem.product.price,
       productId: cartItem.product.id,
       quantity: cartItem.quantity,
     };
   }
 
   static mapCartItemsToRequestProductsOrder(
+    orderId: number,
     cartItems: CartItem[]
   ): RequestProductOrder[] {
-    return cartItems.map(OrderMapper.mapCartItemToRequestProductOrder);
+    return cartItems.map((item) =>
+      OrderMapper.mapCartItemToRequestProductOrder(orderId, item)
+    );
   }
+
+  // static mapRequestOrderToContentOrder(order: RequestOrder): {};
 }

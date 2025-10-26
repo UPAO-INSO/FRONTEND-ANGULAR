@@ -56,39 +56,33 @@ export class OrderListItemComponent {
   }
 
   getTextStatus(status: OrderStatus) {
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'Pendiente';
-      case OrderStatus.PREPARING:
-        return 'Preparando';
-      case OrderStatus.READY:
-        return 'Listo';
-      case OrderStatus.PAID:
-        return 'Pagado';
-      case OrderStatus.COMPLETED:
-        return 'Completado';
-      case OrderStatus.CANCELLED:
-        return 'Cancelado';
-      default:
-        return '';
-    }
+    const STATUS: Partial<Record<OrderStatus, string>> = {
+      [OrderStatus.PENDING]: 'Pendiente',
+      [OrderStatus.PREPARING]: 'Preparando',
+      [OrderStatus.READY]: 'Listo',
+      [OrderStatus.PAID]: 'Pagado',
+      [OrderStatus.COMPLETED]: 'Completado',
+      [OrderStatus.CANCELLED]: 'Cancelado',
+    };
+
+    return STATUS[status] ?? '';
   }
 
   getHoverBackgroundColor(status: OrderStatus): string {
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'bg-gradient-to-r from-status-pending to-side-background';
-      case OrderStatus.PREPARING:
-        return 'bg-gradient-to-r from-status-preparing to-transparent';
-      case OrderStatus.READY:
-        return 'bg-gradient-to-r from-status-ready to-transparent';
-      case OrderStatus.CANCELLED:
-        return 'bg-gradient-to-r from-status-cancelled to-transparent';
-      case OrderStatus.PAID:
-        return 'bg-gradient-to-r from-status-paid to-transparent';
-      default:
-        return 'bg-gradient-to-r from-status-completed to-transparent';
-    }
+    const STATUS: Partial<Record<OrderStatus, string>> = {
+      [OrderStatus.PENDING]:
+        'bg-gradient-to-r from-status-pending to-side-background',
+      [OrderStatus.PREPARING]:
+        'bg-gradient-to-r from-status-preparing to-transparent',
+      [OrderStatus.READY]: 'bg-gradient-to-r from-status-ready to-transparent',
+      [OrderStatus.PAID]: 'bg-gradient-to-r from-status-paid to-transparent',
+      [OrderStatus.COMPLETED]:
+        'bg-gradient-to-r from-status-completed to-transparent',
+      [OrderStatus.CANCELLED]:
+        'bg-gradient-to-r from-status-cancelled to-transparent',
+    };
+
+    return STATUS[status] ?? '';
   }
 
   getTextOrderStatus(status: OrderStatus): {

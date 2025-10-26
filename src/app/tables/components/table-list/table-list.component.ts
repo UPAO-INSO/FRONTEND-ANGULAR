@@ -23,16 +23,16 @@ import { TableListItemComponent } from './table-list-item/table-list-item.compon
 })
 export class TableListComponent {
   tables = input.required<ContentTable[]>();
-  activeOrdersByTable = input<Map<number, ContentOrder>>(new Map());
-
+  modifyStatus = input.required<boolean>();
   productTypes = input.required<ProductType[]>({});
+  tableStatusEnum = input.required<typeof TableStatus>();
 
+  activeOrdersByTable = input<Map<number, ContentOrder>>(new Map());
   isEmpty = input<boolean>(false);
   isLoading = input<boolean>(false);
   errorMessage = input<string | unknown | null>();
 
   orderStatus = OrderStatus;
-  tableStatusEnum = input.required<typeof TableStatus>();
 
   statusChange = output<{
     orderId: number;
@@ -40,7 +40,9 @@ export class TableListComponent {
   }>();
   refresh = output<void>();
   orderCreated = output<RequestOrder>();
+  orderUpdated = output<{ id: number; order: ContentOrder }>();
   productNameQuery = output<string>();
+  modifyStatusChanged = output<boolean>();
 
   selectedTable = signal<Table | null>(null);
   selectedProductCategory = signal<ProductType | null>(null);
@@ -49,12 +51,20 @@ export class TableListComponent {
     this.productNameQuery.emit(name);
   }
 
+  onChangeModifyStatus(status: boolean) {
+    this.modifyStatusChanged.emit(status);
+  }
+
   onChangeStatus(orderId: number, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 
   onOrderCreated(orderData: RequestOrder) {
     this.orderCreated.emit(orderData);
+  }
+
+  onOrderUpdated(id: number, order: ContentOrder) {
+    this.orderUpdated.emit({ id, order });
   }
 
   openRegisterOrder(table: Table) {

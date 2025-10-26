@@ -1,21 +1,23 @@
 import {
   Component,
   computed,
+  effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { OrderSummaryItemComponent } from './order-summary-item/order-summary-item.component';
-import { OrderSummaryTotalComponent } from './order-summary-total/order-summary-total.component';
 import { firstValueFrom } from 'rxjs';
-import { Table } from '@src/app/tables/interfaces/table.interface';
-import { OrderCartService } from '@src/app/orders/services/order-cart.service';
 import { TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+import { OrderCartService } from '@src/app/orders/services/order-cart.service';
+import { Table } from '@src/app/tables/interfaces/table.interface';
 import {
+  ContentOrder,
   PersonByFullName,
   PersonResponse,
+  ProductOrder,
   RequestOrder,
   RequestOrderEmployee,
   RequestProductOrder,
@@ -23,6 +25,10 @@ import {
 import { OrderMapper } from '@src/app/orders/mapper/order.mapper';
 import { User } from '@auth/interfaces/user.interfaces';
 import { OrderService } from '@src/app/orders/services/order.service';
+
+import { OrderSummaryItemComponent } from './order-summary-item/order-summary-item.component';
+import { OrderSummaryTotalComponent } from './order-summary-total/order-summary-total.component';
+import { ProductService } from '@src/app/products/services/product.service';
 
 @Component({
   selector: 'app-order-summary',
@@ -37,16 +43,20 @@ import { OrderService } from '@src/app/orders/services/order.service';
 export class OrderSummaryComponent {
   private orderCartService = inject(OrderCartService);
   private orderService = inject(OrderService);
+  private productService = inject(ProductService);
 
   createOrder = output<RequestOrder>();
+  updateOrder = output<{ id: number; order: RequestOrder }>();
   searchFullName = output<PersonByFullName>();
 
   selectedTable = input<Table | null | undefined>(null);
+  activeOrder = input<ContentOrder | null>();
 
   cartItems = this.orderCartService.cartItems;
   totalItems = this.orderCartService.totalItems;
-  comment = signal<string>('');
 
+  comment = signal<string>('');
+  private orderLoaded = signal<number | null>(null);
   private _user = signal<User | null>(
     localStorage.getItem('user-data')
       ? JSON.parse(localStorage.getItem('user-data')!)
@@ -57,7 +67,61 @@ export class OrderSummaryComponent {
 
   commentLength = computed(() => this.comment().length);
 
+  constructor() {
+    effect(() => {
+      const order = this.activeOrder();
+      const table = this.selectedTable();
+
+      if (!order || !table) {
+        return;
+      }
+
+      if (this.orderLoaded() === order.id) {
+        return;
+      }
+
+      this.loadOrderToCart(order, table.id);
+
+      this.orderLoaded.set(order.id);
+
+      if (order.comment) {
+        this.comment.set(order.comment);
+      }
+    });
+  }
+
+  private async loadOrderToCart(order: ContentOrder, tableId: number) {
+    this.orderCartService.setCurrentTable(tableId);
+
+    const productIds = order.productOrders.map((po) => po.productId);
+
+    const products = await firstValueFrom(
+      this.productService.fetchProductsByIds(productIds)
+    );
+
+    const productsMap = new Map(products.map((p) => [p.id, p]));
+
+    order.productOrders.forEach((productOrder) => {
+      const product = productsMap.get(productOrder.productId);
+
+      if (product) {
+        this.orderCartService.addProductWithQuantity(
+          product,
+          productOrder.quantity
+        );
+      } else {
+        console.warn(
+          `Producto no encontrado en DB: ID ${productOrder.productId}`
+        );
+      }
+    });
+  }
+
   async onSubmitOrder() {
+    const activeOrder = this.activeOrder();
+
+    if (!activeOrder || activeOrder === undefined) return;
+
     if (this._user() === null) return;
 
     const personRequest: PersonByFullName = {
@@ -75,7 +139,10 @@ export class OrderSummaryComponent {
     ];
 
     const productOrders: RequestProductOrder[] =
-      OrderMapper.mapCartItemsToRequestProductsOrder(this.cartItems());
+      OrderMapper.mapCartItemsToRequestProductsOrder(
+        activeOrder.id,
+        this.cartItems()
+      );
 
     if (orderEmployees.length === 0 || productOrders.length === 0) return;
 
@@ -86,7 +153,12 @@ export class OrderSummaryComponent {
       tableId: this.selectedTable()?.id!,
     };
 
-    this.createOrder.emit(orderData);
+    if (this.activeOrder() !== null) {
+      const id = this.activeOrder()?.id!;
+      this.updateOrder.emit({ id, order: orderData });
+    } else {
+      this.createOrder.emit(orderData);
+    }
   }
 
   clearCart() {

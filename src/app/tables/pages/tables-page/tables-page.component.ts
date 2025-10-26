@@ -36,6 +36,7 @@ export class TablesPageComponent {
   tableStatusEnum = TableStatus;
   selectedTableStatus = signal<TableStatus | null>(null);
   productNameQuery = signal<string | null>(null);
+  modifyStatusChanged = signal<boolean>(false);
 
   private currentTableIds = signal<number[]>([]);
 
@@ -126,6 +127,10 @@ export class TablesPageComponent {
     },
   });
 
+  onModifyStatusChanged(status: boolean) {
+    this.modifyStatusChanged.set(status);
+  }
+
   getActiveOrderByTable(tableId: number): ContentOrder | null {
     return this.activeOrdersByTable().get(tableId) || null;
   }
@@ -135,9 +140,20 @@ export class TablesPageComponent {
     this.activeOrdersResource.reload();
   }
 
+  onOrderUpdated(id: number, order: ContentOrder) {
+    this.orderService.updateOrder(id, order).subscribe({
+      next: () => {
+        this.refreshResources();
+      },
+      error: (error) => {
+        console.error('Error creating order:', error);
+      },
+    });
+  }
+
   onOrderCreated(orderData: RequestOrder) {
     this.orderService.createOrder(orderData).subscribe({
-      next: (response) => {
+      next: () => {
         this.refreshResources();
       },
       error: (error) => {

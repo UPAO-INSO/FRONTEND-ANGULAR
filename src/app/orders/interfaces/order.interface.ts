@@ -85,6 +85,9 @@ export interface RequestOrderEmployee {
 }
 
 export interface RequestProductOrder {
-  productId: number;
   quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  orderId: number;
+  productId: number;
 }
