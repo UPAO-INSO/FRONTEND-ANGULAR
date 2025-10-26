@@ -1,16 +1,13 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
+
 import { ChangeStatusProductComponent } from '@products/components/change-status-product/change-status-product.component';
 import {
   ProductType,
   PartialProductUpdate,
 } from '@products/interfaces/product.type';
 
-import {
-  ContentKitchen,
-  KitchenOrderStatus,
-} from '../../interfaces/kitchen-order.interface';
 import { ContentOrder, OrderStatus } from '@orders/interfaces/order.interface';
 import { SearchInputComponent } from '@src/app/tables/components/search-input/search-input.component';
 
@@ -36,7 +33,7 @@ export class KitchenNavComponent {
   selectedButtonProducts = signal<boolean>(false);
 
   updatedProductStaus = output<PartialProductUpdate>();
-  statusChange = output<{ orderId: number; newStatus: KitchenOrderStatus }>();
+  statusChange = output<{ orderId: number; newStatus: OrderStatus }>();
   refresh = output<void>();
   closeModal = output<void>();
   value = output<number>();
@@ -49,8 +46,6 @@ export class KitchenNavComponent {
 
     return ordersList.filter(
       (order) =>
-        order.orderStatus === KitchenOrderStatus.PREPARING ||
-        order.orderStatus === KitchenOrderStatus.PENDING ||
         order.orderStatus === OrderStatus.PENDING ||
         order.orderStatus === OrderStatus.PREPARING
     ).length;
@@ -73,7 +68,7 @@ export class KitchenNavComponent {
     this.closeModal.emit();
   }
 
-  onStatusChange(orderId: number, newStatus: KitchenOrderStatus) {
+  onStatusChange(orderId: number, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 

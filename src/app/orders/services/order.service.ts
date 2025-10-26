@@ -4,17 +4,12 @@ import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import {
   ContentOrder,
   OrderStatus,
+  PersonByFullName,
+  PersonResponse,
   RequestOrder,
   RESTOrder,
 } from '../interfaces/order.interface';
 import { environment } from '@environments/environment';
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
-
-const kitchenStatus = [
-  KitchenOrderStatus.PENDING,
-  KitchenOrderStatus.PREPARING,
-  KitchenOrderStatus.READY,
-];
 
 const atmStatus = [
   OrderStatus.PENDING,
@@ -23,9 +18,16 @@ const atmStatus = [
   OrderStatus.PAID,
 ];
 
+enum Direction {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
 interface Options {
   limit?: number;
   page?: number;
+  sortField?: string;
+  direction?: Direction;
   status?: OrderStatus | OrderStatus[];
 }
 
@@ -38,6 +40,8 @@ export class OrderService {
   envs = environment;
 
   createOrder(order: RequestOrder): Observable<ContentOrder> {
+    console.log('create order');
+
     return this.http
       .post<ContentOrder>(`${this.envs.API_URL}/orders/create`, {
         ...order,
@@ -46,6 +50,18 @@ export class OrderService {
         catchError((error) => {
           console.error('OrderService error:', error);
           return throwError(() => 'No se pudo crear ordenes');
+        })
+      );
+  }
+
+  searchPersonByFullName(person: PersonByFullName): Observable<PersonResponse> {
+    return this.http
+      .post<PersonResponse>(`${this.envs.API_URL}/persons/by-full-name`, person)
+      .pipe(
+        catchError((error) => {
+          console.log({ error });
+
+          return throwError(() => new Error('Error al obtener persona'));
         })
       );
   }
@@ -61,7 +77,6 @@ export class OrderService {
         },
       })
       .pipe(
-        // tap((resp) => console.log({ resp })),
         catchError((error) => {
           console.log({ error });
 
@@ -129,29 +144,6 @@ export class OrderService {
       );
   }
 
-  fetchKitchenOrders(options: Options): Observable<RESTOrder> {
-    const { page = 1, limit = 11 } = options;
-
-    return this.http
-      .post<RESTOrder>(
-        `${this.envs.API_URL}/orders/filter-array-status`,
-        [...kitchenStatus],
-        {
-          params: {
-            page,
-            limit,
-          },
-        }
-      )
-      .pipe(
-        catchError((error) => {
-          console.log({ error });
-
-          return throwError(() => new Error('No se pudo obtener ordenes'));
-        })
-      );
-  }
-
   fetchAtmOrders(options: Options): Observable<RESTOrder> {
     const { page = 1, limit = 5 } = options;
 
@@ -177,7 +169,7 @@ export class OrderService {
 
   updateOrderStatus(
     orderId: number,
-    status: OrderStatus | KitchenOrderStatus
+    status: OrderStatus
   ): Observable<ContentOrder[]> {
     return this.http
       .patch<any>(`${this.envs.API_URL}/orders/status`, { status, orderId })
@@ -187,6 +179,18 @@ export class OrderService {
           return throwError(
             () => new Error('Error al actualizar el estado de la orden')
           );
+        })
+      );
+  }
+
+  updateOrder(id: number, order: ContentOrder): Observable<ContentOrder> {
+    return this.http
+      .put<ContentOrder>(`${this.envs.API_URL}/orders/${id}`, order)
+      .pipe(
+        catchError((error) => {
+          console.error({ error });
+
+          return throwError(() => new Error('Error al actualizar la orden'));
         })
       );
   }

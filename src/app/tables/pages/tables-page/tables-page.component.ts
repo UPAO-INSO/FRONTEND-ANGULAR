@@ -11,7 +11,6 @@ import {
   RequestOrder,
 } from '@src/app/orders/interfaces/order.interface';
 
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 
 import { TableService } from '../../services/table.service';
@@ -37,6 +36,7 @@ export class TablesPageComponent {
   tableStatusEnum = TableStatus;
   selectedTableStatus = signal<TableStatus | null>(null);
   productNameQuery = signal<string | null>(null);
+  modifyStatusChanged = signal<boolean>(false);
 
   private currentTableIds = signal<number[]>([]);
 
@@ -127,6 +127,10 @@ export class TablesPageComponent {
     },
   });
 
+  onModifyStatusChanged(status: boolean) {
+    this.modifyStatusChanged.set(status);
+  }
+
   getActiveOrderByTable(tableId: number): ContentOrder | null {
     return this.activeOrdersByTable().get(tableId) || null;
   }
@@ -136,9 +140,9 @@ export class TablesPageComponent {
     this.activeOrdersResource.reload();
   }
 
-  onOrderCreated(orderData: RequestOrder) {
-    this.orderService.createOrder(orderData).subscribe({
-      next: (response) => {
+  onOrderUpdated(id: number, order: ContentOrder) {
+    this.orderService.updateOrder(id, order).subscribe({
+      next: () => {
         this.refreshResources();
       },
       error: (error) => {
@@ -147,7 +151,18 @@ export class TablesPageComponent {
     });
   }
 
-  onStatusChange(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
+  onOrderCreated(orderData: RequestOrder) {
+    this.orderService.createOrder(orderData).subscribe({
+      next: () => {
+        this.refreshResources();
+      },
+      error: (error) => {
+        console.error('Error creating order:', error);
+      },
+    });
+  }
+
+  onStatusChange(orderId: number, newStatus: OrderStatus) {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
         this.refreshResources();

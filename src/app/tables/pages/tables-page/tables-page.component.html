@@ -7,8 +7,11 @@
   [isEmpty]="(tablesResource.value()?.content?.length ?? 0) === 0"
   [isLoading]="tablesResource.isLoading()"
   [activeOrdersByTable]="activeOrdersByTable()"
+  [modifyStatus]="modifyStatusChanged()"
+  (modifyStatusChanged)="onModifyStatusChanged($event)"
   (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
   (orderCreated)="onOrderCreated($event)"
+  (orderUpdated)="onOrderUpdated($event.id, $event.order)"
   (productNameQuery)="productNameQuery.set($event)"
   (refresh)="onRefresh()"
 />

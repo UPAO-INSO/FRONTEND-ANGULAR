@@ -15,7 +15,7 @@
       </g>
     </svg>
     <span class="text-sm md:text-base font-bold text-white">
-      {{ user()?.fullName | titlecase }}
+      {{ user()?.name | titlecase }} + {{ user()?.lastname }}
     </span>
   </a>
   } @else {}

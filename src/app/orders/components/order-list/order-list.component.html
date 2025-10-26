@@ -34,10 +34,12 @@
     />
     }
   </div>
-  } @if (selectedOrder()) {
+  } @if (selectedOrder() !== null) {
   <app-order-view
-    [activeOrder]="selectedOrder()"
+    [activeOrder]="selectedOrder()!"
+    [isAtm]="true"
     [textConfirm]="'Marcar como Pagado'"
+    [changeStatusQuery]="orderStatus.PAID"
     (statusChange)="onChangeStatus($event.orderId, $event.newStatus)"
     (closeModal)="closeViewOrder()"
   />

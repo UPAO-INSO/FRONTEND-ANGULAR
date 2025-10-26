@@ -1,9 +1,6 @@
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
-import {
-  KitchenOrder,
-  KitchenOrderStatus,
-} from '@kitchen/interfaces/kitchen-order.interface';
+
 import {
   ContentOrder,
   OrderStatus,
@@ -25,7 +22,7 @@ export class OrderListItemComponent {
     this.orderSelected.emit(this.order());
   }
 
-  getOrderAmPm(order: ContentOrder | KitchenOrder) {
+  getOrderAmPm(order: ContentOrder) {
     if (!order || !order.createdAt) return '';
 
     const date = new Date(order.createdAt);
@@ -58,43 +55,37 @@ export class OrderListItemComponent {
     return `Productos: ${productNames.join(', ')}`;
   }
 
-  getTextStatus(status: OrderStatus | KitchenOrderStatus) {
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'Pendiente';
-      case OrderStatus.PREPARING:
-        return 'Preparando';
-      case OrderStatus.READY:
-        return 'Listo';
-      case OrderStatus.PAID:
-        return 'Pagado';
-      case OrderStatus.COMPLETED:
-        return 'Completado';
-      case OrderStatus.CANCELLED:
-        return 'Cancelado';
-      default:
-        return '';
-    }
+  getTextStatus(status: OrderStatus) {
+    const STATUS: Partial<Record<OrderStatus, string>> = {
+      [OrderStatus.PENDING]: 'Pendiente',
+      [OrderStatus.PREPARING]: 'Preparando',
+      [OrderStatus.READY]: 'Listo',
+      [OrderStatus.PAID]: 'Pagado',
+      [OrderStatus.COMPLETED]: 'Completado',
+      [OrderStatus.CANCELLED]: 'Cancelado',
+    };
+
+    return STATUS[status] ?? '';
   }
 
-  getHoverBackgroundColor(status: OrderStatus | KitchenOrderStatus): string {
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'bg-gradient-to-r from-status-pending to-side-background';
-      case OrderStatus.PREPARING:
-        return 'bg-gradient-to-r from-status-preparing to-transparent';
-      case OrderStatus.READY:
-        return 'bg-gradient-to-r from-status-ready to-transparent';
-      case OrderStatus.CANCELLED:
-        return 'bg-gradient-to-r from-status-cancelled to-transparent';
-      case OrderStatus.PAID:
-        return 'bg-gradient-to-r from-status-paid to-transparent';
-      default:
-        return 'bg-gradient-to-r from-status-completed to-transparent';
-    }
+  getHoverBackgroundColor(status: OrderStatus): string {
+    const STATUS: Partial<Record<OrderStatus, string>> = {
+      [OrderStatus.PENDING]:
+        'bg-gradient-to-r from-status-pending to-side-background',
+      [OrderStatus.PREPARING]:
+        'bg-gradient-to-r from-status-preparing to-transparent',
+      [OrderStatus.READY]: 'bg-gradient-to-r from-status-ready to-transparent',
+      [OrderStatus.PAID]: 'bg-gradient-to-r from-status-paid to-transparent',
+      [OrderStatus.COMPLETED]:
+        'bg-gradient-to-r from-status-completed to-transparent',
+      [OrderStatus.CANCELLED]:
+        'bg-gradient-to-r from-status-cancelled to-transparent',
+    };
+
+    return STATUS[status] ?? '';
   }
 
-  getOrderStatus(status: OrderStatus | KitchenOrderStatus): {
+  getTextOrderStatus(status: OrderStatus): {
     class: string;
     text: string;
   } {
@@ -120,7 +111,7 @@ export class OrderListItemComponent {
     }
   }
 
-  getBorderOrderStatus(status: OrderStatus | KitchenOrderStatus) {
+  getBorderOrderStatus(status: OrderStatus) {
     switch (status) {
       case OrderStatus.PENDING:
         return 'border-status-pending ';

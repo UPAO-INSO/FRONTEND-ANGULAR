@@ -4,7 +4,6 @@ import { tap } from 'rxjs';
 
 import { KitchenNavComponent } from '@kitchen/components/kitchen-nav/kitchen-nav.component';
 import { KitchenOrderListComponent } from '@kitchen/components/order-list/kitchen-order-list.component';
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 import { KitchenService } from '@kitchen/services/kitchen.service';
 
 import { PartialProductUpdate } from '@products/interfaces/product.type';
@@ -12,6 +11,7 @@ import { ProductService } from '@products/services/product.service';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 
 import { OrderService } from '@orders/services/order.service';
+import { OrderStatus } from '@src/app/orders/interfaces/order.interface';
 
 @Component({
   selector: 'app-kitchen-page',
@@ -64,7 +64,7 @@ export default class KitchenPageComponent {
     });
   }
 
-  onStatusChange(orderId: number, newStatus: KitchenOrderStatus) {
+  onStatusChange(orderId: number, newStatus: OrderStatus) {
     this.kitchenService.updateOrderStatus(orderId, newStatus).subscribe({
       next: () => {
         this.onRefresh();

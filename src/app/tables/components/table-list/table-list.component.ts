@@ -3,7 +3,6 @@ import { Component, input, output, signal } from '@angular/core';
 import { RegisterOrderComponent } from '@src/app/orders/components/register-order/register-order.component';
 import { ProductType } from '@src/app/products/interfaces/product.type';
 import { OrderViewComponent } from '@src/app/orders/components/order-view/order-view.component';
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 import {
   ContentOrder,
   OrderStatus,
@@ -24,24 +23,26 @@ import { TableListItemComponent } from './table-list-item/table-list-item.compon
 })
 export class TableListComponent {
   tables = input.required<ContentTable[]>();
-  activeOrdersByTable = input<Map<number, ContentOrder>>(new Map());
-
+  modifyStatus = input.required<boolean>();
   productTypes = input.required<ProductType[]>({});
+  tableStatusEnum = input.required<typeof TableStatus>();
 
+  activeOrdersByTable = input<Map<number, ContentOrder>>(new Map());
   isEmpty = input<boolean>(false);
   isLoading = input<boolean>(false);
   errorMessage = input<string | unknown | null>();
 
-  orderStatus = input<OrderStatus>();
-  tableStatusEnum = input.required<typeof TableStatus>();
+  orderStatus = OrderStatus;
 
   statusChange = output<{
     orderId: number;
-    newStatus: OrderStatus | KitchenOrderStatus;
+    newStatus: OrderStatus;
   }>();
   refresh = output<void>();
   orderCreated = output<RequestOrder>();
+  orderUpdated = output<{ id: number; order: ContentOrder }>();
   productNameQuery = output<string>();
+  modifyStatusChanged = output<boolean>();
 
   selectedTable = signal<Table | null>(null);
   selectedProductCategory = signal<ProductType | null>(null);
@@ -50,12 +51,20 @@ export class TableListComponent {
     this.productNameQuery.emit(name);
   }
 
-  onChangeStatus(orderId: number, newStatus: OrderStatus | KitchenOrderStatus) {
+  onChangeModifyStatus(status: boolean) {
+    this.modifyStatusChanged.emit(status);
+  }
+
+  onChangeStatus(orderId: number, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 
   onOrderCreated(orderData: RequestOrder) {
     this.orderCreated.emit(orderData);
+  }
+
+  onOrderUpdated(id: number, order: ContentOrder) {
+    this.orderUpdated.emit({ id, order });
   }
 
   openRegisterOrder(table: Table) {

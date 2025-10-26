@@ -2,7 +2,6 @@ import { Component, inject, input, output, signal } from '@angular/core';
 import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Table } from '@src/app/tables/interfaces/table.interface';
-import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface';
 
 @Component({
   selector: 'app-order-view',
@@ -10,25 +9,43 @@ import { KitchenOrderStatus } from '@kitchen/interfaces/kitchen-order.interface'
   templateUrl: './order-view.component.html',
 })
 export class OrderViewComponent {
-  activeOrder = input<ContentOrder | null>(null);
   selectedTable = input<Table | null>();
+  activeOrder = input.required<ContentOrder>();
+  isAtm = input.required<boolean>();
   textConfirm = input.required<string>();
+  changeStatusQuery = input.required<OrderStatus>();
 
   statusChange = output<{
     orderId: number;
-    newStatus: OrderStatus | KitchenOrderStatus;
+    newStatus: OrderStatus;
   }>();
+  statusModifyModalChange = output<boolean>();
+
   orderStatus = OrderStatus;
 
   closeModal = output<void>();
 
   showConfirmModal = signal<boolean>(false);
+  showConfirmModifyModal = signal<boolean>(false);
+
+  onStatusConfirmModifyModalChange() {
+    this.showConfirmModifyModal.set(true);
+  }
+
+  cancelConfirmModifyModalChange() {
+    this.showConfirmModifyModal.set(false);
+  }
 
   onStatusChange() {
     this.showConfirmModal.set(true);
   }
 
-  confirmStatusChange(status: OrderStatus | KitchenOrderStatus) {
+  confirmStatusModifyModalChange(status: boolean) {
+    this.showConfirmModifyModal.set(false);
+    this.statusModifyModalChange.emit(status);
+  }
+
+  confirmStatusChange(status: OrderStatus) {
     const orderId = this.activeOrder()?.id;
     if (orderId) {
       this.statusChange.emit({ orderId, newStatus: status });
@@ -46,12 +63,7 @@ export class OrderViewComponent {
   }
 
   calcSubtotal(): number {
-    const order = this.activeOrder();
-    if (!order || !order.productOrders) return 0;
-
-    return order.productOrders.reduce((total, product) => {
-      return total + (product.subtotal || 0);
-    }, 0);
+    return this.activeOrder()?.totalPrice!;
   }
 
   calcTax(): number {
@@ -74,42 +86,32 @@ export class OrderViewComponent {
   }
 
   getColorOrderInTableStatus(order: ContentOrder) {
-    switch (order.orderStatus) {
-      case OrderStatus.PREPARING:
-        return 'bg-status-preparing';
-      case OrderStatus.PENDING:
-        return 'bg-status-pending';
-      case OrderStatus.READY:
-        return 'bg-status-ready';
-      case OrderStatus.CANCELLED:
-        return 'bg-status-cancelled';
-      case OrderStatus.COMPLETED:
-        return 'bg-status-completed';
-      case OrderStatus.PAID:
-        return 'bg-status-paid';
-      default:
-        return '';
-    }
+    const status = order.orderStatus;
+
+    const STATUS: Partial<Record<OrderStatus, string>> = {
+      [OrderStatus.PENDING]: 'bg-status-pending',
+      [OrderStatus.PREPARING]: 'bg-status-preparing',
+      [OrderStatus.READY]: 'bg-status-ready',
+      [OrderStatus.PAID]: 'bg-status-paid',
+      [OrderStatus.COMPLETED]: 'bg-status-completed',
+      [OrderStatus.CANCELLED]: 'bg-status-cancelled',
+    };
+
+    return STATUS[status];
   }
 
-  getOrderStatusText(order: ContentOrder | null) {
-    if (!order) return '';
+  getOrderStatusText(order: ContentOrder) {
+    const status = order.orderStatus;
 
-    switch (order.orderStatus) {
-      case OrderStatus.PREPARING:
-        return 'Preparando';
-      case OrderStatus.PENDING:
-        return 'Pendiente';
-      case OrderStatus.READY:
-        return 'Listo';
-      case OrderStatus.CANCELLED:
-        return 'Cancelado';
-      case OrderStatus.COMPLETED:
-        return 'Completado';
-      case OrderStatus.PAID:
-        return 'Pagado';
-      default:
-        return '';
-    }
+    const STATUS: Partial<Record<OrderStatus, string>> = {
+      [OrderStatus.PENDING]: 'Pendiente',
+      [OrderStatus.PREPARING]: 'Preparando',
+      [OrderStatus.READY]: 'Listo',
+      [OrderStatus.PAID]: 'Pagado',
+      [OrderStatus.COMPLETED]: 'Completado',
+      [OrderStatus.CANCELLED]: 'Cancelado',
+    };
+
+    return STATUS[status];
   }
 }
