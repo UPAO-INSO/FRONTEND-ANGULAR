@@ -1,21 +1,21 @@
 <div
-  class="card bg-side-background shadow-lg hover:shadow-xl cursor-pointer h-full min-h-[200px] flex flex-col justify-center items-center transition-all duration-200 hover:scale-[0.98] relative overflow-hidden p-6"
+  class="card bg-side-background shadow-lg hover:shadow-xl cursor-pointer h-full min-h-[160px] sm:min-h-[200px] flex flex-col justify-center items-center transition-all duration-200 hover:scale-[0.98] active:scale-95 relative overflow-hidden p-3 sm:p-4 md:p-6"
   (click)="onTableClick()"
 >
   <!--  -->
   @if (hasCartOrders()) {
   <div
-    class="absolute top-4 left-4 w-3 h-3 bg-orange-500 rounded-full z-10 animate-pulse"
+    class="absolute top-2 sm:top-4 left-2 sm:left-4 w-2 sm:w-3 h-2 sm:h-3 bg-orange-500 rounded-full z-10 animate-pulse"
   ></div>
   }
 
+  <!-- Icono de mesa -->
   <div
-    class="w-full h-30 mt-3 flex flex-col items-center justify-center text-gray-200"
+    class="w-full h-auto mt-2 sm:mt-3 flex flex-col items-center justify-center text-gray-200"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="90"
-      height="90"
+      class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24"
       viewBox="0 0 24 24"
     >
       <path
@@ -26,38 +26,40 @@
   </div>
 
   <!--  -->
-  <div class="mx-4 mb-4">
+  <div class="mx-2 sm:mx-4 mb-2 sm:mb-4 w-full">
     @if (table().status === tableStatus().AVAILABLE) {
-    <div class="flex flex-col items-center justify-center mt-3">
+    <div class="flex flex-col items-center justify-center mt-2 sm:mt-3">
       <span
-        class="badge badge-sm bg-gray-700/50 text-sky-500 font-bold border-0"
+        class="badge badge-xs sm:badge-sm bg-gray-700/50 text-sky-500 font-bold border-0 text-[10px] sm:text-xs"
         >{{ getStatus(table().status) | titlecase }}</span
       >
     </div>
     <div
       aria-label="status"
-      class="status status-lg absolute top-4 right-4 {{
+      class="status status-sm sm:status-md lg:status-lg absolute top-2 sm:top-4 right-2 sm:right-4 {{
         activeOrder() ? getOrderInTableStatus(activeOrder()!) : {}
       }}"
     ></div>
     } @else{
-    <div class="flex flex-col items-center justify-center mt-3">
+    <div class="flex flex-col items-center justify-center mt-2 sm:mt-3">
       <span
-        class="badge badge-sm bg-gray-700/50 text-amber-500 font-bold border-0"
+        class="badge badge-xs sm:badge-sm bg-gray-700/50 text-amber-500 font-bold border-0 text-[10px] sm:text-xs"
         >{{ getStatus(table().status) | titlecase }}</span
       >
     </div>
     <div
       aria-label="status"
-      class="status status-lg absolute top-4 right-4 {{
+      class="status status-sm sm:status-md lg:status-lg absolute top-2 sm:top-4 right-2 sm:right-4 {{
         activeOrder() ? getOrderInTableStatus(activeOrder()!) : ''
       }}"
     ></div>
     }
 
     <!--  -->
-    <div class="flex flex-col items-center justify-center my-3">
-      <h2 class="card-title text-2xl font-bold mt-0 text-gray-200">
+    <div class="flex flex-col items-center justify-center my-2 sm:my-3">
+      <h2
+        class="card-title text-base sm:text-xl md:text-2xl font-bold mt-0 text-gray-200 text-center"
+      >
         Mesa {{ table().number }}
       </h2>
     </div>

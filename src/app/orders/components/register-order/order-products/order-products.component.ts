@@ -75,7 +75,6 @@ export class OrderProductsComponent {
     params: () => ({
       categoryId: this.selectedCategoryId(),
       refreshTrigger: this.productService.refreshTrigger$(),
-      // usar el valor debounced en lugar del valor inmediato del input
       search: this.debouncedSearch(),
     }),
     stream: ({ params }) => {

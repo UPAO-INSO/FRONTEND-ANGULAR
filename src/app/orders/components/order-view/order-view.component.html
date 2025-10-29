@@ -1,94 +1,118 @@
 <div
-  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4"
 >
   <div
-    class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-dropdown-scrollbar rounded-2xl text-white"
+    class="relative w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto custom-dropdown-scrollbar rounded-lg sm:rounded-2xl text-white"
   >
     <div class="bg-side-background">
       <div
         class="bg-background-light dark:bg-background-dark/50 rounded-lg shadow-md"
       >
+        <!-- Header -->
         <header
-          class="p-6 border-b border-gray-500 sticky top-0 z-10 bg-background/50 backdrop-blur-sm transition-all duration-200 shadow-sm"
+          class="p-4 sm:p-6 border-b border-gray-500 sticky top-0 z-10 bg-background/50 backdrop-blur-sm transition-all duration-200 shadow-sm"
         >
-          <h2 class="text-2xl font-bold">
-            Table {{ selectedTable()?.id }} - Detalle
+          <h2 class="text-xl sm:text-2xl font-bold pr-8">
+            Mesa {{ selectedTable()?.number }} - Detalle
           </h2>
-          <p class="text-sm mt-1 text-gray-400">
-            Order #{{ activeOrder().id }}
+          <p class="text-xs sm:text-sm mt-1 text-gray-400">
+            Orden #{{ activeOrder().id }}
           </p>
           <button
-            class="absolute top-7 right-5 z-20 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer transition-colors"
+            class="absolute top-4 sm:top-7 right-3 sm:right-5 z-20 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer transition-colors p-2 hover:bg-gray-800 rounded-full active:scale-95"
             (click)="onCloseModal()"
+            aria-label="Cerrar"
           >
-            <span class="fa-solid fa-xmark text-xl"></span>
+            <span class="fa-solid fa-xmark text-lg sm:text-xl"></span>
           </button>
         </header>
-        <main class="p-6 space-y-6">
-          <section class="bg-gray-900/40 rounded-xl p-8">
-            <h3 class="text-lg font-semibold mb-4">Resumen</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div class="flex justify-start">
-                <span class="text-gray-400 font-medium mr-10">Estado:</span>
+
+        <main class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <!-- Summary Section -->
+          <section class="bg-gray-900/40 rounded-xl p-4 sm:p-6 md:p-8">
+            <h3 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+              Resumen
+            </h3>
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm"
+            >
+              <!-- Status -->
+              <div
+                class="flex flex-col sm:flex-row sm:justify-start gap-1 sm:gap-0"
+              >
+                <span class="text-gray-400 font-medium sm:mr-10">Estado:</span>
                 <span
-                  class="badge font-semibold text-white {{
+                  class="badge font-semibold text-white w-fit {{
                     activeOrder()
                       ? getColorOrderInTableStatus(activeOrder()!)
                       : {}
                   }}"
                 >
-                  {{ getOrderStatusText(activeOrder()!) }}</span
-                >
+                  {{ getOrderStatusText(activeOrder()!) }}
+                </span>
               </div>
-              <div class="flex justify-start">
-                <span class="text-gray-400 font-medium mr-10">Hora:</span>
-                <span class="badge badge-soft font-semibold text-gray-300"
-                  >{{ activeOrder().createdAt | date : "HH:mm" }}
+
+              <!-- Time -->
+              <div
+                class="flex flex-col sm:flex-row sm:justify-start gap-1 sm:gap-0"
+              >
+                <span class="text-gray-400 font-medium sm:mr-10">Hora:</span>
+                <span
+                  class="badge badge-soft font-semibold text-gray-300 w-fit"
+                >
+                  {{ activeOrder().createdAt | date : "HH:mm" }}
                   {{ getOrderAmPm(activeOrder()!) }}
                 </span>
               </div>
-              <div class="col-span-1 sm:col-span-2 flex gap-2 justify-start">
-                <span
-                  class="text-gray-400 font-medium text-background-dark/60 dark:text-background-light/60"
-                  >Comentario:</span
-                >
+
+              <!-- Comment -->
+              <div
+                class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-1 sm:gap-2"
+              >
+                <span class="text-gray-400 font-medium flex-shrink-0">
+                  Comentario:
+                </span>
                 @if (activeOrder().comment.length === 0) {
-                <p class="text-gray-400 ml-2 italic">No hay comentarios</p>
+                <p class="text-gray-400 italic">No hay comentarios</p>
                 } @else {
-                <p class="text-gray-200 italic">
+                <p class="text-gray-200 italic break-words">
                   {{ activeOrder().comment }}
                 </p>
                 }
               </div>
             </div>
           </section>
-          <section class="rounded-xl px-10 py-2">
+
+          <!-- Products Table -->
+          <section
+            class="rounded-xl px-2 sm:px-4 md:px-10 py-2 overflow-x-auto"
+          >
             <div class="flow-root">
-              <table class="min-w-full text-sm">
+              <table class="min-w-full text-xs sm:text-sm">
                 <thead
                   class="border-b border-gray-400 border-background-dark/10 dark:border-background-light/10"
                 >
                   <tr>
                     <th
-                      class="py-3.5 pl-4 pr-3 text-left font-semibold text-background-dark dark:text-background-light sm:pl-0"
+                      class="py-2 sm:py-3.5 pl-2 sm:pl-4 pr-2 sm:pr-3 text-left font-semibold text-background-dark dark:text-background-light"
                       scope="col"
                     >
                       Nombre
                     </th>
                     <th
-                      class="px-3 py-3.5 text-center font-semibold text-background-dark dark:text-background-light"
+                      class="px-2 sm:px-3 py-2 sm:py-3.5 text-center font-semibold text-background-dark dark:text-background-light whitespace-nowrap"
                       scope="col"
                     >
-                      Cantidad
+                      Cant.
                     </th>
                     <th
-                      class="px-3 py-3.5 text-right font-semibold text-background-dark dark:text-background-light"
+                      class="px-2 sm:px-3 py-2 sm:py-3.5 text-right font-semibold text-background-dark dark:text-background-light whitespace-nowrap"
                       scope="col"
                     >
                       Precio
                     </th>
                     <th
-                      class="py-3.5 pl-3 pr-4 text-right font-semibold text-background-dark dark:text-background-light sm:pr-0"
+                      class="py-2 sm:py-3.5 pl-2 sm:pl-3 pr-2 sm:pr-4 text-right font-semibold text-background-dark dark:text-background-light whitespace-nowrap"
                       scope="col"
                     >
                       Total
@@ -96,27 +120,28 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-400">
-                  <!--  -->
                   @for (product of activeOrder().productOrders; track
                   product.id) {
                   <tr>
                     <td
-                      class="py-4 pl-4 pr-3 font-medium text-background-dark dark:text-background-light sm:pl-0"
+                      class="py-3 sm:py-4 pl-2 sm:pl-4 pr-2 sm:pr-3 font-medium text-background-dark dark:text-background-light"
                     >
-                      {{ product.productName | titlecase }}
+                      <span class="block sm:inline">
+                        {{ product.productName | titlecase }}
+                      </span>
                     </td>
                     <td
-                      class="px-3 py-4 text-center text-gray-400 font-medium text-background-dark/80 dark:text-background-light/80"
+                      class="px-2 sm:px-3 py-3 sm:py-4 text-center text-gray-400 font-medium text-background-dark/80 dark:text-background-light/80"
                     >
                       {{ product.quantity }}
                     </td>
                     <td
-                      class="px-3 py-4 text-right text-gray-400 font-medium text-background-dark/80 dark:text-background-light/80"
+                      class="px-2 sm:px-3 py-3 sm:py-4 text-right text-gray-400 font-medium text-background-dark/80 dark:text-background-light/80 whitespace-nowrap"
                     >
                       S/ {{ product.unitPrice }}
                     </td>
                     <td
-                      class="py-4 pl-3 pr-4 text-right font-bold text-background-dark/80 dark:text-background-light/80 sm:pr-0"
+                      class="py-3 sm:py-4 pl-2 sm:pl-3 pr-2 sm:pr-4 text-right font-bold text-background-dark/80 dark:text-background-light/80 whitespace-nowrap"
                     >
                       S/ {{ product.subtotal }}
                     </td>
@@ -126,65 +151,85 @@
               </table>
             </div>
           </section>
+
+          <!-- Divider -->
           <div class="border border-gray-500"></div>
-          <section class="px-5 py-3 justify-items-end">
-            <!-- <span class="badge badge-xl">Pago</span> -->
-            <div class="space-y-3 text-sm flex flex-col min-w-70">
+
+          <!-- Totals Section -->
+          <section class="px-3 sm:px-5 py-3 justify-items-end">
+            <div
+              class="space-y-2 sm:space-y-3 text-xs sm:text-sm flex flex-col min-w-full sm:min-w-70"
+            >
+              <!-- Subtotal -->
               <div class="flex flex-row text-gray-400 justify-between">
                 <span
                   class="text-background-dark/60 dark:text-background-light/60"
-                  >Subtotal</span
                 >
-                <span class="text-background-dark dark:text-background-light"
-                  >S/ {{ calcSubtotal() }}</span
+                  Subtotal
+                </span>
+                <span
+                  class="text-background-dark dark:text-background-light font-medium"
                 >
+                  S/ {{ calcSubtotal() }}
+                </span>
               </div>
+
+              <!-- IGV -->
               <div class="flex flex-row text-gray-400 justify-between">
                 <span
                   class="text-background-dark/60 dark:text-background-light/60"
-                  >IGV (18%)</span
                 >
-                <span class="text-background-dark dark:text-background-light"
-                  >S/ {{ calcTax() }}</span
+                  IGV (18%)
+                </span>
+                <span
+                  class="text-background-dark dark:text-background-light font-medium"
                 >
+                  S/ {{ calcTax() }}
+                </span>
               </div>
+
+              <!-- Total -->
               <div
-                class="flex font-bold text-white text-lg border-t border-gray-400 justify-between pt-1"
+                class="flex font-bold text-white text-base sm:text-lg border-t border-gray-400 justify-between pt-2 sm:pt-1"
               >
-                <span class="text-background-dark dark:text-background-light"
-                  >Total</span
-                >
-                <span class="text-background-dark dark:text-background-light"
-                  >S/ {{ calcTotal() }}</span
-                >
+                <span class="text-background-dark dark:text-background-light">
+                  Total
+                </span>
+                <span class="text-background-dark dark:text-background-light">
+                  S/ {{ calcTotal() }}
+                </span>
               </div>
             </div>
           </section>
-          <div class="flex flex-row w-full gap-2">
-            @if (activeOrder().orderStatus !== orderStatus.READY) {
 
-            <!--  -->
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row w-full gap-2 sm:gap-2">
+            @if (activeOrder().orderStatus !== orderStatus.READY) {
+            <!-- Modify Button -->
             @if (!isAtm()) {
             <button
-              class="flex-1 btn h-12 bg-red-500 text-gray-100 hover:bg-red-600"
+              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base bg-red-500 text-gray-100 hover:bg-red-600 transition-colors active:scale-95"
               (click)="onStatusConfirmModifyModalChange()"
             >
+              <span class="fa-solid fa-pen-to-square mr-2"></span>
               Modificar Pedido
             </button>
             }
 
-            <!--  -->
+            <!-- Disabled Confirm Button -->
             <button
               disabled
-              class="flex-1 btn h-12 bg-gray-700 text-gray-500 font-bold rounded-lg"
+              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base bg-gray-700 text-gray-500 font-bold rounded-lg cursor-not-allowed"
             >
               {{ textConfirm() }}
             </button>
             } @else {
+            <!-- Active Confirm Button -->
             <button
-              class="flex-1 btn h-12 px-6 bg-red-500 text-white font-bold rounded-lg hover:bg-red-500/80 cursor-pointer"
+              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base px-6 bg-red-500 text-white font-bold rounded-lg hover:bg-red-500/80 cursor-pointer transition-colors active:scale-95"
               (click)="onStatusChange()"
             >
+              <span class="fa-solid fa-check mr-2"></span>
               {{ textConfirm() }}
             </button>
             }
@@ -198,89 +243,128 @@
   @if (showConfirmModifyModal()) {
   <div
     class="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4"
+    (click)="cancelConfirmModifyModalChange()"
   >
     <div
-      class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6"
+      class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-xs sm:max-w-md w-full p-4 sm:p-6 mx-4"
+      (click)="$event.stopPropagation()"
     >
-      <div class="flex items-center mb-4">
-        <div class="flex-shrink-0">
-          <span
-            class="fa-solid fa-exclamation-triangle text-amber-500 text-2xl"
-          ></span>
+      <!-- Header -->
+      <div class="flex items-start sm:items-center justify-between mb-4">
+        <div class="flex items-start sm:items-center">
+          <div class="flex-shrink-0">
+            <span
+              class="fa-solid fa-exclamation-triangle text-amber-500 text-xl sm:text-2xl"
+            ></span>
+          </div>
+          <div class="ml-3">
+            <h3
+              class="text-base sm:text-lg font-medium text-gray-900 dark:text-white"
+            >
+              Confirmar Modificación
+            </h3>
+          </div>
         </div>
-        <div class="ml-3">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            Confirmar Modificar Pedido
-          </h3>
-        </div>
+        <button
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-95 -mt-1"
+          (click)="cancelConfirmModifyModalChange()"
+          aria-label="Cerrar"
+        >
+          <span class="fa-solid fa-xmark text-lg"></span>
+        </button>
       </div>
 
-      <div class="mb-6">
-        <p class="text-sm text-gray-600 dark:text-gray-300">
+      <!-- Content -->
+      <div class="mb-4 sm:mb-6">
+        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
           ¿Estás seguro de que deseas modificar la orden #{{
             activeOrder().id
           }}?
         </p>
       </div>
 
-      <div class="flex gap-3 justify-end">
+      <!-- Actions -->
+      <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end">
         <button
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+          class="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer active:scale-95"
           (click)="cancelConfirmModifyModalChange()"
         >
           Cancelar
         </button>
         <button
-          class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+          class="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 transition-colors cursor-pointer active:scale-95"
           (click)="confirmStatusModifyModalChange(true)"
         >
-          Sí, Modificar Pedido
+          <span class="fa-solid fa-check mr-1 sm:mr-2"></span>
+          Sí, Modificar
         </button>
       </div>
     </div>
   </div>
   }
 
-  <!-- Confirm Modal -->
+  <!-- Confirm Status Change Modal -->
   @if (showConfirmModal()) {
   <div
     class="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4"
+    (click)="cancelStatusChange()"
   >
     <div
-      class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6"
+      class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-xs sm:max-w-md w-full p-4 sm:p-6 mx-4"
+      (click)="$event.stopPropagation()"
     >
-      <div class="flex items-center mb-4">
-        <div class="flex-shrink-0">
-          <span
-            class="fa-solid fa-exclamation-triangle text-amber-500 text-2xl"
-          ></span>
+      <!-- Header -->
+      <div class="flex items-start sm:items-center justify-between mb-4">
+        <div class="flex items-start sm:items-center">
+          <div class="flex-shrink-0">
+            <span
+              class="fa-solid fa-exclamation-triangle text-amber-500 text-xl sm:text-2xl"
+            ></span>
+          </div>
+          <div class="ml-3">
+            <h3
+              class="text-base sm:text-lg font-medium text-gray-900 dark:text-white"
+            >
+              Confirmar {{ textConfirm() }}
+            </h3>
+          </div>
         </div>
-        <div class="ml-3">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-            Confirmar {{ textConfirm() }}
-          </h3>
-        </div>
+        <button
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-95 -mt-1"
+          (click)="cancelStatusChange()"
+          aria-label="Cerrar"
+        >
+          <span class="fa-solid fa-xmark text-lg"></span>
+        </button>
       </div>
 
-      <div class="mb-6">
-        <p class="text-sm text-gray-600 dark:text-gray-300">
-          ¿Estás seguro de que deseas modificar la orden #{{
+      <!-- Content -->
+      <div class="mb-4 sm:mb-6">
+        <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+          ¿Estás seguro de que deseas cambiar el estado de la orden #{{
             activeOrder().id
-          }}? Esta acción no se puede deshacer.
+          }}?
+          <span
+            class="block mt-1 text-amber-600 dark:text-amber-400 font-medium"
+          >
+            Esta acción no se puede deshacer.
+          </span>
         </p>
       </div>
 
-      <div class="flex gap-3 justify-end">
+      <!-- Actions -->
+      <div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 justify-end">
         <button
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+          class="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer active:scale-95"
           (click)="cancelStatusChange()"
         >
           Cancelar
         </button>
         <button
-          class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+          class="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 transition-colors cursor-pointer active:scale-95"
           (click)="confirmStatusChange(changeStatusQuery())"
         >
+          <span class="fa-solid fa-check mr-1 sm:mr-2"></span>
           Sí, {{ textConfirm() }}
         </button>
       </div>

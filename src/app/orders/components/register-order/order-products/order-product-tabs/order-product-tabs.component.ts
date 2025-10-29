@@ -29,6 +29,18 @@ export class OrderProductTabsComponent {
 
   categorySelected = output<ProductType>();
 
+  onSelectChange(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    const categoryId = Number(selectElement.value);
+    const category = this.productCategories().find(
+      (cat) => cat.id === categoryId
+    );
+
+    if (category) {
+      this.selectCategory(category);
+    }
+  }
+
   constructor() {
     effect(() => {
       const defaultCategory = this.selectedCategory();

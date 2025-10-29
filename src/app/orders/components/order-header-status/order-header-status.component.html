@@ -1,27 +1,64 @@
-<header class="flex flex-col gap-6 items-start my-3">
-  <div class="flex flex-row gap-5 pt-2">
-    <h1 class="text-3xl font-bold text-gray-100">Pedidos</h1>
-    <label class="input w-40 bg-side-background">
-      <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
+<header
+  class="flex flex-col gap-4 sm:gap-6 items-start my-2 sm:my-3 px-2 sm:px-0"
+>
+  <!-- Title & Search Row -->
+  <section class="flex flex-col sm:flex-row gap-3 sm:gap-5 pt-1 sm:pt-2 w-full">
+    <!-- Title -->
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-100">
+      Pedidos
+    </h1>
+
+    <!-- Search Input -->
+    <label
+      class="input w-full sm:w-40 md:w-48 bg-side-background border border-gray-600 focus-within:border-red-500 transition-colors h-10 sm:h-auto"
+    >
+      <i
+        class="fa-solid fa-magnifying-glass text-gray-500 text-xs sm:text-sm"
+      ></i>
       <app-search-table-input (value)="tableNumberValue($event)" />
     </label>
-  </div>
+  </section>
 
-  <div class="flex flex-wrap items-center gap-4 font-semibold">
-    @for (filter of statusFilters; track filter.status ?? 'all') {
-    <button
-      class="relative px-2 pt-1 bg-transparent font-bold cursor-pointer transition-all duration-300 hover:text-gray-400"
-      [class]="
-        isStatusSelected(filter.status!) ? filter.colorClass : 'text-gray-500'
-      "
-      [class.border-b-2]="isStatusSelected(filter.status!)"
-      (click)="selectStatus(filter.status)"
+  <!-- Status Filters -->
+  <section
+    class="w-full overflow-x-auto pb-2 sm:pb-0 -mx-2 px-2 sm:mx-0 sm:px-0"
+  >
+    <div
+      class="flex flex-nowrap sm:flex-wrap items-center gap-3 sm:gap-4 font-semibold min-w-max sm:min-w-0"
     >
-      @if (filter.icon) {
-      <i [class]="filter.icon" class="mr-2"></i>
+      @for (filter of statusFilters; track filter.status ?? 'all') {
+      <button
+        class="relative px-2 sm:px-3 pt-1 pb-0.5 bg-transparent font-bold cursor-pointer transition-all duration-300 hover:text-gray-400 border-b-2 border-transparent whitespace-nowrap text-xs sm:text-sm md:text-base active:scale-95 flex-shrink-0"
+        [class]="
+          isStatusSelected(filter.status!) ? filter.colorClass : 'text-gray-500'
+        "
+        [class.border-b-2]="isStatusSelected(filter.status!)"
+        [style.border-color]="
+          isStatusSelected(filter.status!) ? 'currentColor' : 'transparent'
+        "
+        (click)="selectStatus(filter.status)"
+      >
+        @if (filter.icon) {
+        <i [class]="filter.icon" class="mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+        }
+        <span>{{ filter.label }}</span>
+      </button>
       }
-      {{ filter.label }}
-    </button>
-    }
-  </div>
+    </div>
+  </section>
+
+  <!-- Mobile: Dropdown Alternative -->
+  <section class="block sm:hidden w-full">
+    <select
+      class="select select-bordered w-full bg-side-background text-white border-gray-600 focus:border-red-500 text-sm"
+      (change)="onSelectChange($event)"
+      [value]="getSelectedFilterValue()"
+    >
+      @for (filter of statusFilters; track filter.status ?? 'all') {
+      <option [value]="filter.status ?? 'all'">
+        {{ filter.label }}
+      </option>
+      }
+    </select>
+  </section>
 </header>
