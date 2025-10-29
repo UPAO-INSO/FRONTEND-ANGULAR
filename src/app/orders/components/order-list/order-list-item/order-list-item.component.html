@@ -1,42 +1,78 @@
 <div
-  class="relative bg-side-background text-gray-500 rounded-lg shadow-2xl p-4 border-l-4 {{
+  class="relative bg-side-background text-gray-500 rounded-lg shadow-lg hover:shadow-xl p-3 sm:p-4 md:p-5 border-l-4 {{
     getBorderOrderStatus(order().orderStatus)
-  }} cursor-pointer overflow-hidden group"
+  }} cursor-pointer overflow-hidden group transition-shadow duration-200"
   (click)="onOrderClick()"
 >
+  <!-- Hover Effect Background -->
   <div
     class="absolute inset-[-5px] w-[calc(100vh/5)] {{
       getHoverBackgroundColor(order().orderStatus)
-    }} -translate-x-full group-hover:translate-x-0 transition-all duration-300 ease-out rounded-lg"
+    }} -translate-x-full group-hover:translate-x-0 transition-all duration-300 ease-out rounded-lg pointer-events-none"
   ></div>
 
-  <div
-    class="relative z-10 flex justify-between items-start text-white gap-4 duration-500 ease-out active:scale-[0.98]"
+  <!-- Content -->
+  <main
+    class="relative z-10 flex flex-col sm:flex-row justify-between items-start text-white gap-3 sm:gap-4 duration-500 ease-out active:scale-[0.98]"
   >
-    <div class="flex-1 min-w-0 flex items-start gap-6">
-      <div class="flex-shrink-0">
-        <h3 class="font-bold text-lg">Orden #{{ order().id }}</h3>
-        <p class="text-sm text-gray-300">Mesa: {{ order().tableId }}</p>
-      </div>
+    <!-- Left Section: Order Info & Products -->
+    <section class="flex-1 min-w-0 w-full sm:w-auto">
+      <div class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6">
+        <!-- Order Header -->
+        <div class="flex-shrink-0">
+          <h3 class="font-bold text-base sm:text-lg md:text-xl">
+            Orden #{{ order().id }}
+          </h3>
+          <p class="text-xs sm:text-sm text-gray-300 mt-0.5">
+            <span class="fa-solid fa-table text-gray-400 mr-1"></span>
+            Mesa {{ order().tableId }}
+          </p>
+        </div>
 
-      <div class="flex-1 min-w-0">
-        <p
-          class="text-sm text-gray-200 pt-3 pl-5 truncate"
-          [title]="getProductsDisplayText(order().productOrders)"
-        >
-          {{ getProductsDisplayText(order().productOrders) | titlecase }}
-        </p>
+        <!-- Products List -->
+        <div class="flex-1 min-w-0 sm:pt-1">
+          <p class="text-xs sm:text-sm text-gray-400 mb-1 hidden sm:block">
+            Productos:
+          </p>
+          <p
+            class="text-xs sm:text-sm text-gray-200 sm:pl-2 line-clamp-2 sm:line-clamp-1"
+            [title]="getProductsDisplayText(order().productOrders)"
+          >
+            {{ getProductsDisplayText(order().productOrders) | titlecase }}
+          </p>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="text-right flex-shrink-0">
-      <span [class]="getTextOrderStatus(order().orderStatus).class">
+    <!-- Right Section: Status & Time -->
+    <section
+      class="flex sm:flex-col justify-between sm:justify-start items-start sm:items-end gap-2 sm:gap-1 flex-shrink-0 w-full sm:w-auto"
+    >
+      <!-- Status Badge -->
+      <span
+        class="text-xs sm:text-sm font-semibold px-2 py-1 rounded-md whitespace-nowrap {{
+          getTextOrderStatus(order().orderStatus).class
+        }}"
+      >
         {{ getTextStatus(order().orderStatus) }}
       </span>
-      <p class="text-xs mt-1 text-gray-400">
-        {{ order().createdAt | date : "HH:mm" }}
-        {{ getOrderAmPm(order()) }}
-      </p>
-    </div>
+
+      <!-- Time -->
+      <div class="flex items-center gap-1 text-gray-400">
+        <span class="fa-solid fa-clock text-[10px] sm:text-xs"></span>
+        <p class="text-xs sm:text-sm whitespace-nowrap">
+          {{ order().createdAt | date : "HH:mm" }}
+          {{ getOrderAmPm(order()) }}
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Product Count Badge -->
+  <div class="absolute top-2 right-2 sm:hidden">
+    <span class="badge badge-xs bg-gray-700/80 text-gray-300 border-0">
+      {{ order().productOrders.length }}
+      {{ order().productOrders.length === 1 ? "item" : "items" }}
+    </span>
   </div>
 </div>
