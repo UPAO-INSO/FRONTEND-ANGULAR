@@ -23,7 +23,7 @@ export class TableListItemComponent {
   private orderCartService = inject(OrderCartService);
 
   table = input.required<Table>();
-  tableStatus = input.required<typeof TableStatus>();
+  tableStatus = TableStatus;
 
   activeOrder = input<ContentOrder | null>(null);
 

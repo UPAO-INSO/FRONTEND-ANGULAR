@@ -23,6 +23,7 @@
       [error]="ordersResource.error()"
       (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
       (refresh)="onRefresh()"
+      (servedProductOrder)="onServerProductOrder($event)"
     />
   </main>
 </div>

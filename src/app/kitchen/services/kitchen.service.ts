@@ -8,6 +8,7 @@ import {
   OrderStatus,
   RESTOrder,
 } from '@src/app/orders/interfaces/order.interface';
+import { ServedProductOrder } from '../components/order-card/order-card.component';
 
 enum Direction {
   ASC = 'ASC',
@@ -150,6 +151,27 @@ export class KitchenService {
           console.error('Error updating order status:', error);
           return throwError(
             () => new Error('Error al actualizar el estado de la orden')
+          );
+        })
+      );
+  }
+
+  servedProductOrder(served: ServedProductOrder) {
+    return this.http
+      .patch(`${this.envs.API_URL}/orders/product-orders/serve`, served)
+      .pipe(
+        tap(() => {
+          const cachedOrder = this.orderByIdCache.get(served.orderId);
+          if (cachedOrder) {
+            this.orderByIdCache.set(served.orderId, cachedOrder);
+          }
+
+          this.clearCache();
+        }),
+        catchError((error) => {
+          console.error('Error updating served product order:', error);
+          return throwError(
+            () => new Error('Error al actualizar el producto servido')
           );
         })
       );

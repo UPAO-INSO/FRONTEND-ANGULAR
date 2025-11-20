@@ -9,7 +9,7 @@ import {
   RequestOrder,
 } from '@src/app/orders/interfaces/order.interface';
 
-import type {
+import {
   ContentTable,
   Table,
   TableStatus,
@@ -25,7 +25,6 @@ export class TableListComponent {
   tables = input.required<ContentTable[]>();
   modifyStatus = input.required<boolean>();
   productTypes = input.required<ProductType[]>({});
-  tableStatusEnum = input.required<typeof TableStatus>();
 
   activeOrdersByTable = input<Map<number, ContentOrder>>(new Map());
   isEmpty = input<boolean>(false);

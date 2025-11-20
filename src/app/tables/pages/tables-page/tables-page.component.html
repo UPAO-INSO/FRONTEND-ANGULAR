@@ -2,7 +2,6 @@
 
 <app-table-list
   [productTypes]="productTypeResource.value() ?? []"
-  [tableStatusEnum]="tableStatusEnum"
   [tables]="tablesResource.value()?.content ?? []"
   [isEmpty]="(tablesResource.value()?.content?.length ?? 0) === 0"
   [isLoading]="tablesResource.isLoading()"

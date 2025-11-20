@@ -105,7 +105,7 @@ export class OrderService {
         tap((personResponse) => {
           this.personCache.set(cacheKey, personResponse);
           this.setCache(cacheKey, personResponse);
-          console.log('💾 Person cached');
+          console.log('Person cached');
         }),
         catchError((error) => {
           console.log({ error });

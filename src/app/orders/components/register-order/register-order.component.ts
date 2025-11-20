@@ -12,7 +12,7 @@ import { ProductType } from '@src/app/products/interfaces/product.type';
   templateUrl: './register-order.component.html',
 })
 export class RegisterOrderComponent {
-  selectedTable = input<Table | null>();
+  selectedTable = input.required<Table>();
   productTypes = input.required<ProductType[]>({});
   modifyStatus = input<boolean>();
   activeOrder = input<ContentOrder | null>();
