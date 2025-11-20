@@ -31,7 +31,6 @@
   <app-table-list-item
     class="min-h-[200px] max-h-[300px]"
     [table]="table"
-    [tableStatus]="tableStatusEnum()"
     [activeOrder]="getActiveOrderByTable(table.id)"
     (tableSelected)="openRegisterOrder($event)"
   />
@@ -52,11 +51,10 @@
 
 @if (selectedTable()) {
 <!--  -->
-@if(getActiveOrderByTable(selectedTable()?.id!) && !modifyStatus()) {
-
+@if(getActiveOrderByTable(selectedTable()!.id) && !modifyStatus()) {
 <app-order-view
-  [selectedTable]="selectedTable()"
-  [activeOrder]="getActiveOrderByTable(selectedTable()?.id!)!"
+  [selectedTable]="selectedTable()!"
+  [activeOrder]="getActiveOrderByTable(selectedTable()!.id)!"
   [isAtm]="false"
   [textConfirm]="'Completar Pedido'"
   [changeStatusQuery]="orderStatus.COMPLETED"
@@ -68,9 +66,9 @@
 <!--  -->
 @else {
 <app-register-order
-  [selectedTable]="selectedTable()"
+  [selectedTable]="selectedTable()!"
   [productTypes]="productTypes()"
-  [activeOrder]="getActiveOrderByTable(selectedTable()?.id!)"
+  [activeOrder]="getActiveOrderByTable(selectedTable()!.id)"
   (orderCreated)="onOrderCreated($event)"
   (orderUpdated)="onOrderUpdated($event.id, $event.order)"
   (closeModal)="closeRegisterOrder()"

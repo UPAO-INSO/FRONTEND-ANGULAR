@@ -33,7 +33,6 @@ export class TablesPageComponent {
   private orderService = inject(OrderService);
   paginationService = inject(PaginationService);
 
-  tableStatusEnum = TableStatus;
   selectedTableStatus = signal<TableStatus | null>(null);
   productNameQuery = signal<string | null>(null);
   modifyStatusChanged = signal<boolean>(false);
@@ -136,6 +135,7 @@ export class TablesPageComponent {
   }
 
   onRefresh() {
+    this.tableService.clearCache();
     this.tablesResource.reload();
     this.activeOrdersResource.reload();
   }
@@ -174,11 +174,8 @@ export class TablesPageComponent {
   }
 
   private refreshResources() {
-    try {
-      this.tablesResource.reload();
-      this.activeOrdersResource.reload();
-    } catch (error) {
-      this.refreshResources();
-    }
+    this.tableService.clearCache();
+    this.tablesResource.reload();
+    this.activeOrdersResource.reload();
   }
 }

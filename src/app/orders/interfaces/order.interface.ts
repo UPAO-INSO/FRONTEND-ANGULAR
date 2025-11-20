@@ -57,7 +57,9 @@ export interface OrderEmployee {
 export interface ProductOrder {
   id: number;
   productName: string;
+  productTypeName: string;
   quantity: number;
+  servedQuantity: number;
   unitPrice: number;
   subtotal: number;
   orderId: number;

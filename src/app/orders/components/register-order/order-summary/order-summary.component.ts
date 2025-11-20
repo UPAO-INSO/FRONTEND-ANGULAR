@@ -49,7 +49,7 @@ export class OrderSummaryComponent {
   updateOrder = output<{ id: number; order: RequestOrder }>();
   searchFullName = output<PersonByFullName>();
 
-  selectedTable = input<Table | null | undefined>(null);
+  selectedTable = input.required<Table>();
   activeOrder = input<ContentOrder | null>();
 
   cartItems = this.orderCartService.cartItems;
@@ -120,8 +120,6 @@ export class OrderSummaryComponent {
   async onSubmitOrder() {
     const activeOrder = this.activeOrder();
 
-    if (!activeOrder || activeOrder === undefined) return;
-
     if (this._user() === null) return;
 
     const personRequest: PersonByFullName = {
@@ -140,7 +138,7 @@ export class OrderSummaryComponent {
 
     const productOrders: RequestProductOrder[] =
       OrderMapper.mapCartItemsToRequestProductsOrder(
-        activeOrder.id,
+        activeOrder?.id!,
         this.cartItems()
       );
 

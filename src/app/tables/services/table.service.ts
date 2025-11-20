@@ -27,6 +27,8 @@ export class TableService {
   private cacheTimestamps = new Map<string, number>();
 
   private isCacheValid(key: string): boolean {
+    console.log('CACHE');
+
     const timestamp = this.cacheTimestamps.get(key);
     if (!timestamp) return false;
 
@@ -53,11 +55,11 @@ export class TableService {
     this.tablesByStatusCache.delete(status);
   }
 
-  fetchTables(options: Options, forceRefresh = false): Observable<RESTTable> {
+  fetchTables(options: Options): Observable<RESTTable> {
     const { limit = 8, page = 1, status = '' } = options;
     const cacheKey = `tables_${page}_${limit}_${status}`;
 
-    if (!forceRefresh && this.isCacheValid(cacheKey)) {
+    if (this.isCacheValid(cacheKey)) {
       const cached = this.tablesCache.get(cacheKey);
       if (cached) {
         return of(cached);

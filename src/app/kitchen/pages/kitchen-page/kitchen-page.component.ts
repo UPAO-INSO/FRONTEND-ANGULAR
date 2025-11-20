@@ -12,6 +12,7 @@ import { PaginationService } from '@shared/components/pagination/pagination.serv
 
 import { OrderService } from '@orders/services/order.service';
 import { OrderStatus } from '@src/app/orders/interfaces/order.interface';
+import { ServedProductOrder } from '../../components/order-card/order-card.component';
 
 @Component({
   selector: 'app-kitchen-page',
@@ -75,7 +76,20 @@ export default class KitchenPageComponent {
     });
   }
 
+  onServerProductOrder(served: ServedProductOrder) {
+    this.kitchenService.servedProductOrder(served).subscribe({
+      next: () => {
+        this.onRefresh();
+      },
+      error: (error) => {
+        console.error('Error updating served product order:', error);
+      },
+    });
+  }
+
   onRefresh() {
+    console.log('REFRESH');
+
     this.ordersResource.reload();
   }
 
