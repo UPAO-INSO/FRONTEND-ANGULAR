@@ -30,12 +30,12 @@
         </div>
 
         <!-- Products List -->
-        <div class="flex-1 min-w-0 sm:pt-1">
+        <div class="flex-1 min-w-0 max-w-[340px] sm:pt-1">
           <p class="text-xs sm:text-sm text-gray-400 mb-1 hidden sm:block">
             Productos:
           </p>
           <p
-            class="text-xs sm:text-sm text-gray-200 sm:pl-2 line-clamp-2 sm:line-clamp-1"
+            class="text-xs sm:text-sm text-gray-200 sm:pl-2 line-clamp-2 sm:line-clamp-1 truncate"
             [title]="getProductsDisplayText(order().productOrders)"
           >
             {{ getProductsDisplayText(order().productOrders) | titlecase }}

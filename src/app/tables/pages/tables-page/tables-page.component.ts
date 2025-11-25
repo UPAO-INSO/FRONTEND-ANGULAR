@@ -16,7 +16,8 @@ import { PaginationService } from '@shared/components/pagination/pagination.serv
 import { TableService } from '../../services/table.service';
 import { TableStatus } from '../../interfaces/table.interface';
 import { TableListComponent } from '../../components/table-list/table-list.component';
-import { TableHeaderStatusComponent } from '../../components/table-list/table-header-status/table-header-status.component';
+import { TableHeaderStatusComponent } from '../../components/table-header-status/table-header-status.component';
+import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
 
 @Component({
   selector: 'app-orders-page',
@@ -31,6 +32,7 @@ export class TablesPageComponent {
   tableService = inject(TableService);
   productService = inject(ProductService);
   private orderService = inject(OrderService);
+  private orderSyncService = inject(OrderSyncService);
   paginationService = inject(PaginationService);
 
   selectedTableStatus = signal<TableStatus | null>(null);
@@ -136,6 +138,7 @@ export class TablesPageComponent {
 
   onRefresh() {
     this.tableService.clearCache();
+    this.orderService.clearCache();
     this.tablesResource.reload();
     this.activeOrdersResource.reload();
   }
@@ -153,7 +156,12 @@ export class TablesPageComponent {
 
   onOrderCreated(orderData: RequestOrder) {
     this.orderService.createOrder(orderData).subscribe({
-      next: () => {
+      next: (createdOrder) => {
+        this.orderSyncService.notifyOrderCreated(
+          createdOrder.id,
+          createdOrder.tableId
+        );
+
         this.refreshResources();
       },
       error: (error) => {
@@ -166,6 +174,7 @@ export class TablesPageComponent {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
         this.refreshResources();
+        this.orderSyncService.notifyStatusChange(orderId);
       },
       error: (error) => {
         console.error('Error change order:', error);
@@ -175,6 +184,7 @@ export class TablesPageComponent {
 
   private refreshResources() {
     this.tableService.clearCache();
+    this.orderService.clearCache();
     this.tablesResource.reload();
     this.activeOrdersResource.reload();
   }

@@ -5,7 +5,7 @@
     <app-kitchen-nav
       [productTypes]="productTypeResource.value() ?? []"
       [orders]="ordersResource.value()?.content ?? []"
-      [currentPage]="paginationService.currentPage()"
+      [currentPage]="currentPage"
       [totalPages]="ordersResource.value()?.totalPages"
       [error]="ordersResource.error()"
       [isLoading]="ordersResource.isLoading()"

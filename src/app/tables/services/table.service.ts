@@ -23,12 +23,10 @@ export class TableService {
   private tableByIdCache = new Map<number, Table>();
   private tablesByStatusCache = new Map<TableStatus, Table[]>();
 
-  private readonly CACHE_TTL = 3 * 60 * 1000;
+  private readonly CACHE_TTL = 2 * 60 * 1000;
   private cacheTimestamps = new Map<string, number>();
 
   private isCacheValid(key: string): boolean {
-    console.log('CACHE');
-
     const timestamp = this.cacheTimestamps.get(key);
     if (!timestamp) return false;
 

@@ -20,7 +20,15 @@ export class LoginPageComponent {
 
   loginForm = this.fb.group({
     username: ['', [Validators.required, Validators.minLength(4)]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(20),
+        Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,20}$/),
+      ],
+    ],
   });
 
   togglePasswordVisibility() {

@@ -57,6 +57,11 @@ export class OrderStatusComponent {
       icon: 'fa-solid fa-list',
     },
     {
+      status: OrderStatus.COMPLETED,
+      label: 'Completado',
+      colorClass: 'text-status-completed',
+    },
+    {
       status: OrderStatus.PREPARING,
       label: 'Preparando',
       colorClass: 'text-status-preparing',
