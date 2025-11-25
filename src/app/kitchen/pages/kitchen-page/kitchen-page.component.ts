@@ -13,6 +13,7 @@ import { PaginationService } from '@shared/components/pagination/pagination.serv
 import { OrderService } from '@orders/services/order.service';
 import { OrderStatus } from '@src/app/orders/interfaces/order.interface';
 import { ServedProductOrder } from '../../components/order-card/order-card.component';
+import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
 
 @Component({
   selector: 'app-kitchen-page',
@@ -21,12 +22,20 @@ import { ServedProductOrder } from '../../components/order-card/order-card.compo
 })
 export default class KitchenPageComponent {
   private kitchenService = inject(KitchenService);
-  paginationService = inject(PaginationService);
-  productService = inject(ProductService);
-  ordersService = inject(OrderService);
+  private paginationService = inject(PaginationService);
+  private productService = inject(ProductService);
+  private orderService = inject(OrderService);
+  private orderSyncService = inject(OrderSyncService);
 
   refreshProductsTrigger = signal(0);
   tableNumber = signal<number | null>(null);
+  currentPage = this.paginationService.currentPage();
+
+  constructor() {
+    this.orderSyncService.orderUpdates$.subscribe((update) => {
+      this.onRefresh();
+    });
+  }
 
   ordersResource = rxResource({
     params: () => ({
@@ -35,11 +44,12 @@ export default class KitchenPageComponent {
     }),
 
     stream: ({ params }) => {
-      if (params.tableNumber !== null && params.tableNumber !== 0)
-        return this.ordersService.searchByTableNumber(
+      if (params.tableNumber !== null && params.tableNumber !== 0) {
+        return this.orderService.searchByTableNumber(
           { page: params.page },
           params.tableNumber
         );
+      }
 
       return this.kitchenService.fetchActiveOrders({ page: params.page }) ?? [];
     },
@@ -69,6 +79,7 @@ export default class KitchenPageComponent {
     this.kitchenService.updateOrderStatus(orderId, newStatus).subscribe({
       next: () => {
         this.onRefresh();
+        this.orderSyncService.notifyStatusChange(orderId);
       },
       error: (error) => {
         console.error('Error updating order status:', error);
@@ -80,6 +91,7 @@ export default class KitchenPageComponent {
     this.kitchenService.servedProductOrder(served).subscribe({
       next: () => {
         this.onRefresh();
+        this.orderSyncService.notifyProductChange(served.orderId);
       },
       error: (error) => {
         console.error('Error updating served product order:', error);
@@ -88,8 +100,8 @@ export default class KitchenPageComponent {
   }
 
   onRefresh() {
-    console.log('REFRESH');
-
+    this.orderService.clearCache();
+    this.kitchenService.clearCache();
     this.ordersResource.reload();
   }
 

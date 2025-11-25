@@ -1,4 +1,11 @@
-import { Component, effect, input, output, signal } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 
 import {
@@ -7,6 +14,7 @@ import {
   ProductOrder,
 } from '@orders/interfaces/order.interface';
 import { ConfirmReadyModalComponent } from './confirm-ready-modal/confirm-ready-modal.component';
+import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
 
 interface ProductProgress {
   productOrder: ProductOrder;
@@ -27,6 +35,8 @@ export interface ServedProductOrder {
   templateUrl: './order-card.component.html',
 })
 export class OrderCardComponent {
+  private orderSyncService = inject(OrderSyncService);
+
   order = input.required<ContentOrder>();
   changeStatus = output<OrderStatus>();
 
@@ -178,12 +188,14 @@ export class OrderCardComponent {
       this.showConfirmModal.set(true);
     } else {
       this.changeStatus.emit(status);
+      this.orderSyncService.notifyStatusChange(this.order().id);
     }
   }
 
   confirmReady() {
     this.changeStatus.emit(OrderStatus.READY);
     this.showConfirmModal.set(false);
+    this.orderSyncService.notifyStatusChange(this.order().id);
   }
 
   cancelReady() {
@@ -192,5 +204,6 @@ export class OrderCardComponent {
 
   onServedProductOrder(served: ServedProductOrder) {
     this.servedProductOrder.emit(served);
+    this.orderSyncService.notifyProductChange(this.order().id);
   }
 }

@@ -1,5 +1,5 @@
 import { Component, output, signal } from '@angular/core';
-import { Table, TableStatus } from '../../../interfaces/table.interface';
+import { Table, TableStatus } from '../../interfaces/table.interface';
 
 @Component({
   selector: 'app-table-header-status',
