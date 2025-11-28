@@ -31,12 +31,146 @@
           <button class="btn btn-square btn-primary">
             <span class="fa-solid fa-search"></span>
           </button>
+
+          <!--  -->
+          @if (documentQuery().length >= 8 && getClients().length === 0 &&
+          !clientsResource.isLoading()) {
+          <button
+            class="btn btn-success btn-square"
+            (click)="startClientCreation()"
+            [disabled]="isCreatingClient()"
+            title="Crear nuevo cliente"
+          >
+            @if (isCreatingClient()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            } @else {
+            <span class="fa-solid fa-plus"></span>
+            }
+          </button>
+          }
         </div>
       </div>
       <p class="text-xs text-gray-500 mt-1 ml-1">
         Ingresa al menos 3 caracteres para buscar
       </p>
     </div>
+
+    <!--  -->
+    @if (isCreatingClient()) {
+    <div class="alert alert-info mb-4">
+      <span class="loading loading-spinner loading-sm"></span>
+      <span>Consultando documento {{ documentQuery() }}...</span>
+    </div>
+    }
+
+    <!--  -->
+    @if (newClientData()) {
+    <div class="bg-gray-800 rounded-lg p-4 mb-4">
+      <h4 class="font-semibold text-white mb-3 flex items-center">
+        <span class="fa-solid fa-user-plus mr-2 text-success"></span>
+        Confirmar Nuevo Cliente
+      </h4>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="label text-sm text-gray-300">Documento</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.documentNumber"
+            readonly
+          />
+        </div>
+
+        @if (newClientData()!.documentNumber.length === 8) {
+        <div>
+          <label class="label text-sm text-gray-300">Nombres</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.name"
+            (input)="updateNewClientField('name', $event)"
+          />
+        </div>
+        <div>
+          <label class="label text-sm text-gray-300">Apellidos</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.lastname || ''"
+            (input)="updateNewClientField('lastname', $event)"
+          />
+        </div>
+        } @else {
+        <div class="md:col-span-2">
+          <label class="label text-sm text-gray-300">Razón Social</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.name"
+            (input)="updateNewClientField('name', $event)"
+          />
+        </div>
+        }
+
+        <div class="md:col-span-2">
+          <label class="label text-sm text-gray-300">Dirección</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.completeAddress || ''"
+            (input)="updateNewClientField('completeAddress', $event)"
+          />
+        </div>
+
+        <div>
+          <label class="label text-sm text-gray-300">Teléfono (opcional)</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.phone || ''"
+            (input)="updateNewClientField('phone', $event)"
+          />
+        </div>
+
+        <div>
+          <label class="label text-sm text-gray-300">Email (opcional)</label>
+          <input
+            type="email"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.email || ''"
+            (input)="updateNewClientField('email', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-4">
+        <button class="btn btn-sm btn-ghost" (click)="cancelClientCreation()">
+          Cancelar
+        </button>
+        <button
+          class="btn btn-md btn-success absolute bottom-8 right-10"
+          (click)="confirmClientCreation()"
+          [disabled]="isSavingClient()"
+        >
+          @if (isSavingClient()) {
+          <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+          <span class="fa-solid fa-save mr-1"></span>
+          } Crear Cliente
+        </button>
+      </div>
+    </div>
+    }
+
+    <!--  -->
+    <!-- Error de creación -->
+    @if (creationError()) {
+    <div class="alert alert-error mb-4">
+      <span class="fa-solid fa-exclamation-triangle"></span>
+      <span>{{ creationError() }}</span>
+    </div>
+    }
 
     <!-- Estado de carga -->
     @if (clientsResource.isLoading()) {
@@ -54,7 +188,8 @@
     }
 
     <!-- Lista de clientes -->
-    @if (!clientsResource.isLoading() && !clientsResource.error()) {
+    @if (!clientsResource.isLoading() && !clientsResource.error() &&
+    !newClientData()) {
     <div class="max-h-96 overflow-y-auto custom-scrollbar">
       @if (getClients().length === 0) {
       <div class="text-center py-8 text-gray-500">
@@ -64,44 +199,11 @@
       } @else {
       <div class="space-y-2">
         @for (client of getClients(); track client.id) {
-        <div
-          class="card bg-gray-800 hover:bg-gray-700 cursor-pointer transition-all border-2 {{
-            selectedClient()?.id === client.id
-              ? 'border-primary'
-              : 'border-transparent'
-          }}"
-          (click)="onSelectClient(client)"
-        >
-          <div class="card-body p-4">
-            <div class="flex items-start justify-between">
-              <div class="flex-1">
-                <h4 class="font-semibold text-white text-lg">
-                  {{ getClientFullName(client) }}
-                </h4>
-                <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
-                  <div class="flex items-center gap-1 text-gray-400">
-                    <span class="fa-solid fa-id-card"></span>
-                    <span>{{ client.documentNumber }}</span>
-                  </div>
-                  <div class="flex items-center gap-1 text-gray-400">
-                    <span class="fa-solid fa-envelope"></span>
-                    <span>{{ client.email }}</span>
-                  </div>
-                  <div class="flex items-center gap-1 text-gray-400">
-                    <span class="fa-solid fa-phone"></span>
-                    <span>{{ client.phone }}</span>
-                  </div>
-                </div>
-              </div>
-              @if (selectedClient()?.id === client.id) {
-              <div class="badge badge-primary badge-lg">
-                <span class="fa-solid fa-check mr-1"></span>
-                Seleccionado
-              </div>
-              }
-            </div>
-          </div>
-        </div>
+        <app-client-list
+          [client]="client"
+          [selectedClient]="selectedClient()"
+          (selectClient)="onSelectClient($event)"
+        />
         }
       </div>
       }
@@ -113,6 +215,7 @@
     } }
 
     <!-- Botones de acción -->
+    @if (!newClientData()) {
     <div class="modal-action">
       <button class="btn btn-ghost" (click)="close()">Cancelar</button>
       <button
@@ -124,6 +227,7 @@
         Confirmar Cliente
       </button>
     </div>
+    }
   </div>
 
   <form method="dialog" class="modal-backdrop">

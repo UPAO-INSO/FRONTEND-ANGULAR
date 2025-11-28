@@ -1,0 +1,38 @@
+<div
+  class="card bg-gray-800 hover:bg-gray-700 cursor-pointer transition-all border-2 {{
+    selectedClient()?.id === client().id
+      ? 'border-primary'
+      : 'border-transparent'
+  }}"
+  (click)="onSelectClient(client())"
+>
+  <div class="card-body p-4">
+    <div class="flex items-start justify-between">
+      <div class="flex-1">
+        <h4 class="font-semibold text-white text-lg">
+          {{ getClientFullName(client()) }}
+        </h4>
+        <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
+          <div class="flex items-center gap-1 text-gray-400">
+            <span class="fa-solid fa-id-card"></span>
+            <span>{{ client().documentNumber }}</span>
+          </div>
+          <div class="flex items-center gap-1 text-gray-400">
+            <span class="fa-solid fa-envelope"></span>
+            <span>{{ client().email }}</span>
+          </div>
+          <div class="flex items-center gap-1 text-gray-400">
+            <span class="fa-solid fa-phone"></span>
+            <span>{{ client().phone }}</span>
+          </div>
+        </div>
+      </div>
+      @if (selectedClient()?.id === client().id) {
+      <div class="badge badge-primary badge-lg">
+        <span class="fa-solid fa-check mr-1"></span>
+        Seleccionado
+      </div>
+      }
+    </div>
+  </div>
+</div>

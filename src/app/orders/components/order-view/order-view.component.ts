@@ -1,5 +1,9 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
+import {
+  ContentOrder,
+  OrderStatus,
+  UUID,
+} from '../../interfaces/order.interface';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { PaymentCheckoutComponent } from '@shared/components/payment-checkout/payment-checkout.component';
 import { Table } from '@src/app/tables/interfaces/table.interface';
@@ -12,8 +16,13 @@ import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-mod
 import { ConfirmStatusModalComponent } from '../confirm-status-modal/confirm-status-modal.component';
 
 interface PaymentSuccessData {
-  orderId: number;
+  orderId: UUID;
   chargeId: string;
+}
+
+interface StatusChange {
+  orderId: UUID;
+  newStatus: OrderStatus;
 }
 
 @Component({
@@ -36,10 +45,7 @@ export class OrderViewComponent {
   textConfirm = input.required<string>();
   changeStatusQuery = input.required<OrderStatus>();
 
-  statusChange = output<{
-    orderId: number;
-    newStatus: OrderStatus;
-  }>();
+  statusChange = output<StatusChange>();
   statusModifyModalChange = output<boolean>();
 
   orderStatus = OrderStatus;
@@ -144,6 +150,8 @@ export class OrderViewComponent {
   openPayment() {
     const order = this.activeOrder();
 
+    console.log({ order });
+
     const existingOrder = this.culqiService.getCulqiOrder(order.id);
 
     if (existingOrder) {
@@ -158,7 +166,7 @@ export class OrderViewComponent {
 
     this.paymentData.set({
       amount: this.calcTotal(),
-      description: `Orden #${order.id} - Mesa ${this.activeOrder().tableId}`,
+      description: `Orden ${order.id} - Mesa ${this.activeOrder().tableId}`,
       orderNumber: order.id.toString(),
       confirm: true,
       currencyIsoCode: 'PEN',

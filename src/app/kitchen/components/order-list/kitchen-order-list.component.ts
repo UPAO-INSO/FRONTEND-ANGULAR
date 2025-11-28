@@ -5,10 +5,14 @@ import {
   ServedProductOrder,
 } from '../order-card/order-card.component';
 
-import { ContentOrder, OrderStatus } from '@orders/interfaces/order.interface';
+import {
+  ContentOrder,
+  OrderStatus,
+  UUID,
+} from '@orders/interfaces/order.interface';
 
 export interface StatusChange {
-  orderId: number;
+  orderId: UUID;
   newStatus: OrderStatus;
 }
 
@@ -57,7 +61,7 @@ export class KitchenOrderListComponent {
     return [...sortedNonReady, ...sortedReady];
   });
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
+  onStatusChange(orderId: UUID, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 

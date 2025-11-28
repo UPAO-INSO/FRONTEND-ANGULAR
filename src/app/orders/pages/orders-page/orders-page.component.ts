@@ -4,7 +4,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { OrderService } from '../../services/order.service';
 import { OrderListComponent } from '../../components/order-list/order-list.component';
 import { OrderStatusComponent } from '../../components/order-header-status/order-header-status.component';
-import { OrderStatus } from '../../interfaces/order.interface';
+import { OrderStatus, UUID } from '../../interfaces/order.interface';
 
 import { PaginationComponent } from '@src/app/shared/components/pagination/pagination.component';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
@@ -37,7 +37,7 @@ export default class OrdersPageComponent {
     });
   }
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
+  onStatusChange(orderId: UUID, newStatus: OrderStatus) {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
         this.orderSyncService.notifyStatusChange(orderId);

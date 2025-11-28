@@ -9,6 +9,7 @@ import {
   ContentOrder,
   OrderStatus,
   RequestOrder,
+  UUID,
 } from '@src/app/orders/interfaces/order.interface';
 
 import { PaginationService } from '@shared/components/pagination/pagination.service';
@@ -122,7 +123,7 @@ export class TablesPageComponent {
     this.activeOrdersResource.reload();
   }
 
-  onOrderUpdated(id: number, order: ContentOrder) {
+  onOrderUpdated(id: UUID, order: ContentOrder) {
     this.orderService.updateOrder(id, order).subscribe({
       next: () => {
         this.refreshResources();
@@ -149,7 +150,7 @@ export class TablesPageComponent {
     });
   }
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
+  onStatusChange(orderId: UUID, newStatus: OrderStatus) {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
         this.refreshResources();

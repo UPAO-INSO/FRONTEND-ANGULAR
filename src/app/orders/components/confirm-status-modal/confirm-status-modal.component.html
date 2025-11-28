@@ -1,4 +1,4 @@
-@if (isOpen) {
+@if (isOpen()) {
 <div
   class="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4"
   (click)="onCancel()"
@@ -18,7 +18,7 @@
           <h3
             class="text-base sm:text-lg font-medium text-gray-900 dark:text-white"
           >
-            Confirmar {{ confirmText }}
+            Confirmar {{ confirmText() }}
           </h3>
         </div>
       </div>
@@ -34,7 +34,7 @@
     <div class="mb-4 sm:mb-6">
       <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
         ¿Estás seguro de que deseas cambiar el estado de la orden #{{
-          orderId
+          orderId()
         }}?
         <span class="block mt-1 text-amber-600 dark:text-amber-400 font-medium">
           Esta acción no se puede deshacer.
@@ -54,7 +54,7 @@
         (click)="onConfirm()"
       >
         <span class="fa-solid fa-check mr-1 sm:mr-2"></span>
-        Sí, {{ confirmText }}
+        Sí, {{ confirmText() }}
       </button>
     </div>
   </div>

@@ -11,7 +11,7 @@ import { ProductService } from '@products/services/product.service';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 
 import { OrderService } from '@orders/services/order.service';
-import { OrderStatus } from '@src/app/orders/interfaces/order.interface';
+import { OrderStatus, UUID } from '@src/app/orders/interfaces/order.interface';
 import { ServedProductOrder } from '../../components/order-card/order-card.component';
 import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
 
@@ -75,7 +75,7 @@ export default class KitchenPageComponent {
     });
   }
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
+  onStatusChange(orderId: UUID, newStatus: OrderStatus) {
     this.kitchenService.updateOrderStatus(orderId, newStatus).subscribe({
       next: () => {
         this.onRefresh();

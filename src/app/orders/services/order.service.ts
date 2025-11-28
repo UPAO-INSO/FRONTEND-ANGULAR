@@ -8,6 +8,7 @@ import {
   PersonResponse,
   RequestOrder,
   RESTOrder,
+  UUID,
 } from '../interfaces/order.interface';
 import { environment } from '@environments/environment';
 
@@ -41,7 +42,7 @@ export class OrderService {
   envs = environment;
 
   private ordersCache = new Map<string, RESTOrder>();
-  private orderByIdCache = new Map<number, ContentOrder>();
+  private orderByIdCache = new Map<UUID, ContentOrder>();
   private personCache = new Map<string, PersonResponse>();
   private ordersByTableCache = new Map<string, ContentOrder[]>();
   private readonly CACHE_TTL = 2 * 60 * 1000;
@@ -296,7 +297,7 @@ export class OrderService {
   }
 
   updateOrderStatus(
-    orderId: number,
+    orderId: UUID,
     status: OrderStatus
   ): Observable<ContentOrder[]> {
     return this.http
@@ -321,7 +322,7 @@ export class OrderService {
       );
   }
 
-  updateOrder(id: number, order: ContentOrder): Observable<ContentOrder> {
+  updateOrder(id: UUID, order: ContentOrder): Observable<ContentOrder> {
     return this.http
       .put<ContentOrder>(`${this.envs.API_URL}/orders/${id}`, order)
       .pipe(
