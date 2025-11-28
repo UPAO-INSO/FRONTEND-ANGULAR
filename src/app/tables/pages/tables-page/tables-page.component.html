@@ -1,7 +1,6 @@
 <app-table-header-status (status)="selectedTableStatus.set($event)" />
 
 <app-table-list
-  [productTypes]="productTypeResource.value() ?? []"
   [tables]="tablesResource.value()?.content ?? []"
   [isEmpty]="(tablesResource.value()?.content?.length ?? 0) === 0"
   [isLoading]="tablesResource.isLoading()"
@@ -11,7 +10,6 @@
   (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
   (orderCreated)="onOrderCreated($event)"
   (orderUpdated)="onOrderUpdated($event.id, $event.order)"
-  (productNameQuery)="productNameQuery.set($event)"
   (refresh)="onRefresh()"
 />
 

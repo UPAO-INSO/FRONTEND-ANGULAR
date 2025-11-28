@@ -30,7 +30,7 @@ export class ClientSelectorComponent {
 
   clientsResource = rxResource({
     params: () => ({
-      page: this.paginationService.currentPage(),
+      page: this.currentPage(),
       query: this.documentQuery(),
     }),
 

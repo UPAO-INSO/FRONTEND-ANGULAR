@@ -18,10 +18,15 @@ import {
   PartialProductUpdate,
 } from '../../interfaces/product.type';
 import { ProductService } from '../../services/product.service';
+import { SearchProductInputComponent } from '../search-product-input/search-product-input.component';
 
 @Component({
   selector: 'app-change-status-product',
-  imports: [OrderProductTabsComponent, OrderProductItemComponent],
+  imports: [
+    OrderProductTabsComponent,
+    OrderProductItemComponent,
+    SearchProductInputComponent,
+  ],
   templateUrl: './change-status-product.component.html',
 })
 export class ChangeStatusProductComponent {
@@ -38,6 +43,7 @@ export class ChangeStatusProductComponent {
   updateProductStaus = output<PartialProductUpdate>();
 
   selectedCategoryId = signal<number | null>(null);
+  debouncedSearch = signal<string | null>(null);
 
   onProductStatusUpdated(product: PartialProductUpdate) {
     this.updateProductStaus.emit(product);
@@ -55,10 +61,18 @@ export class ChangeStatusProductComponent {
   filteredProducts = rxResource({
     params: () => ({
       categoryId: this.selectedCategoryId(),
-      refreshTrigger: this.refreshTrigger(),
+      refreshTrigger: this.productService.refreshTrigger$(),
+      search: this.debouncedSearch(),
     }),
     stream: ({ params }) => {
       if (!params.categoryId) return of([]);
+
+      const search = (params.search ?? '').toString().trim();
+
+      if (search.length > 0) {
+        return this.productService.fetchProductsByNameContainig(search);
+      }
+
       return this.productService.fetchProductsByTypeId(params.categoryId);
     },
   });

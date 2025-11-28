@@ -24,7 +24,6 @@ import { TableListItemComponent } from './table-list-item/table-list-item.compon
 export class TableListComponent {
   tables = input.required<ContentTable[]>();
   modifyStatus = input.required<boolean>();
-  productTypes = input.required<ProductType[]>({});
 
   activeOrdersByTable = input<Map<number, ContentOrder>>(new Map());
   isEmpty = input<boolean>(false);
@@ -40,15 +39,10 @@ export class TableListComponent {
   refresh = output<void>();
   orderCreated = output<RequestOrder>();
   orderUpdated = output<{ id: number; order: ContentOrder }>();
-  productNameQuery = output<string>();
   modifyStatusChanged = output<boolean>();
 
   selectedTable = signal<Table | null>(null);
   selectedProductCategory = signal<ProductType | null>(null);
-
-  productName(name: string) {
-    this.productNameQuery.emit(name);
-  }
 
   onChangeModifyStatus(status: boolean) {
     this.modifyStatusChanged.emit(status);

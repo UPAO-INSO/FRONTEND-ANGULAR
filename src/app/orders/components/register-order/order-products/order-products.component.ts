@@ -18,10 +18,15 @@ import { OrderCartService } from '@src/app/orders/services/order-cart.service';
 import { ProductService } from '@src/app/products/services/product.service';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
+import { SearchProductInputComponent } from '@src/app/products/components/search-product-input/search-product-input.component';
 
 @Component({
   selector: 'app-order-products',
-  imports: [OrderProductItemComponent, OrderProductTabsComponent],
+  imports: [
+    OrderProductItemComponent,
+    OrderProductTabsComponent,
+    SearchProductInputComponent,
+  ],
   templateUrl: './order-products.component.html',
 })
 export class OrderProductsComponent {
@@ -32,31 +37,9 @@ export class OrderProductsComponent {
   productTypes = input.required<ProductType[]>({});
 
   closeModal = output<void>();
-  selectedCategoryId = signal<number | null>(null);
-
-  // TODO: REFACTORIZAR
-  value = output<string>();
-
-  inputValue = signal<string | null>(null);
   debouncedSearch = signal<string | null>(null);
 
-  debounceEffect = effect((onCleanUp) => {
-    const value = this.inputValue();
-
-    const timeout = setTimeout(() => {
-      if (value !== null) {
-        this.debouncedSearch.set(value);
-        this.value.emit(value);
-      }
-
-      return;
-    }, 500);
-
-    onCleanUp(() => {
-      clearTimeout(timeout);
-    });
-  });
-  //
+  selectedCategoryId = signal<number | null>(null);
 
   products = computed(() => {
     return this.filteredProducts.value();
@@ -83,11 +66,9 @@ export class OrderProductsComponent {
       const search = (params.search ?? '').toString().trim();
 
       if (search.length > 0) {
-        // usar directamente el servicio de búsqueda (ya hay debounce en debounceEffect)
         return this.productService.fetchProductsByNameContainig(search);
       }
 
-      // Sin texto: devolver por categoría
       return this.productService.fetchProductsByTypeId(params.categoryId);
     },
   });

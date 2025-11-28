@@ -11,24 +11,30 @@ import { OrderSummaryComponent } from './order-summary/order-summary.component';
 import { ContentOrder, RequestOrder } from '../../interfaces/order.interface';
 
 import { Table } from '@src/app/tables/interfaces/table.interface';
-import { ProductType } from '@src/app/products/interfaces/product.type';
-import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { tap } from 'rxjs';
+import { ProductService } from '@src/app/products/services/product.service';
+import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-modify-modal.component';
 
 @Component({
   selector: 'app-register-order',
-  imports: [OrderProductsComponent, OrderSummaryComponent],
+  imports: [
+    OrderProductsComponent,
+    OrderSummaryComponent,
+    ConfirmModifyModalComponent,
+  ],
   templateUrl: './register-order.component.html',
 })
 export class RegisterOrderComponent {
+  private productService = inject(ProductService);
+
   selectedTable = input.required<Table>();
-  productTypes = input.required<ProductType[]>({});
   modifyStatus = input<boolean>();
   activeOrder = input<ContentOrder | null>();
 
   orderCreated = output<RequestOrder>();
   orderUpdated = output<{ id: number; order: ContentOrder }>();
   closeModal = output<void>();
-  nameProductQuery = output<string>();
   statusModifyModalChange = output<boolean>();
 
   showCreateConfirmModal = signal<boolean>(false);
@@ -36,9 +42,13 @@ export class RegisterOrderComponent {
 
   orderSummary = viewChild(OrderSummaryComponent);
 
-  nameProductValue(name: string) {
-    return this.nameProductQuery.emit(name);
-  }
+  productTypeResource = rxResource({
+    stream: () => {
+      return this.productService
+        .fetchProductsType()
+        .pipe(tap((productTypes) => productTypes));
+    },
+  });
 
   onCreateOrder(orderData: RequestOrder) {
     this.pendingOrderData.set(orderData);
