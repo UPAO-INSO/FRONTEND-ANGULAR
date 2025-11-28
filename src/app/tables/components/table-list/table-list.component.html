@@ -67,12 +67,10 @@
 @else {
 <app-register-order
   [selectedTable]="selectedTable()!"
-  [productTypes]="productTypes()"
   [activeOrder]="getActiveOrderByTable(selectedTable()!.id)"
   (orderCreated)="onOrderCreated($event)"
   (orderUpdated)="onOrderUpdated($event.id, $event.order)"
   (closeModal)="closeRegisterOrder()"
   (statusModifyModalChange)="onChangeModifyStatus($event)"
-  (nameProductQuery)="productName($event)"
 />
 } }

@@ -42,7 +42,7 @@ export class ProductService {
 
   constructor() {
     this.initializeUserId();
-    this.setupWebSocketConnection();
+    // this.setupWebSocketConnection();
   }
 
   private isCacheValid(key: string): boolean {

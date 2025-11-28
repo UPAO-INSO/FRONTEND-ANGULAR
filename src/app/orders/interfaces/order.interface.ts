@@ -1,3 +1,5 @@
+export type UUID = string;
+
 export interface PersonResponse {
   id: number;
   name: string;
@@ -13,7 +15,7 @@ export interface PersonByFullName {
 }
 
 export interface Order {
-  id: number;
+  id: UUID;
   mesa: number;
   productos: ProductOrder[];
   estado: OrderStatus | string;
@@ -47,7 +49,7 @@ export interface ContentOrder {
 
 export interface OrderEmployee {
   id: number;
-  orderId: number;
+  orderId: UUID;
   employeeId: number;
   minutesSpent: number;
   employeeName: string;
@@ -62,7 +64,7 @@ export interface ProductOrder {
   servedQuantity: number;
   unitPrice: number;
   subtotal: number;
-  orderId: number;
+  orderId: UUID;
   productId: number;
 }
 
@@ -90,6 +92,6 @@ export interface RequestProductOrder {
   quantity: number;
   unitPrice: number;
   subtotal: number;
-  orderId: number;
+  orderId: UUID;
   productId: number;
 }

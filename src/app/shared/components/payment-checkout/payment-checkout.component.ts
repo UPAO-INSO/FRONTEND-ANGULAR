@@ -3,6 +3,7 @@ import {
   effect,
   inject,
   input,
+  OnDestroy,
   output,
   signal,
   viewChild,
@@ -14,8 +15,11 @@ import { Client } from '@src/app/clients/interfaces/client.interface';
 import {
   ClientDetailsRequest,
   CreateCulqiOrder,
+  RESTChangeStatusCulqiOrder,
   RESTCulqiOrder,
 } from '../../interfaces/culqi.interface';
+import { WebSocketService } from '../../services/websocket.service';
+import { filter, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-payment-checkout',
@@ -24,6 +28,7 @@ import {
 })
 export class PaymentCheckoutComponent {
   private culqiService = inject(CulqiService);
+  private websocketService = inject(WebSocketService);
 
   isOpen = input.required<boolean>();
   paymentRequest = input.required<CreateCulqiOrder>();
@@ -43,6 +48,11 @@ export class PaymentCheckoutComponent {
   qrResponse = signal<RESTCulqiOrder | null>(null);
   showQrModal = signal<boolean>(false);
 
+  private wsSubscription?: Subscription;
+
+  paymentStatus = signal<string>('pending');
+  isListeningForPayment = signal<boolean>(false);
+
   constructor() {
     effect(() => {
       const isOpen = this.isOpen();
@@ -51,8 +61,84 @@ export class PaymentCheckoutComponent {
       if (isOpen && existingOrder) {
         this.qrResponse.set(existingOrder);
         this.showQrModal.set(true);
+        this.subscribeToOrderUpdates(existingOrder.id);
       }
     });
+  }
+
+  private subscribeToOrderUpdates(culqiOrderId: string) {
+    if (this.wsSubscription) {
+      console.log('unsubscribe');
+      this.wsSubscription.unsubscribe();
+    }
+
+    this.isListeningForPayment.set(true);
+    console.log('Listening for payment updates for order:', culqiOrderId);
+
+    this.wsSubscription = this.websocketService.culqiOrderUpdates$
+      .pipe(
+        filter((update): update is RESTChangeStatusCulqiOrder => {
+          if (!update) return false;
+
+          return update.id === culqiOrderId;
+        })
+      )
+      .subscribe({
+        next: (update) => {
+          console.log('Payment update received:', update);
+          this.handlePaymentUpdate(update);
+        },
+        error: (error) => {
+          console.error('WebSocket subscription error:', error);
+          this.isListeningForPayment.set(false);
+        },
+      });
+  }
+
+  private handlePaymentUpdate(update: RESTChangeStatusCulqiOrder) {
+    const status = update.state;
+    this.paymentStatus.set(status);
+
+    switch (status.toLowerCase()) {
+      case 'paid':
+        console.log('Payment confirmed!');
+        this.onPaymentConfirmed(update);
+        break;
+
+      case 'expired':
+        console.log('Payment expired');
+        this.errorMessage.set('El código de pago ha expirado');
+        break;
+
+      case 'cancelled':
+        console.log('Payment cancelled');
+        this.errorMessage.set('El pago fue cancelado');
+        break;
+
+      default:
+        console.log('Payment status:', status);
+    }
+  }
+
+  private onPaymentConfirmed(update: RESTChangeStatusCulqiOrder) {
+    const currentOrder = this.qrResponse();
+
+    if (currentOrder) {
+      const updatedOrder: RESTCulqiOrder = {
+        ...currentOrder,
+        state: update.state,
+        paid_at: update.paid_at,
+        updated_at: update.updated_at,
+      };
+
+      this.qrResponse.set(updatedOrder);
+      this.paymentSuccess.emit(updatedOrder);
+      this.isListeningForPayment.set(false);
+
+      setTimeout(() => {
+        this.closeQrModal();
+      }, 2000);
+    }
   }
 
   onClientSelectorCancel() {}
@@ -166,6 +252,7 @@ export class PaymentCheckoutComponent {
         this.isProcessing.set(false);
         this.qrResponse.set(response);
         this.showQrModal.set(true);
+        this.subscribeToOrderUpdates(response.id);
         this.paymentSuccess.emit(response);
       },
       error: (error) => {
@@ -179,6 +266,12 @@ export class PaymentCheckoutComponent {
 
   closeQrModal() {
     this.showQrModal.set(false);
+    this.isListeningForPayment.set(false);
+
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+      this.wsSubscription = undefined;
+    }
   }
 
   copyPaymentCode() {

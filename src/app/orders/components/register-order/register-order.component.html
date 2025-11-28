@@ -9,10 +9,9 @@
       <!-- Products Section -->
       <div class="w-full lg:w-2/3 h-auto lg:h-full overflow-y-auto">
         <app-order-products
-          [productTypes]="productTypes()"
+          [productTypes]="productTypeResource.value() ?? []"
           [selectedTable]="selectedTable()"
           (closeModal)="onCloseModal()"
-          (value)="nameProductValue($event)"
         />
       </div>
 
@@ -32,6 +31,10 @@
 
   <!-- Confirmation Modal -->
   @if (showCreateConfirmModal()) {
+
+  <!-- <app-confirm-modify-modal /> -->
+
+  <!--  -->
   <div
     class="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4"
   >

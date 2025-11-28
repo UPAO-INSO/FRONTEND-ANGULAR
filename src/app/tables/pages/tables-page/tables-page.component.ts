@@ -107,27 +107,6 @@ export class TablesPageComponent {
     return ordersByTable;
   });
 
-  productResource = rxResource({
-    params: () => ({ name: this.productNameQuery() }),
-
-    stream: ({ params }) => {
-      if (params.name !== null)
-        return this.productService.fetchProductsByNameContainig(params.name);
-
-      return this.productService
-        .fetchProducts()
-        .pipe(tap((products) => products));
-    },
-  });
-
-  productTypeResource = rxResource({
-    stream: () => {
-      return this.productService
-        .fetchProductsType()
-        .pipe(tap((productTypes) => productTypes));
-    },
-  });
-
   onModifyStatusChanged(status: boolean) {
     this.modifyStatusChanged.set(status);
   }

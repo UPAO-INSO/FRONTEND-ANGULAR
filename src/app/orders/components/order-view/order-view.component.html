@@ -219,11 +219,11 @@
               <span>Procesar Pago</span>
               }
             </button>
+            }
 
             <!-- Botones de modificar y confirmar orden -->
             @if (activeOrder().orderStatus !== orderStatus.READY &&
-            activeOrder().orderStatus !== orderStatus.COMPLETED &&
-            activeOrder().orderStatus !== orderStatus.PAID) {
+            activeOrder().orderStatus !== orderStatus.COMPLETED ) {
 
             <!--  -->
             @if (!isAtm()) {
@@ -252,7 +252,7 @@
               <span class="fa-solid fa-check mr-2"></span>
               {{ textConfirm() }}
             </button>
-            } }
+            }
           </div>
         </main>
       </div>

@@ -29,8 +29,31 @@ export interface RESTCulqiOrder {
   fee_details: null;
   creation_date: number;
   expiration_date: number;
-  updated_at: null;
-  paid_at: null;
+  updated_at: number;
+  paid_at: number;
+  available_on: null;
+  metadata: null;
+  qr: string;
+  cuotealo: null;
+  url_pe: string;
+}
+
+export interface RESTChangeStatusCulqiOrder {
+  object: string;
+  id: string;
+  amount: number;
+  payment_code: string;
+  currency_code: string;
+  description: string;
+  order_number: string;
+  state: string;
+  total_fee: null;
+  net_amount: null;
+  fee_details: null;
+  creation_date: number;
+  expiration_date: number;
+  updated_at: number;
+  paid_at: number;
   available_on: null;
   metadata: null;
   qr: string;
