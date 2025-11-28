@@ -33,7 +33,7 @@ export interface RESTOrder {
 }
 
 export interface ContentOrder {
-  id: number;
+  id: UUID;
   orderStatus: OrderStatus;
   comment: string;
   paid: boolean;

@@ -1,8 +1,10 @@
+import { UUID } from '@src/app/orders/interfaces/order.interface';
+
 export interface CreateCulqiOrder {
   amount: number;
   currencyIsoCode: string;
   description: string;
-  orderNumber: string;
+  orderNumber: UUID;
   expirationDate: string;
   confirm: boolean;
   clientDetailsRequest: ClientDetailsRequest;
@@ -22,7 +24,7 @@ export interface RESTCulqiOrder {
   payment_code: string;
   currency_code: string;
   description: string;
-  order_number: string;
+  order_number: UUID;
   state: string;
   total_fee: null;
   net_amount: null;

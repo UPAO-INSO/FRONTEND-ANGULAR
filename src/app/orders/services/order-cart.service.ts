@@ -3,7 +3,6 @@ import {
   Product,
   ProductsType,
 } from '@src/app/products/interfaces/product.type';
-import { ProductOrder } from '../interfaces/order.interface';
 
 export interface CartItem {
   product: Product;
@@ -36,6 +35,18 @@ export class OrderCartService {
     )
   );
 
+  cartOtherItems = computed(() =>
+    this.cartItems().filter(
+      (item) =>
+        item.product.productTypeName !== ProductsType.SEGUNDOS &&
+        item.product.productTypeName !== ProductsType.ENTRADAS
+    )
+  );
+
+  totalOthers = computed(() =>
+    this.cartOtherItems().reduce((acc, item) => acc + item.quantity, 0)
+  );
+
   totalItems = computed(() =>
     this.cartItems().reduce((acc, item) => acc + item.quantity, 0)
   );
@@ -49,6 +60,7 @@ export class OrderCartService {
   );
 
   subtotal = computed(() => {
+    const others = this.cartOtherItems();
     const starters = this.cartStarterItems();
     const seconds = this.cartSecondItems();
     const totalStarters = this.totalStarters();
@@ -56,28 +68,25 @@ export class OrderCartService {
 
     const secondsTotal = seconds.reduce((acc, item) => acc + item.subtotal, 0);
 
+    const othersTotal = others.reduce((acc, item) => acc + item.subtotal, 0);
+
+    let startersTotal = 0;
     if (totalStarters === totalSeconds) {
-      return secondsTotal;
-    }
-
-    if (totalStarters > totalSeconds) {
+      startersTotal = 0;
+    } else if (totalStarters > totalSeconds) {
       const excessStarters = totalStarters - totalSeconds;
-
-      let startersExcessTotal = 0;
       let remainingExcess = excessStarters;
 
       for (const starter of starters) {
         if (remainingExcess <= 0) break;
 
         const itemsToCharge = Math.min(starter.quantity, remainingExcess);
-        startersExcessTotal += starter.product.price * itemsToCharge;
+        startersTotal += starter.product.price * itemsToCharge;
         remainingExcess -= itemsToCharge;
       }
-
-      return secondsTotal + startersExcessTotal;
     }
 
-    return secondsTotal;
+    return secondsTotal + startersTotal + othersTotal;
   });
 
   tax = computed(() => this.subtotal() * 0.18);
@@ -87,6 +96,7 @@ export class OrderCartService {
   menuBreakdown = computed(() => {
     const totalStarters = this.totalStarters();
     const totalSeconds = this.totalSeconds();
+    const totalOthers = this.totalOthers();
 
     const menusIncluded = Math.min(totalStarters, totalSeconds);
     const extraStarters = Math.max(0, totalStarters - totalSeconds);
@@ -98,6 +108,7 @@ export class OrderCartService {
       secondsWithoutStarter,
       totalStarters,
       totalSeconds,
+      totalOthers,
     };
   });
 

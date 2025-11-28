@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { OrderProductsComponent } from './order-products/order-products.component';
 import { OrderSummaryComponent } from './order-summary/order-summary.component';
-import { ContentOrder, RequestOrder } from '../../interfaces/order.interface';
+import {
+  ContentOrder,
+  RequestOrder,
+  UUID,
+} from '../../interfaces/order.interface';
 
 import { Table } from '@src/app/tables/interfaces/table.interface';
 import { rxResource } from '@angular/core/rxjs-interop';
@@ -16,13 +20,14 @@ import { tap } from 'rxjs';
 import { ProductService } from '@src/app/products/services/product.service';
 import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-modify-modal.component';
 
+interface OrderUpdated {
+  id: UUID;
+  order: ContentOrder;
+}
+
 @Component({
   selector: 'app-register-order',
-  imports: [
-    OrderProductsComponent,
-    OrderSummaryComponent,
-    ConfirmModifyModalComponent,
-  ],
+  imports: [OrderProductsComponent, OrderSummaryComponent],
   templateUrl: './register-order.component.html',
 })
 export class RegisterOrderComponent {
@@ -33,7 +38,7 @@ export class RegisterOrderComponent {
   activeOrder = input<ContentOrder | null>();
 
   orderCreated = output<RequestOrder>();
-  orderUpdated = output<{ id: number; order: ContentOrder }>();
+  orderUpdated = output<OrderUpdated>();
   closeModal = output<void>();
   statusModifyModalChange = output<boolean>();
 
@@ -55,7 +60,7 @@ export class RegisterOrderComponent {
     this.showCreateConfirmModal.set(true);
   }
 
-  onUpdateOrder(id: number, order: RequestOrder) {
+  onUpdateOrder(id: UUID, order: RequestOrder) {
     this.pendingOrderData.set(order);
     this.showCreateConfirmModal.set(true);
   }

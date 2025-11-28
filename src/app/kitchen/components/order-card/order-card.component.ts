@@ -12,6 +12,7 @@ import {
   ContentOrder,
   OrderStatus,
   ProductOrder,
+  UUID,
 } from '@orders/interfaces/order.interface';
 import { ConfirmReadyModalComponent } from './confirm-ready-modal/confirm-ready-modal.component';
 import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
@@ -24,7 +25,7 @@ interface ProductProgress {
 }
 
 export interface ServedProductOrder {
-  orderId: number;
+  orderId: UUID;
   productOrderId: number;
   quantity: number;
 }

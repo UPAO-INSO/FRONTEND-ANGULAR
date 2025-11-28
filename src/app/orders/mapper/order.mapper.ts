@@ -1,8 +1,8 @@
 import {
   ContentOrder,
   Order,
-  RequestOrder,
   RequestProductOrder,
+  UUID,
 } from '../interfaces/order.interface';
 import { CartItem } from '../services/order-cart.service';
 
@@ -23,7 +23,7 @@ export class OrderMapper {
   }
 
   static mapCartItemToRequestProductOrder(
-    orderId: number,
+    orderId: UUID,
     cartItem: CartItem
   ): RequestProductOrder {
     return {
@@ -36,7 +36,7 @@ export class OrderMapper {
   }
 
   static mapCartItemsToRequestProductsOrder(
-    orderId: number,
+    orderId: UUID,
     cartItems: CartItem[]
   ): RequestProductOrder[] {
     return cartItems.map((item) =>

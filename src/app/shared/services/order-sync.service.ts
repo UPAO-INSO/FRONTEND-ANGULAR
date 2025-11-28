@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
+import { UUID } from '@src/app/orders/interfaces/order.interface';
 import { Subject } from 'rxjs';
 
 export interface OrderUpdate {
-  orderId: number;
+  orderId: UUID;
   type: 'created' | 'status' | 'product' | 'full' | 'deleted';
   tableId?: number;
 }
@@ -20,23 +21,23 @@ export class OrderSyncService {
     this.orderUpdated$.next(update);
   }
 
-  notifyOrderCreated(orderId: number, tableId?: number) {
+  notifyOrderCreated(orderId: UUID, tableId?: number) {
     this.notifyOrderUpdate({ orderId, type: 'created', tableId });
   }
 
-  notifyStatusChange(orderId: number, tableId?: number) {
+  notifyStatusChange(orderId: UUID, tableId?: number) {
     this.notifyOrderUpdate({ orderId, type: 'status', tableId });
   }
 
-  notifyProductChange(orderId: number, tableId?: number) {
+  notifyProductChange(orderId: UUID, tableId?: number) {
     this.notifyOrderUpdate({ orderId, type: 'product', tableId });
   }
 
-  notifyFullUpdate(orderId: number, tableId?: number) {
+  notifyFullUpdate(orderId: UUID, tableId?: number) {
     this.notifyOrderUpdate({ orderId, type: 'full', tableId });
   }
 
-  notifyOrderDeleted(orderId: number, tableId?: number) {
+  notifyOrderDeleted(orderId: UUID, tableId?: number) {
     this.notifyOrderUpdate({ orderId, type: 'deleted', tableId });
   }
 }

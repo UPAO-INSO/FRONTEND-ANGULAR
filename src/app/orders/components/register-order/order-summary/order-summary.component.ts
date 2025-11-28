@@ -17,10 +17,10 @@ import {
   ContentOrder,
   PersonByFullName,
   PersonResponse,
-  ProductOrder,
   RequestOrder,
   RequestOrderEmployee,
   RequestProductOrder,
+  UUID,
 } from '@src/app/orders/interfaces/order.interface';
 import { OrderMapper } from '@src/app/orders/mapper/order.mapper';
 import { User } from '@auth/interfaces/user.interfaces';
@@ -29,6 +29,11 @@ import { OrderService } from '@src/app/orders/services/order.service';
 import { OrderSummaryItemComponent } from './order-summary-item/order-summary-item.component';
 import { OrderSummaryTotalComponent } from './order-summary-total/order-summary-total.component';
 import { ProductService } from '@src/app/products/services/product.service';
+
+interface OrderUpdated {
+  id: UUID;
+  order: RequestOrder;
+}
 
 @Component({
   selector: 'app-order-summary',
@@ -46,7 +51,7 @@ export class OrderSummaryComponent {
   private productService = inject(ProductService);
 
   createOrder = output<RequestOrder>();
-  updateOrder = output<{ id: number; order: RequestOrder }>();
+  updateOrder = output<OrderUpdated>();
   searchFullName = output<PersonByFullName>();
 
   selectedTable = input.required<Table>();
@@ -56,7 +61,7 @@ export class OrderSummaryComponent {
   totalItems = this.orderCartService.totalItems;
 
   comment = signal<string>('');
-  private orderLoaded = signal<number | null>(null);
+  private orderLoadedId = signal<UUID | null>(null);
   private _user = signal<User | null>(
     localStorage.getItem('user-data')
       ? JSON.parse(localStorage.getItem('user-data')!)
@@ -76,13 +81,13 @@ export class OrderSummaryComponent {
         return;
       }
 
-      if (this.orderLoaded() === order.id) {
+      if (this.orderLoadedId() === order.id) {
         return;
       }
 
       this.loadOrderToCart(order, table.id);
 
-      this.orderLoaded.set(order.id);
+      this.orderLoadedId.set(order.id);
 
       if (order.comment) {
         this.comment.set(order.comment);

@@ -1,17 +1,6 @@
-@if (isOpen()) {
+@if (isOpen() && !existingOrder()) {
 <dialog class="modal modal-open">
   <div class="modal-box bg-side-background max-w-md">
-    <button
-      class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-700 rounded-full"
-      (click)="onCancel()"
-      [disabled]="isProcessing()"
-      aria-label="Cerrar"
-    >
-      <span class="fa-solid fa-xmark text-xl"></span>
-    </button>
-
-    <!--  -->
-    @if (!existingOrder()) {
     <h3 class="font-bold text-xl text-white mb-4">
       <span class="fa-solid fa-wallet mr-2"></span>
       Procesar Pago
@@ -63,16 +52,16 @@
 
     <!-- Detalles del pago -->
     <div class="bg-gray-800 rounded-lg p-4 mb-4">
-      <div class="flex justify-between items-center mb-2">
-        <span class="text-gray-400">Descripción:</span>
-        <span class="text-white font-semibold">{{
+      <div class="flex justify-between items-center mb-2 gap-1">
+        <span class="text-gray-400">Descripción: </span>
+        <span class="text-white font-semibold truncate">{{
           paymentRequest().description
         }}</span>
       </div>
 
       @if (paymentRequest().orderNumber) {
-      <div class="flex justify-between items-center mb-2">
-        <span class="text-gray-400">Orden #:</span>
+      <div class="flex justify-between items-center mb-2 truncate">
+        <span class="text-gray-400">Orden:</span>
         <span class="text-white">{{ paymentRequest().orderNumber }}</span>
       </div>
       }
@@ -221,45 +210,63 @@
       </div>
       }
     </div>
-    }
   </div>
 </dialog>
 }
 
-<!-- Modal de selección de cliente -->
-<app-client-selector
-  #clientSelector
-  (clientSelected)="onClientSelected($event)"
-  (cancel)="onClientSelectorCancel()"
-/>
+<!--  -->
+@if (showPaymentSuccessModal()) {
+<dialog class="modal modal-open z-[9999]">
+  <div class="modal-box bg-side-background max-w-md">
+    <div class="text-center py-6">
+      <!-- Icono de éxito -->
+      <div class="mb-4">
+        <div
+          class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto"
+        >
+          <span class="fa-solid fa-check text-white text-2xl"></span>
+        </div>
+      </div>
 
-<!-- Modal de código QR -->
+      <h3 class="font-bold text-2xl text-white mb-2">¡Pago Confirmado!</h3>
+
+      <p class="text-gray-400 mb-4">Tu pago ha sido procesado exitosamente</p>
+
+      @if (qrResponse()) {
+      <div
+        class="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-4"
+      >
+        <div class="flex justify-between items-center">
+          <span class="text-green-400">Monto pagado:</span>
+          <span class="text-green-400 text-xl font-bold">
+            S/ {{ (qrResponse()!.amount / 100).toFixed(2) }}
+          </span>
+        </div>
+        <div class="flex justify-between items-center mt-2">
+          <span class="text-green-400 text-sm">Orden:</span>
+          <span class="text-green-400 text-sm">
+            {{ qrResponse()!.order_number }}
+          </span>
+        </div>
+      </div>
+      }
+
+      <div class="modal-action justify-center">
+        <button
+          class="btn btn-success px-8"
+          (click)="closePaymentSuccessModal()"
+        >
+          <span class="fa-solid fa-check mr-2"></span>
+          Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+</dialog>
+}
+
+<!--  -->
 @if (showQrModal() && qrResponse()) {
-
-<!--  -->
-@if (isListeningForPayment()) {
-<div class="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-  <div class="flex items-center gap-2">
-    <span class="loading loading-spinner loading-sm text-blue-500"></span>
-    <span class="text-sm text-blue-400">
-      Esperando confirmación de pago...
-    </span>
-  </div>
-</div>
-}
-
-<!--  -->
-@if (paymentStatus() === 'PAID' || paymentStatus() === 'paid') {
-<div class="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-  <div class="flex items-center gap-2">
-    <span class="fa-solid fa-check-circle text-green-500"></span>
-    <span class="text-sm text-green-400 font-semibold">
-      ¡Pago confirmado exitosamente!
-    </span>
-  </div>
-</div>
-}
-
 <!--  -->
 <dialog class="modal modal-open">
   <div class="modal-box bg-side-background max-w-lg">
@@ -325,7 +332,7 @@
 
       <!-- Orden número -->
       <div class="flex justify-between items-center">
-        <span class="text-gray-400">Orden #:</span>
+        <span class="text-gray-400">Orden:</span>
         <span class="text-white">{{ qrResponse()!.order_number }}</span>
       </div>
 
@@ -404,3 +411,10 @@
   </div>
 </dialog>
 }
+
+<!-- Modal de selección de cliente -->
+<app-client-selector
+  #clientSelector
+  (clientSelected)="onClientSelected($event)"
+  (cancel)="onClientSelectorCancel()"
+/>

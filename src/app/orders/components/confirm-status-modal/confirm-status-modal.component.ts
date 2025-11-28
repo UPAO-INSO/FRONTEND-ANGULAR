@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { OrderStatus, UUID } from '../../interfaces/order.interface';
 
 @Component({
   selector: 'app-confirm-status-modal',
@@ -8,15 +9,15 @@ import { CommonModule } from '@angular/common';
   templateUrl: './confirm-status-modal.component.html',
 })
 export class ConfirmStatusModalComponent {
-  @Input() isOpen: boolean = false;
-  @Input() orderId: number = 0;
-  @Input() confirmText: string = 'Cambiar Estado';
-  @Input() statusQuery: any = null;
-  @Output() confirm = new EventEmitter<any>();
-  @Output() cancel = new EventEmitter<void>();
+  isOpen = input<boolean>(false);
+  orderId = input<UUID>('');
+  confirmText = input<string>('Cambiar Estado');
+  statusQuery = input<OrderStatus>();
+  confirm = output<any>();
+  cancel = output<void>();
 
   onConfirm(): void {
-    this.confirm.emit(this.statusQuery);
+    this.confirm.emit(this.statusQuery());
   }
 
   onCancel(): void {

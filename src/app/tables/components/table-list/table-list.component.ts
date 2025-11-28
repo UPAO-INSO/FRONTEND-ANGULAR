@@ -7,6 +7,7 @@ import {
   ContentOrder,
   OrderStatus,
   RequestOrder,
+  UUID,
 } from '@src/app/orders/interfaces/order.interface';
 
 import {
@@ -15,6 +16,16 @@ import {
   TableStatus,
 } from '../../interfaces/table.interface';
 import { TableListItemComponent } from './table-list-item/table-list-item.component';
+
+interface StatusChange {
+  orderId: UUID;
+  newStatus: OrderStatus;
+}
+
+interface OrderUpdate {
+  id: UUID;
+  order: ContentOrder;
+}
 
 @Component({
   selector: 'app-table-list',
@@ -32,13 +43,10 @@ export class TableListComponent {
 
   orderStatus = OrderStatus;
 
-  statusChange = output<{
-    orderId: number;
-    newStatus: OrderStatus;
-  }>();
+  statusChange = output<StatusChange>();
   refresh = output<void>();
   orderCreated = output<RequestOrder>();
-  orderUpdated = output<{ id: number; order: ContentOrder }>();
+  orderUpdated = output<OrderUpdate>();
   modifyStatusChanged = output<boolean>();
 
   selectedTable = signal<Table | null>(null);
@@ -48,7 +56,7 @@ export class TableListComponent {
     this.modifyStatusChanged.emit(status);
   }
 
-  onChangeStatus(orderId: number, newStatus: OrderStatus) {
+  onChangeStatus(orderId: UUID, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 
@@ -56,7 +64,7 @@ export class TableListComponent {
     this.orderCreated.emit(orderData);
   }
 
-  onOrderUpdated(id: number, order: ContentOrder) {
+  onOrderUpdated(id: UUID, order: ContentOrder) {
     this.orderUpdated.emit({ id, order });
   }
 

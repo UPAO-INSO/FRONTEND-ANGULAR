@@ -52,6 +52,7 @@ export class PaymentCheckoutComponent {
 
   paymentStatus = signal<string>('pending');
   isListeningForPayment = signal<boolean>(false);
+  showPaymentSuccessModal = signal<boolean>(false);
 
   constructor() {
     effect(() => {
@@ -61,7 +62,23 @@ export class PaymentCheckoutComponent {
       if (isOpen && existingOrder) {
         this.qrResponse.set(existingOrder);
         this.showQrModal.set(true);
+        console.log('showQrModal true', this.showQrModal());
+
+        this.paymentStatus.set(existingOrder.state || 'pending');
         this.subscribeToOrderUpdates(existingOrder.id);
+        return;
+      }
+
+      if (!isOpen) {
+        this.showQrModal.set(false);
+        this.showPaymentSuccessModal.set(false);
+        this.qrResponse.set(null);
+        this.isListeningForPayment.set(false);
+
+        if (this.wsSubscription) {
+          this.wsSubscription.unsubscribe();
+          this.wsSubscription = undefined;
+        }
       }
     });
   }
@@ -77,11 +94,10 @@ export class PaymentCheckoutComponent {
 
     this.wsSubscription = this.websocketService.culqiOrderUpdates$
       .pipe(
-        filter((update): update is RESTChangeStatusCulqiOrder => {
-          if (!update) return false;
-
-          return update.id === culqiOrderId;
-        })
+        filter(
+          (update): update is RESTChangeStatusCulqiOrder =>
+            !!update && update.id === culqiOrderId
+        )
       )
       .subscribe({
         next: (update) => {
@@ -134,11 +150,13 @@ export class PaymentCheckoutComponent {
       this.qrResponse.set(updatedOrder);
       this.paymentSuccess.emit(updatedOrder);
       this.isListeningForPayment.set(false);
-
-      setTimeout(() => {
-        this.closeQrModal();
-      }, 2000);
+      this.showPaymentSuccessModal.set(true);
     }
+  }
+
+  closePaymentSuccessModal() {
+    this.showPaymentSuccessModal.set(false);
+    this.closeQrModal();
   }
 
   onClientSelectorCancel() {}
@@ -266,12 +284,15 @@ export class PaymentCheckoutComponent {
 
   closeQrModal() {
     this.showQrModal.set(false);
+    this.qrResponse.set(null);
     this.isListeningForPayment.set(false);
 
     if (this.wsSubscription) {
       this.wsSubscription.unsubscribe();
       this.wsSubscription = undefined;
     }
+
+    this.cancel.emit();
   }
 
   copyPaymentCode() {
@@ -299,10 +320,13 @@ export class PaymentCheckoutComponent {
 
   openExistingQr() {
     const order = this.existingOrder();
-    if (order) {
-      this.qrResponse.set(order);
-      this.showQrModal.set(true);
-    }
+    console.log('exist order', { order });
+    if (!order) return;
+
+    this.qrResponse.set(order);
+    this.showQrModal.set(true);
+    this.paymentStatus.set(order.state || 'pending');
+    this.subscribeToOrderUpdates(order.id);
   }
 
   formatAmount(amount: number): string {
