@@ -60,3 +60,25 @@ export interface RestProductContent {
   active: boolean;
   available: boolean;
 }
+
+/**
+ * Request para crear un producto
+ */
+export interface ProductRequest {
+  name: string;
+  price: number;
+  description: string;
+  productTypeId: number;
+}
+
+/**
+ * Request para actualizar un producto
+ */
+export interface ProductUpdateRequest {
+  name?: string;
+  price?: number;
+  description?: string;
+  productTypeId?: number;
+  active?: boolean;
+  available?: boolean;
+}
