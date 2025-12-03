@@ -25,6 +25,11 @@ export const routes: Routes = [
         loadChildren: () => import('./kitchen/kitchen.routes'),
       },
       {
+        path: 'inventory',
+        loadChildren: () =>
+          import('./inventory/inventory.routes').then((m) => m.inventoryRoutes),
+      },
+      {
         path: '**',
         redirectTo: '',
       },

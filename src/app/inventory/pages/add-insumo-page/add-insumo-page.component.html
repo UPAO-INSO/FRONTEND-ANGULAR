@@ -1,0 +1,157 @@
+<main class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+  <div class="flex flex-col gap-8">
+    <!-- Breadcrumb -->
+    <div class="flex flex-wrap gap-2">
+      <a
+        routerLink="/dashboard/inventory"
+        class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal hover:underline"
+      >
+        Inventario
+      </a>
+      <span class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">/</span>
+      <span class="text-[#131811] dark:text-white text-base font-medium leading-normal">
+        Añadir Item
+      </span>
+    </div>
+
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between gap-3">
+      <div class="flex flex-col gap-2">
+        <p class="text-[#131811] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
+          Añadir Nuevo Item
+        </p>
+        <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal">
+          Registra un nuevo item.
+        </p>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div
+        class="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg"
+      >
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Form Card -->
+    <div
+      class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm"
+    >
+      <form class="p-6 md:p-8 space-y-8" (submit)="onSubmit($event)">
+        <div class="space-y-6">
+          <h3
+            class="text-lg font-semibold text-[#131811] dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3"
+          >
+            Detalles del Item
+          </h3>
+
+          <!-- Nombre -->
+          <div class="flex max-w-full flex-wrap items-end gap-4">
+            <label class="flex flex-col min-w-40 flex-1">
+              <p class="text-[#131811] dark:text-white text-base font-medium leading-normal pb-2">
+                Nombre del Item
+              </p>
+              <input
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:border-blue-500/50 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4 text-base font-normal leading-normal"
+                placeholder="Ej: Harina de Trigo"
+                [ngModel]="name()"
+                (ngModelChange)="name.set($event)"
+                name="name"
+                required
+              />
+            </label>
+          </div>
+
+          <!-- Tipo de Item -->
+          <div class="flex flex-col min-w-40 flex-1">
+            <p class="text-[#131811] dark:text-white text-base font-medium leading-normal pb-2">
+              Tipo de Item
+            </p>
+            <div class="relative">
+              <select
+                class="form-select appearance-none flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:border-blue-500/50 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 py-3.5 text-base font-normal leading-normal"
+                [ngModel]="selectedType()"
+                (change)="onTypeChange($event)"
+                name="type"
+              >
+                @for (type of inventoryTypes; track type) {
+                  <option [value]="type">{{ typeLabels[type] }}</option>
+                }
+              </select>
+              <span
+                class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Cantidad y Unidad -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <label class="flex flex-col min-w-40 flex-1 md:col-span-1">
+              <p class="text-[#131811] dark:text-white text-base font-medium leading-normal pb-2">
+                Cantidad
+              </p>
+              <input
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:border-blue-500/50 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4 text-base font-normal leading-normal"
+                placeholder="0"
+                type="number"
+                min="0"
+                [step]="quantityStep"
+                [ngModel]="quantity()"
+                (ngModelChange)="onQuantityChange($event)"
+                name="quantity"
+                required
+              />
+            </label>
+            <label class="flex flex-col min-w-40 flex-1 md:col-span-2">
+              <p class="text-[#131811] dark:text-white text-base font-medium leading-normal pb-2">
+                Unidad de Medida
+              </p>
+              <div class="relative">
+                <select
+                  class="form-select appearance-none flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:border-blue-500/50 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 py-3.5 text-base font-normal leading-normal"
+                  [ngModel]="selectedUnit()"
+                  (change)="onUnitChange($event)"
+                  name="unit"
+                >
+                  @for (unit of allowedUnits; track unit) {
+                    <option [value]="unit">{{ unitLabels[unit] }}</option>
+                  }
+                </select>
+                <span
+                  class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                ></span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div
+          class="flex flex-col sm:flex-row-reverse gap-4 pt-6 border-t border-gray-200 dark:border-gray-700"
+        >
+          <button
+            class="flex max-w-[480px] w-full sm:w-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-blue-600 hover:bg-blue-700 text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            type="submit"
+            [disabled]="isSubmitting()"
+          >
+            @if (isSubmitting()) {
+              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <span>Guardando...</span>
+            } @else {
+              <span>Guardar</span>
+            }
+          </button>
+          <button
+            class="flex max-w-[480px] w-full sm:w-auto cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-[#131811] dark:text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] px-6"
+            type="button"
+            (click)="goBack()"
+          >
+            <span>Cancelar</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
