@@ -119,27 +119,6 @@
             </div>
           </div>
 
-          <!-- Tipo de Insumo -->
-          <div class="flex flex-col">
-            <label
-              class="text-gray-200 text-base font-medium leading-normal pb-2"
-              for="item-type"
-            >
-              Tipo de Insumo
-            </label>
-            <select
-              class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 h-14 placeholder:text-gray-400 px-4 py-3.5 text-base font-normal leading-normal"
-              id="item-type"
-              [ngModel]="selectedType()"
-              (change)="onTypeChange($event)"
-              name="type"
-            >
-              @for (type of inventoryTypes; track type) {
-                <option [value]="type">{{ typeLabels[type] }}</option>
-              }
-            </select>
-          </div>
-
           <!-- Actions -->
           <div class="flex justify-between items-center gap-4 pt-6 border-t border-gray-700">
             <button

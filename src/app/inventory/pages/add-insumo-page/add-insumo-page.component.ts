@@ -39,20 +39,30 @@ export class AddInsumoPageComponent {
     return ALLOWED_UNITS_BY_TYPE[InventoryType.INGREDIENT];
   }
 
-  // Determinar step para el input de cantidad
+  // Step dinámico: 1 para UNIDAD, 0.1 para otros
   get quantityStep(): string {
-    return this.selectedUnit() === UnitOfMeasure.UNIDAD ? '1' : '0.1';
+    return this.selectedUnit() === 'UNIDAD' ? '1' : '0.1';
   }
 
   onUnitChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const unit = target.value as UnitOfMeasure;
     this.selectedUnit.set(unit);
+    // Si cambia a UNIDAD, redondear la cantidad actual a entero
+    if (unit === 'UNIDAD') {
+      this.quantity.set(Math.round(this.quantity()));
+    }
     this.clearError();
   }
 
+  // Redondear según unidad: entero para UNIDAD, máximo 2 decimales para otros
   onQuantityChange(value: number): void {
-    this.quantity.set(value);
+    if (this.selectedUnit() === 'UNIDAD') {
+      this.quantity.set(Math.round(value));
+    } else {
+      const rounded = Math.round(value * 100) / 100;
+      this.quantity.set(rounded);
+    }
   }
 
   onSubmit(event: Event): void {

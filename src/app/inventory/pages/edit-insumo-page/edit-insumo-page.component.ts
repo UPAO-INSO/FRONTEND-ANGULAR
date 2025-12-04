@@ -13,8 +13,6 @@ import {
   UNIT_OF_MEASURE_LABELS,
   ALLOWED_UNITS_BY_TYPE,
   validateInventoryItem,
-  validateTypeChange,
-  validateUnitChange,
 } from '../../interfaces/inventory.interface';
 
 @Component({
@@ -43,8 +41,7 @@ export class EditInsumoPageComponent implements OnInit {
   isDeleting = signal(false);
   errorMessage = signal<string | null>(null);
 
-  // Opciones
-  inventoryTypes = Object.values(InventoryType);
+  // Opciones - Solo para ingredientes
   typeLabels = INVENTORY_TYPE_LABELS;
   unitLabels = UNIT_OF_MEASURE_LABELS;
 
@@ -75,84 +72,33 @@ export class EditInsumoPageComponent implements OnInit {
     });
   }
 
+  // Unidades permitidas para ingredientes (masa y volumen, no UNIDAD)
   get allowedUnits(): UnitOfMeasure[] {
-    return ALLOWED_UNITS_BY_TYPE[this.selectedType()];
+    return ALLOWED_UNITS_BY_TYPE[InventoryType.INGREDIENT];
   }
 
+  // Step dinámico: 1 para UNIDAD, 0.1 para otros
   get quantityStep(): string {
-    return this.selectedUnit() === UnitOfMeasure.UNIDAD ? '1' : '0.01';
-  }
-
-  onTypeChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const newType = target.value as InventoryType;
-    const originalType = this.originalItem()?.type ?? InventoryType.INGREDIENT;
-
-    // Validar cambio de tipo según reglas del backend
-    const validation = validateTypeChange(
-      originalType,
-      newType,
-      this.selectedUnit(),
-      this.quantity()
-    );
-
-    if (!validation.valid) {
-      this.errorMessage.set(validation.message!);
-      // Revertir al tipo anterior
-      target.value = this.selectedType();
-      return;
-    }
-
-    this.selectedType.set(newType);
-
-    // Si es BEVERAGE o DISPOSABLE, forzar UNIDAD
-    const allowedUnits = ALLOWED_UNITS_BY_TYPE[newType];
-    if (!allowedUnits.includes(this.selectedUnit())) {
-      this.selectedUnit.set(allowedUnits[0]);
-      
-      // Redondear cantidad si es UNIDAD
-      if (allowedUnits[0] === UnitOfMeasure.UNIDAD && !Number.isInteger(this.quantity())) {
-        this.quantity.set(Math.round(this.quantity()));
-      }
-    }
-
-    this.clearError();
+    return this.selectedUnit() === 'UNIDAD' ? '1' : '0.1';
   }
 
   onUnitChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
-    const newUnit = target.value as UnitOfMeasure;
-    const originalUnit = this.originalItem()?.unitOfMeasure ?? UnitOfMeasure.G;
-
-    // Validar cambio de unidad según reglas del backend
-    const validation = validateUnitChange(
-      this.selectedType(),
-      originalUnit,
-      newUnit,
-      this.quantity()
-    );
-
-    if (!validation.valid) {
-      this.errorMessage.set(validation.message!);
-      target.value = this.selectedUnit();
-      return;
-    }
-
-    this.selectedUnit.set(newUnit);
-
-    // Si cambia a UNIDAD, redondear cantidad
-    if (newUnit === UnitOfMeasure.UNIDAD && !Number.isInteger(this.quantity())) {
+    this.selectedUnit.set(target.value as UnitOfMeasure);
+    // Si cambia a UNIDAD, redondear la cantidad actual a entero
+    if (target.value === 'UNIDAD') {
       this.quantity.set(Math.round(this.quantity()));
     }
-
     this.clearError();
   }
 
+  // Redondear según unidad: entero para UNIDAD, máximo 2 decimales para otros
   onQuantityChange(value: number): void {
-    if (this.selectedUnit() === UnitOfMeasure.UNIDAD) {
+    if (this.selectedUnit() === 'UNIDAD') {
       this.quantity.set(Math.round(value));
     } else {
-      this.quantity.set(value);
+      const rounded = Math.round(value * 100) / 100;
+      this.quantity.set(rounded);
     }
   }
 
@@ -182,7 +128,7 @@ export class EditInsumoPageComponent implements OnInit {
     const request: InventoryUpdate = {
       name: this.name().trim(),
       quantity: this.quantity(),
-      type: this.selectedType(),
+      type: InventoryType.INGREDIENT, // Siempre INGREDIENT
       unitOfMeasure: this.selectedUnit(),
     };
 

@@ -107,9 +107,9 @@
                 id="product-price"
                 type="number"
                 min="0"
-                step="0.01"
+                step="0.1"
                 [ngModel]="price()"
-                (ngModelChange)="price.set($event)"
+                (ngModelChange)="onPriceChange($event)"
                 name="price"
               />
             </div>
@@ -151,7 +151,7 @@
                       min="0"
                       step="1"
                       [ngModel]="inventoryQuantity()"
-                      (ngModelChange)="inventoryQuantity.set($event)"
+                      (ngModelChange)="onInventoryQuantityChange($event)"
                       name="inventoryQuantity"
                     />
                     <p class="text-gray-400 text-xs mt-2">

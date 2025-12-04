@@ -101,6 +101,17 @@ export class AddProductPageComponent implements OnInit {
     this.recipeItems.update(items => items.filter((_, i) => i !== index));
   }
 
+  // Redondear precio a 2 decimales
+  onPriceChange(value: number): void {
+    const rounded = Math.round(value * 100) / 100;
+    this.price.set(rounded);
+  }
+
+  // Para bebidas/descartables: solo enteros
+  onInitialQuantityChange(value: number): void {
+    this.initialQuantity.set(Math.round(value));
+  }
+
   goBack(): void {
     this.router.navigate(['/dashboard/inventory']);
   }
