@@ -36,7 +36,10 @@ export class RecipeModalComponent implements OnInit {
 
   // Temporary state for the item being added
   currentItem = signal<InventoryItem | null>(null);
-  quantity = signal<number>(0);
+  quantity = signal<number | null>(null);
+  
+  // Error message for validation
+  quantityError = signal<string | null>(null);
 
   ngOnInit() {
     if (this.initialItems.length > 0) {
@@ -66,13 +69,30 @@ export class RecipeModalComponent implements OnInit {
     }
   }
   
+  // Búsqueda dinámica mientras escribe
+  onSearchChange(value: string): void {
+    this.searchTerm.set(value);
+    if (value.trim()) {
+      this.search();
+    } else {
+      this.searchResults.set([]);
+    }
+  }
+
   search() {
-    if (!this.searchTerm().trim()) return;
+    const term = this.searchTerm().trim().toLowerCase();
+    if (!term) {
+      this.searchResults.set([]);
+      return;
+    }
     
-    this.inventoryService.searchByName({}, this.searchTerm()).subscribe({
+    // Búsqueda local case-insensitive en los items cargados
+    this.inventoryService.findAll({ page: 1, limit: 100 }, InventoryType.INGREDIENT).subscribe({
       next: (res) => {
-        // Cast content to InventoryItem[] because the interface might be generic
-        this.searchResults.set(res.content as unknown as InventoryItem[]);
+        const filtered = res.content.filter(item => 
+          item.name.toLowerCase().includes(term)
+        );
+        this.searchResults.set(filtered);
       },
       error: (err) => console.error(err)
     });
@@ -80,7 +100,8 @@ export class RecipeModalComponent implements OnInit {
 
   selectItem(item: InventoryItem) {
     this.currentItem.set(item);
-    this.quantity.set(0);
+    this.quantity.set(null);
+    this.quantityError.set(null);
   }
 
   isDecimalAllowed(unit: string): boolean {
@@ -97,9 +118,10 @@ export class RecipeModalComponent implements OnInit {
 
   addItem() {
     const item = this.currentItem();
-    let qty = this.quantity();
+    const qtyValue = this.quantity();
     
-    if (item && qty > 0) {
+    if (item && qtyValue !== null && qtyValue > 0) {
+      let qty = qtyValue;
       // Enforce integer for UNIDAD, or max 2 decimals for others
       if (!this.isDecimalAllowed(item.unitOfMeasure)) {
         qty = Math.floor(qty);
@@ -133,7 +155,7 @@ export class RecipeModalComponent implements OnInit {
       });
       
       this.currentItem.set(null);
-      this.quantity.set(0);
+      this.quantity.set(null);
       this.searchTerm.set('');
       this.searchResults.set([]);
     }
@@ -163,12 +185,25 @@ export class RecipeModalComponent implements OnInit {
     }
   }
 
-  onQuantityChange(value: number): void {
+  onQuantityChange(value: number | null): void {
+    if (value === null || value === undefined) {
+      this.quantity.set(null);
+      this.quantityError.set(null);
+      return;
+    }
     const item = this.currentItem();
     if (item) {
       if (!this.isDecimalAllowed(item.unitOfMeasure)) {
-        this.quantity.set(Math.floor(value));
+        // Verificar si tiene decimales
+        if (!Number.isInteger(value)) {
+          this.quantityError.set('Las unidades solo aceptan números enteros, no decimales');
+          this.quantity.set(Math.floor(value));
+          return;
+        }
+        this.quantityError.set(null);
+        this.quantity.set(value);
       } else {
+        this.quantityError.set(null);
         this.quantity.set(this.roundToTwoDecimals(value));
       }
     } else {

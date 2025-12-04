@@ -92,8 +92,10 @@ export class OrderService {
           this.clearCache();
         }),
         catchError((error) => {
-          console.error('OrderService error:', error);
-          return throwError(() => 'No se pudo crear ordenes');
+          console.error('CreateOrder error:', error);
+          // Extract meaningful error message from backend
+          const errorMessage = error.error?.message || error.statusText || 'Error al crear la orden';
+          return throwError(() => ({ message: errorMessage, error: error.error }));
         })
       );
   }
@@ -322,7 +324,7 @@ export class OrderService {
       );
   }
 
-  updateOrder(id: UUID, order: ContentOrder): Observable<ContentOrder> {
+  updateOrder(id: UUID, order: RequestOrder): Observable<ContentOrder> {
     return this.http
       .put<ContentOrder>(`${this.envs.API_URL}/orders/${id}`, order)
       .pipe(
@@ -332,9 +334,12 @@ export class OrderService {
           this.clearCache();
         }),
         catchError((error) => {
-          console.error({ error });
+          console.error('Update order error:', error);
 
-          return throwError(() => new Error('Error al actualizar la orden'));
+          // Extract meaningful error message from backend
+          const errorMessage = error.error?.message || error.statusText || 'Error al actualizar la orden';
+          // Return error with original structure preserved
+          return throwError(() => ({ message: errorMessage, error: error.error }));
         })
       );
   }
