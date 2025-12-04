@@ -103,7 +103,7 @@
             <input 
               type="number" 
               [ngModel]="quantity()" 
-              (ngModelChange)="quantity.set($event)"
+              (ngModelChange)="onQuantityChange($event)"
               [min]="getMin(currentItem()?.unitOfMeasure || '')" 
               [step]="getStep(currentItem()?.unitOfMeasure || '')"
               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white p-2 border"

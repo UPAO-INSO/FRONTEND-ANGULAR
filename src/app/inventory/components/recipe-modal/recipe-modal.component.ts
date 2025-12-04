@@ -100,9 +100,11 @@ export class RecipeModalComponent implements OnInit {
     let qty = this.quantity();
     
     if (item && qty > 0) {
-      // Enforce integer for UNIDAD
+      // Enforce integer for UNIDAD, or max 2 decimals for others
       if (!this.isDecimalAllowed(item.unitOfMeasure)) {
         qty = Math.floor(qty);
+      } else {
+        qty = this.roundToTwoDecimals(qty);
       }
 
       this.selectedItems.update(items => {
@@ -113,7 +115,7 @@ export class RecipeModalComponent implements OnInit {
           const updatedItems = [...items];
           updatedItems[existingIndex] = {
             ...updatedItems[existingIndex],
-            quantity: updatedItems[existingIndex].quantity + qty
+            quantity: this.roundToTwoDecimals(updatedItems[existingIndex].quantity + qty)
           };
           return updatedItems;
         }
@@ -147,16 +149,35 @@ export class RecipeModalComponent implements OnInit {
         const newItems = [...items];
         const item = newItems[index];
         
-        // Enforce integer for UNIDAD
+        // Enforce integer for UNIDAD, or max 2 decimals for others
         let newQty = quantity;
         if (!this.isDecimalAllowed(item.unitOfMeasure)) {
           newQty = Math.floor(quantity);
+        } else {
+          newQty = this.roundToTwoDecimals(quantity);
         }
 
         newItems[index] = { ...item, quantity: newQty };
         return newItems;
       });
     }
+  }
+
+  onQuantityChange(value: number): void {
+    const item = this.currentItem();
+    if (item) {
+      if (!this.isDecimalAllowed(item.unitOfMeasure)) {
+        this.quantity.set(Math.floor(value));
+      } else {
+        this.quantity.set(this.roundToTwoDecimals(value));
+      }
+    } else {
+      this.quantity.set(value);
+    }
+  }
+
+  private roundToTwoDecimals(value: number): number {
+    return Math.round(value * 100) / 100;
   }
 
   confirm() {

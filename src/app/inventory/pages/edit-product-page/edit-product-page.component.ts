@@ -248,6 +248,19 @@ export class EditProductPageComponent implements OnInit {
       });
   }
 
+  onPriceChange(value: number): void {
+    this.price.set(this.roundToTwoDecimals(value));
+  }
+
+  onInventoryQuantityChange(value: number): void {
+    // Para bebidas/descartables, solo enteros
+    this.inventoryQuantity.set(Math.round(value));
+  }
+
+  private roundToTwoDecimals(value: number): number {
+    return Math.round(value * 100) / 100;
+  }
+
   onDelete(): void {
     if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) {
       return;
