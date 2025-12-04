@@ -69,13 +69,13 @@
               <div
                 class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row gap-1 sm:gap-2"
               >
-                <span class="text-gray-400 font-medium flex-shrink-0">
+                <span class="text-gray-400 font-medium shrink-0">
                   Comentario:
                 </span>
                 @if (activeOrder().comment.length === 0) {
                 <p class="text-gray-400 italic">No hay comentarios</p>
                 } @else {
-                <p class="text-gray-200 italic break-words">
+                <p class="text-gray-200 italic wrap-break-words">
                   {{ activeOrder().comment }}
                 </p>
                 }
@@ -200,13 +200,12 @@
 
           <!-- Action Buttons -->
           <div class="flex flex-col sm:flex-row w-full gap-2 sm:gap-2">
-            <!-- Botón de Pago (solo si puede procesar pago y es ATM) -->
             @if (canProcessPayment() && isAtm()) {
             <button
               class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base text-white transition-colors active:scale-95 {{
                 culqiOrder()
                   ? 'bg-purple-600 hover:bg-purple-700'
-                  : 'bg-green-600 hover:bg-green-700'
+                  : 'bg-green-700 hover:bg-green-900'
               }}"
               (click)="openPayment()"
               [disabled]="activeOrder().orderStatus === orderStatus.PAID"
@@ -236,12 +235,14 @@
             </button>
             }
 
+            <!--  -->
+            @if (activeOrder().orderStatus === orderStatus.PAID) {
             <button
-              disabled
-              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base bg-gray-700 text-gray-500 font-bold rounded-lg cursor-not-allowed"
+              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base bg-purple-700 text-gray-200 font-bold rounded-lg cursor-pointer"
             >
-              {{ textConfirm() }}
+              Generar Comprobante
             </button>
+            }
 
             <!--  -->
             } @else if (activeOrder().orderStatus !== orderStatus.PAID) {
@@ -263,6 +264,7 @@
 <!-- Payment Checkout Modal -->
 <app-payment-checkout
   [isOpen]="showPaymentModal()"
+  [order]="activeOrder()"
   [paymentRequest]="paymentData()"
   [existingOrder]="culqiOrder()"
   (paymentSuccess)="onPaymentSuccess($event)"

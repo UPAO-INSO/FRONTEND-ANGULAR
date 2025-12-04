@@ -16,4 +16,9 @@ export class PaginationService {
       initialValue: 1,
     }
   );
+
+  resetPage() {
+    const queryParams = { ...this.activatedRoute.snapshot.queryParams };
+    delete queryParams['page'];
+  }
 }

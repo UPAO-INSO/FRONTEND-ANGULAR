@@ -5,7 +5,6 @@ import {
   UUID,
 } from '../../interfaces/order.interface';
 import { DatePipe, TitleCasePipe } from '@angular/common';
-import { PaymentCheckoutComponent } from '@shared/components/payment-checkout/payment-checkout.component';
 import { Table } from '@src/app/tables/interfaces/table.interface';
 import {
   CreateCulqiOrder,
@@ -14,6 +13,7 @@ import {
 import { CulqiService } from '@src/app/shared/services/culqi.service';
 import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-modify-modal.component';
 import { ConfirmStatusModalComponent } from '../confirm-status-modal/confirm-status-modal.component';
+import { PaymentCheckoutComponent } from '@src/app/payments/components/payment-checkout/payment-checkout.component';
 
 interface PaymentSuccessData {
   orderId: UUID;
@@ -30,9 +30,9 @@ interface StatusChange {
   imports: [
     TitleCasePipe,
     DatePipe,
-    PaymentCheckoutComponent,
     ConfirmModifyModalComponent,
     ConfirmStatusModalComponent,
+    PaymentCheckoutComponent,
   ],
   templateUrl: './order-view.component.html',
 })
@@ -70,6 +70,9 @@ export class OrderViewComponent {
       last_name: '',
       email: '',
       phone_number: '',
+    },
+    metadata: {
+      customer_id: 0,
     },
   });
 
@@ -176,6 +179,9 @@ export class OrderViewComponent {
         last_name: '',
         email: '',
         phone_number: '',
+      },
+      metadata: {
+        customer_id: 0,
       },
     });
     this.showPaymentModal.set(true);

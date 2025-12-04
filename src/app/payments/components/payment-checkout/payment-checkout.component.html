@@ -86,24 +86,26 @@
           class="flex-1 btn btn-sm {{
             selectedPaymentMethod() === 'mobile_wallet'
               ? 'btn-primary'
-              : 'btn-outline'
+              : 'btn-outline text-gray-300'
           }}"
           (click)="onSelectPaymentMethod('mobile_wallet')"
           [disabled]="isProcessing()"
         >
           <span class="fa-solid fa-mobile-screen mr-1"></span>
-          Yape / Plin
+          Billetera Digital
         </button>
-        <!-- <button
+        <button
           class="flex-1 btn btn-sm {{
-            selectedPaymentMethod() === 'card' ? 'btn-primary' : 'btn-outline'
+            selectedPaymentMethod() === 'cash'
+              ? 'btn-primary'
+              : 'btn-outline text-gray-300'
           }}"
-          (click)="onSelectPaymentMethod('card')"
+          (click)="onSelectPaymentMethod('cash')"
           [disabled]="isProcessing()"
         >
-          <span class="fa-solid fa-credit-card mr-1"></span>
-          Tarjeta
-        </button> -->
+          <span class="fa-solid fa-cash-register mr-1"></span>
+          Efectivo
+        </button>
       </div>
     </div>
 
@@ -130,9 +132,9 @@
       <div class="flex items-start gap-2">
         <span class="fa-solid fa-shield-halved text-blue-400 mt-1"></span>
         <div class="text-sm text-blue-300">
-          <p class="font-semibold mb-1">Pago con tarjeta</p>
+          <p class="font-semibold mb-1">Pago con efectivo</p>
           <p class="text-xs text-blue-400">
-            Procesado de forma segura con encriptación SSL
+            Registrar pedido como pagado con efectivo.
           </p>
         </div>
       </div>
@@ -157,23 +159,23 @@
         Cancelar
       </button>
       <button
-        class="btn {{
-          selectedPaymentMethod() === 'mobile_wallet'
-            ? 'btn-primary'
-            : 'btn-success'
-        }}"
+        class="btn btn-primary"
         (click)="onPay()"
         [disabled]="isProcessing() || !selectedClient()"
       >
         @if (isProcessing()) {
         <span class="loading loading-spinner loading-sm"></span>
         <span>Procesando...</span>
-        } @else if (selectedPaymentMethod() === 'mobile_wallet') {
+        }
+        <!--  -->
+        @else if (selectedPaymentMethod() === 'mobile_wallet') {
         <span class="fa-solid fa-qrcode mr-2"></span>
         <span>Generar QR</span>
-        } @else {
-        <span class="fa-solid fa-credit-card mr-2"></span>
-        <span>Pagar con Tarjeta</span>
+        }
+        <!--   -->
+        @else {
+        <span class="fa-solid fa-money-bill-wave mr-2"></span>
+        <span>Pagar con Efectivo</span>
         }
       </button>
     </div>
@@ -216,7 +218,7 @@
 
 <!--  -->
 @if (showPaymentSuccessModal()) {
-<dialog class="modal modal-open z-[9999]">
+<dialog class="modal modal-open z-9999">
   <div class="modal-box bg-side-background max-w-md">
     <div class="text-center py-6">
       <!-- Icono de éxito -->
@@ -312,11 +314,17 @@
           <span class="text-white font-mono text-lg">
             {{ qrResponse()!.payment_code }}
           </span>
+
           <button
-            class="btn btn-xs text-gray-100 bg-gray-800 hover:bg-gray-600 p-2 rounded-md"
+            class="btn btn-xs text-gray-100 bg-gray-800 hover:bg-gray-600 p-2 rounded-md relative"
             (click)="copyPaymentCode()"
             title="Copiar código"
           >
+            <!--  -->
+            @if (showCopyToast()) {
+            <span class="badge absolute bottom-7">Copiado!</span>
+            }
+
             <span class="fa-solid fa-copy"></span>
           </button>
         </div>
