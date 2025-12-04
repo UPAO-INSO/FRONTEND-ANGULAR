@@ -8,6 +8,10 @@ export interface CreateCulqiOrder {
   expirationDate: string;
   confirm: boolean;
   clientDetailsRequest: ClientDetailsRequest;
+  metadata: Metadata;
+}
+export interface Metadata {
+  customer_id: number;
 }
 
 export interface ClientDetailsRequest {
@@ -26,17 +30,17 @@ export interface RESTCulqiOrder {
   description: string;
   order_number: UUID;
   state: string;
-  total_fee: null;
-  net_amount: null;
-  fee_details: null;
+  total_fee: number | null;
+  net_amount: number | null;
+  fee_details: { [key: string]: any } | null;
   creation_date: number;
   expiration_date: number;
   updated_at: number;
   paid_at: number;
-  available_on: null;
-  metadata: null;
+  available_on: Date | null;
+  metadata: { [key: string]: any } | null;
   qr: string;
-  cuotealo: null;
+  cuotealo: string | null;
   url_pe: string;
 }
 
@@ -49,16 +53,16 @@ export interface RESTChangeStatusCulqiOrder {
   description: string;
   order_number: string;
   state: string;
-  total_fee: null;
-  net_amount: null;
-  fee_details: null;
+  total_fee: number | null;
+  net_amount: number | null;
+  fee_details: { [key: string]: any } | null;
   creation_date: number;
   expiration_date: number;
   updated_at: number;
   paid_at: number;
-  available_on: null;
-  metadata: null;
+  available_on: Date | null;
+  metadata: { [key: string]: any } | null;
   qr: string;
-  cuotealo: null;
+  cuotealo: string | null;
   url_pe: string;
 }

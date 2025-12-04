@@ -3,7 +3,6 @@ import {
   effect,
   inject,
   input,
-  OnDestroy,
   output,
   signal,
   viewChild,
@@ -12,14 +11,20 @@ import { CommonModule } from '@angular/common';
 import { CulqiService } from '@shared/services/culqi.service';
 import { ClientSelectorComponent } from '@src/app/clients/components/client-selector/client-selector.component';
 import { Client } from '@src/app/clients/interfaces/client.interface';
+import { filter, Subscription, timeInterval } from 'rxjs';
 import {
-  ClientDetailsRequest,
   CreateCulqiOrder,
-  RESTChangeStatusCulqiOrder,
   RESTCulqiOrder,
-} from '../../interfaces/culqi.interface';
-import { WebSocketService } from '../../services/websocket.service';
-import { filter, Subscription } from 'rxjs';
+  RESTChangeStatusCulqiOrder,
+  ClientDetailsRequest,
+} from '@src/app/shared/interfaces/culqi.interface';
+import { WebSocketService } from '@src/app/shared/services/websocket.service';
+import {
+  CreatePaymentRequest,
+  PaymentType,
+} from '../../interfaces/payments.inteface';
+import { ContentOrder } from '@src/app/orders/interfaces/order.interface';
+import { PaymentsService } from '../../services/payments.service';
 
 @Component({
   selector: 'app-payment-checkout',
@@ -29,7 +34,10 @@ import { filter, Subscription } from 'rxjs';
 export class PaymentCheckoutComponent {
   private culqiService = inject(CulqiService);
   private websocketService = inject(WebSocketService);
+  private paymentService = inject(PaymentsService);
+  private wsSubscription?: Subscription;
 
+  order = input.required<ContentOrder>();
   isOpen = input.required<boolean>();
   paymentRequest = input.required<CreateCulqiOrder>();
   existingOrder = input<RESTCulqiOrder | null>(null);
@@ -42,13 +50,12 @@ export class PaymentCheckoutComponent {
 
   isProcessing = signal<boolean>(false);
   errorMessage = signal<string>('');
-  selectedPaymentMethod = signal<any>('mobile_wallet');
+  selectedPaymentMethod = signal<string>('mobile_wallet');
   selectedClient = signal<Client | null>(null);
 
   qrResponse = signal<RESTCulqiOrder | null>(null);
   showQrModal = signal<boolean>(false);
-
-  private wsSubscription?: Subscription;
+  showCopyToast = signal<boolean>(false);
 
   paymentStatus = signal<string>('pending');
   isListeningForPayment = signal<boolean>(false);
@@ -188,19 +195,28 @@ export class PaymentCheckoutComponent {
     };
   }
 
-  getCustomerEmail(): string {
-    return this.selectedClient()?.email || '';
-  }
-
-  onPayWithCard() {
-    const request = this.paymentRequest();
+  onPayWithCash() {
+    const order = this.order();
+    const now = new Date().toISOString();
+    const payment: CreatePaymentRequest = {
+      provider: 'system',
+      externalId: '',
+      amount: order.totalPrice,
+      currencyCode: 'PEN',
+      description: `Order ${order.id} - Mesa ${order.tableId}`,
+      orderId: order.id,
+      customerId: this.selectedClient()?.id || 0,
+      paymentType: PaymentType.CASH,
+      state: 'paid',
+      qr: '',
+      urlPe: '',
+      creationDate: now,
+      expirationDate: now,
+      updatedAt: now,
+      paidAt: now,
+      rawResponse: '',
+    };
     const customerInfo = this.getCustomerInfo();
-    const email = this.getCustomerEmail();
-
-    if (!email) {
-      this.errorMessage.set('Selecciona un cliente o proporciona un email');
-      return;
-    }
 
     if (!customerInfo) {
       this.errorMessage.set(
@@ -210,23 +226,18 @@ export class PaymentCheckoutComponent {
     }
 
     this.isProcessing.set(true);
+    this.onProcessPaymentCash(payment);
     this.errorMessage.set('');
   }
 
   onPayWithWallet() {
     const request = this.paymentRequest();
     const customerInfo = this.getCustomerInfo();
-    const email = this.getCustomerEmail();
 
     if (!customerInfo) {
       this.errorMessage.set(
         'Selecciona un cliente o proporciona información del cliente'
       );
-      return;
-    }
-
-    if (!email) {
-      this.errorMessage.set('Selecciona un cliente o proporciona un email');
       return;
     }
 
@@ -247,11 +258,25 @@ export class PaymentCheckoutComponent {
     }
 
     this.isProcessing.set(true);
-    this.onProcessPayment(request, customerInfo, amountInCents);
+    this.onProcessPaymentWallet(request, customerInfo, amountInCents);
     this.errorMessage.set('');
   }
 
-  onProcessPayment(
+  onProcessPaymentCash(payment: CreatePaymentRequest) {
+    this.paymentService.createPayment(payment).subscribe({
+      next: () => {
+        this.isProcessing.set(false);
+      },
+      error: (error) => {
+        console.error('Error al crear orden:', error);
+        this.isProcessing.set(false);
+        this.errorMessage.set('Error al crear orden de pago');
+        this.paymentError.emit(error);
+      },
+    });
+  }
+
+  onProcessPaymentWallet(
     request: CreateCulqiOrder,
     customerInfo: ClientDetailsRequest,
     amountInCents: number
@@ -260,6 +285,9 @@ export class PaymentCheckoutComponent {
       ...request,
       clientDetailsRequest: customerInfo,
       amount: amountInCents,
+      metadata: {
+        customer_id: this.selectedClient()?.id || 0,
+      },
     };
 
     console.log({ orderRequest });
@@ -299,8 +327,10 @@ export class PaymentCheckoutComponent {
     const code = this.qrResponse()?.payment_code;
     if (code) {
       navigator.clipboard.writeText(code);
-      // TODO: Agregar un toast
-      console.log('Código copiado:', code);
+      this.showCopyToast.set(true);
+      setTimeout(() => {
+        this.showCopyToast.set(false);
+      }, 1000);
     }
   }
 
@@ -309,7 +339,7 @@ export class PaymentCheckoutComponent {
     if (method === 'mobile_wallet') {
       this.onPayWithWallet();
     } else {
-      this.onPayWithCard();
+      this.onPayWithCash();
     }
   }
 
