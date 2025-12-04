@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs';
 
@@ -29,7 +29,7 @@ export default class KitchenPageComponent {
 
   refreshProductsTrigger = signal(0);
   tableNumber = signal<number | null>(null);
-  currentPage = this.paginationService.currentPage();
+  currentPage = computed(() => this.paginationService.currentPage());
 
   constructor() {
     this.orderSyncService.orderUpdates$.subscribe((update) => {

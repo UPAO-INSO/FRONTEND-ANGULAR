@@ -204,8 +204,8 @@
             <button
               class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base text-white transition-colors active:scale-95 {{
                 culqiOrder()
-                  ? 'bg-purple-600 hover:bg-purple-700'
-                  : 'bg-green-700 hover:bg-green-900'
+                  ? 'bg-purple-600 hover:bg-purple-600/80'
+                  : 'bg-orange-600 hover:bg-orange-600/80'
               }}"
               (click)="openPayment()"
               [disabled]="activeOrder().orderStatus === orderStatus.PAID"
@@ -221,13 +221,11 @@
             }
 
             <!-- Botones de modificar y confirmar orden -->
-            @if (activeOrder().orderStatus !== orderStatus.READY &&
-            activeOrder().orderStatus !== orderStatus.COMPLETED ) {
 
             <!--  -->
             @if (!isAtm()) {
             <button
-              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base bg-red-500 text-gray-100 hover:bg-red-600 transition-colors active:scale-95"
+              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base bg-red-600 text-gray-100 hover:bg-red-600/80 transition-colors active:scale-95"
               (click)="onStatusConfirmModifyModalChange()"
             >
               <span class="fa-solid fa-pen-to-square mr-2"></span>
@@ -245,9 +243,9 @@
             }
 
             <!--  -->
-            } @else if (activeOrder().orderStatus !== orderStatus.PAID) {
+            @if (activeOrder().orderStatus !== orderStatus.PAID) {
             <button
-              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base px-6 bg-red-500 text-white font-bold rounded-lg hover:bg-red-500/80 cursor-pointer transition-colors active:scale-95"
+              class="flex-1 btn h-11 sm:h-12 text-sm sm:text-base px-6 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 cursor-pointer transition-colors active:scale-95"
               (click)="onStatusChange()"
             >
               <span class="fa-solid fa-check mr-2"></span>

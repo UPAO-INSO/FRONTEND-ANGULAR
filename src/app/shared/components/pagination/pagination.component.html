@@ -1,25 +1,25 @@
 <div
   class="flex items-center justify-center h-full w-full font-poppins-semibold"
 >
-  <div class="flex items-center grid-cols-3 text-gray-200 space-x-2">
+  <div class="flex items-center text-gray-200 space-x-2">
     <button
       class="join-item btn bg-side-background rounded-box h-8"
-      [routerLink]="[]"
-      [queryParams]="{ page: activePage() - 1 }"
-      [disabled]="activePage() <= 1"
+      (click)="previousPage()"
+      [disabled]="currentPage() <= 1"
     >
       <i class="fa-solid fa-arrow-left"></i>
     </button>
+
     <span
       class="flex items-center justify-center h-10 w-10 rounded-full border-0 border-white bg-side-background/40 text-sm"
     >
-      {{ activePage() }}
+      {{ currentPage() }}
     </span>
+
     <button
       class="join-item btn bg-side-background rounded-box h-8"
-      [routerLink]="[]"
-      [queryParams]="{ page: activePage() + 1 }"
-      [disabled]="activePage() >= pages()"
+      (click)="nextPage()"
+      [disabled]="currentPage() >= pages()"
     >
       <i class="fa-solid fa-arrow-right"></i>
     </button>

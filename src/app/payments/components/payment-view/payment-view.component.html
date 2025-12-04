@@ -43,7 +43,7 @@
           <div class="mb-3">
             <label class="text-gray-400 text-sm">Monto</label>
             <p class="text-2xl font-bold text-accent">
-              {{ payment().amount | currency : "S/ " }}
+              {{ formatAmount(payment().amount) | currency : "S/ " }}
             </p>
           </div>
 

@@ -23,7 +23,7 @@
   <div
     class="font-bold text-lg text-accent group-hover:text-accent-focus transition-colors"
   >
-    {{ payment().amount.toFixed(2) | currency : "S/ " }}
+    {{ formatAmount(payment().amount) | currency : "S/ " }}
   </div>
 </td>
 

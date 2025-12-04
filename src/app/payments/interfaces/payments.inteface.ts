@@ -4,7 +4,7 @@ export interface RESTPayment {
   totalElements: number;
   size: number;
   page: number;
-  empty: null;
+  empty: boolean;
 }
 
 export interface ContentPayment {

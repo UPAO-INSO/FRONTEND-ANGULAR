@@ -50,6 +50,11 @@ export class PaymentListItemComponent {
     }
   }
 
+  formatAmount(amountInCents: number): string {
+    const amountInSoles = amountInCents / 100;
+    return amountInSoles.toFixed(2);
+  }
+
   openPaymentDetails() {
     this.viewDetails.emit(this.payment());
   }

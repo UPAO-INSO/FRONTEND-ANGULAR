@@ -24,8 +24,8 @@ export class KitchenNavComponent {
   orders = input<ContentOrder[]>();
   isLoading = input<boolean>(false);
   error = input<Error | undefined>();
-  currentPage = input<number>();
-  totalPages = input<number>();
+  currentPage = input.required<number>();
+  totalPages = input.required<number>();
   refreshTrigger = input<number>(0);
 
   productTypes = input.required<ProductType[]>();
