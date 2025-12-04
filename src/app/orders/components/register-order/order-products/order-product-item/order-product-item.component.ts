@@ -51,6 +51,33 @@ export class OrderProductItemComponent {
     return this.localAvailable() ? 'text-green-700' : 'text-red-700';
   });
 
+  // Imagen del producto desde assets/products con fallback
+  private slugify(name: string): string {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[áàäâ]/g, 'a')
+      .replace(/[éèëê]/g, 'e')
+      .replace(/[íìïî]/g, 'i')
+      .replace(/[óòöô]/g, 'o')
+      .replace(/[úùüû]/g, 'u')
+      // Mantener ñ tal cual
+      .replace(/[^a-z0-9ñ]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  getProductImageSrc(): string {
+    const name = this.product().name ?? '';
+    if (!name) return 'assets/products/placeholder.webp';
+    const slug = this.slugify(name);
+    return `assets/products/${slug}.webp`;
+  }
+
+  onImgError(ev: Event): void {
+    const img = ev.target as HTMLImageElement;
+    img.src = 'assets/products/placeholder.webp';
+  }
+
   onSubmitProductStatus() {
     const currentProduct = this.product();
     const newStatus = !currentProduct.available;
