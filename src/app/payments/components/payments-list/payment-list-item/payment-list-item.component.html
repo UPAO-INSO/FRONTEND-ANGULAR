@@ -65,3 +65,17 @@
     {{ getStatusText(payment().state) }}
   </span>
 </td>
+
+<td>
+  <div class="flex items-center justify-center">
+    <button
+      class="btn btn-sm btn-primary gap-2"
+      (click)="onCreateVoucher($event)"
+      [disabled]="payment().state !== 'paid'"
+      title="Generar comprobante"
+    >
+      <i class="fa-solid fa-file-invoice text-xs"></i>
+      Generar
+    </button>
+  </div>
+</td>

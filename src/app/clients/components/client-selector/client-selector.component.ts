@@ -135,7 +135,7 @@ export class ClientSelectorComponent {
     this.newClientData.set({
       documentNumber: ruc,
       name: response.data.nombre_o_razon_social,
-      lastname: response.data.tipo_contribuyente,
+      lastname: response.data.tipo_contribuyente || 'PERSONA JURIDICA',
       completeAddress: response.data.direccion,
       phone: '',
       email: '',

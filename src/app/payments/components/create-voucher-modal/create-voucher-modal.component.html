@@ -1,0 +1,161 @@
+@if (isOpen()) {
+<dialog class="modal modal-open">
+  <div class="modal-box bg-side-background max-w-2xl">
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h3 class="font-bold text-2xl text-white mb-2">
+          <i class="fa-solid fa-file-invoice text-accent mr-2"></i>
+          Generar Comprobante Electrónico
+        </h3>
+        <p class="text-gray-400 text-sm">Pago #{{ payment().id }}</p>
+      </div>
+      <button (click)="onClose()" class="btn btn-sm btn-circle btn-ghost">
+        <span class="fa-solid fa-xmark text-xl"></span>
+      </button>
+    </div>
+
+    <!-- Tipo de comprobante -->
+    <div class="mb-6">
+      <label class="block text-gray-300 font-semibold mb-3">
+        Tipo de Comprobante
+      </label>
+      <div class="grid grid-cols-2 gap-4">
+        <button
+          class="btn btn-lg gap-3"
+          [class.btn-primary]="voucherType() === VoucherType.RECEIPT"
+          [class.btn-outline]="voucherType() !== VoucherType.RECEIPT"
+          (click)="selectVoucherType(VoucherType.RECEIPT)"
+        >
+          <i class="fa-solid fa-receipt text-xl"></i>
+          <div class="text-left">
+            <div class="font-bold">Boleta</div>
+            <div class="text-xs opacity-70">Serie BBB1</div>
+          </div>
+        </button>
+
+        <button
+          class="btn btn-lg gap-3"
+          [class.btn-primary]="voucherType() === VoucherType.INVOICE"
+          [class.btn-outline]="voucherType() !== VoucherType.INVOICE"
+          (click)="selectVoucherType(VoucherType.INVOICE)"
+        >
+          <i class="fa-solid fa-file-invoice text-xl"></i>
+          <div class="text-left">
+            <div class="font-bold">Factura</div>
+            <div class="text-xs opacity-70">Serie FFF1</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Información del pago -->
+    <div class="bg-gray-800 rounded-lg p-4 mb-6">
+      <h4 class="font-semibold text-white mb-3">Información del Pago</h4>
+
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <span class="text-gray-400">Monto Total:</span>
+          <p class="text-white font-semibold text-lg">
+            S/ {{ (payment().amount / 100).toFixed(2) }}
+          </p>
+        </div>
+
+        <div>
+          <span class="text-gray-400">Estado:</span>
+          <p class="text-white">
+            <span
+              class="badge"
+              [class.badge-success]="payment().state === 'paid'"
+              [class.badge-warning]="payment().state === 'pending'"
+            >
+              {{ payment().state }}
+            </span>
+          </p>
+        </div>
+
+        <div>
+          <span class="text-gray-400">Fecha de Pago:</span>
+          <p class="text-white">
+            {{ payment().paidAt | date : "dd/MM/yyyy HH:mm" }}
+          </p>
+        </div>
+
+        <div>
+          <span class="text-gray-400">Método:</span>
+          <p class="text-white">{{ payment().paymentType }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Productos -->
+    <div class="bg-gray-800 rounded-lg p-4 mb-6">
+      <h4 class="font-semibold text-white mb-3">
+        Productos ({{ payment().order.productOrders.length }})
+      </h4>
+
+      <div class="max-h-48 overflow-y-auto">
+        <table class="table table-sm w-full">
+          <thead class="text-gray-400">
+            <tr>
+              <th>Producto</th>
+              <th class="text-center">Cant.</th>
+              <th class="text-right">Precio</th>
+              <th class="text-right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-300">
+            @for (product of payment().order.productOrders; track product.id) {
+            <tr>
+              <td class="text-sm">{{ product.productName }}</td>
+              <td class="text-center">{{ product.quantity }}</td>
+              <td class="text-right">S/ {{ product.unitPrice.toFixed(2) }}</td>
+              <td class="text-right font-semibold">
+                S/ {{ product.subtotal.toFixed(2) }}
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mensajes -->
+    @if (errorMessage()) {
+    <div class="alert alert-error mb-4">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span>{{ errorMessage() }}</span>
+    </div>
+    }
+    <!--  -->
+    @if (successMessage()) {
+    <div class="alert alert-success mb-4">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>{{ successMessage() }}</span>
+    </div>
+    }
+
+    <!-- Acciones -->
+    <div class="modal-action">
+      <button
+        class="btn btn-ghost"
+        (click)="onClose()"
+        [disabled]="isProcessing()"
+      >
+        Cancelar
+      </button>
+      <button
+        class="btn btn-primary gap-2"
+        (click)="generateVoucher()"
+        [disabled]="isProcessing() || payment().state !== 'paid'"
+      >
+        @if (isProcessing()) {
+        <span class="loading loading-spinner loading-sm"></span>
+        Generando... } @else {
+        <i class="fa-solid fa-file-invoice"></i>
+        Generar Comprobante }
+      </button>
+    </div>
+  </div>
+</dialog>
+}

@@ -14,6 +14,7 @@ export class PaymentListItemComponent {
   payment = input.required<ContentPayment>();
 
   viewDetails = output<ContentPayment>();
+  createVoucher = output<ContentPayment>();
 
   paymentType = PaymentType;
 
@@ -57,5 +58,10 @@ export class PaymentListItemComponent {
 
   openPaymentDetails() {
     this.viewDetails.emit(this.payment());
+  }
+
+  onCreateVoucher(event: Event) {
+    event.stopPropagation();
+    this.createVoucher.emit(this.payment());
   }
 }

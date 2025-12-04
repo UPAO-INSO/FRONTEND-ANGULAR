@@ -24,7 +24,7 @@ interface StatusChange {
 
 interface OrderUpdate {
   id: UUID;
-  order: ContentOrder;
+  order: RequestOrder;
 }
 
 @Component({
@@ -64,7 +64,7 @@ export class TableListComponent {
     this.orderCreated.emit(orderData);
   }
 
-  onOrderUpdated(id: UUID, order: ContentOrder) {
+  onOrderUpdated(id: UUID, order: RequestOrder) {
     this.orderUpdated.emit({ id, order });
   }
 

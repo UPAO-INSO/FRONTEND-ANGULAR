@@ -9,7 +9,9 @@
       [class.group-hover:opacity-30]="!isKitchen()"
       [class.duration-300]="!isKitchen()"
       [class.transition-opacity]="!isKitchen()"
-      src="https://lh3.googleusercontent.com/aida-public/AB6AXuArr8YlVyZU0vwnMlylp53O7qh2SNZPUIvqsT6FWs5gwQ6Z7TmyHtvsQOqMzjVoKjH2kj_alwVpqKiapFe3A5t1fAy8T9lpScigCM5qDG0Kl1UXgAoyeJfJX1QleYQPEu3MsYO1HvX_X98sUyD8KUSkG5nKtAqsvXpRyo-wICO4FMZIO7kQACf6FgivDb5scXNltNBc-eSNcFSpLILYn8y8qEyee7pYWcRlsMoUnCfHPNcjkvnOcyDV-2iQrxfvShFt0ekAkf-wCaJ9"
+      [src]="getProductImageSrc()"
+      (error)="onImgError($event)"
+      loading="lazy"
     />
 
     <!--  Description Overlay -->
@@ -87,10 +89,11 @@
       >
         {{ textStatusProduct() }}
       </span>
-      <div class="relative cursor-pointer">
+      <div class="relative cursor-pointer" [class.opacity-50]="isUpdating()" [class.pointer-events-none]="isUpdating()">
         <input
           type="checkbox"
           [checked]="product().available"
+          [disabled]="isUpdating()"
           class="toggle toggle-xs sm:toggle-sm"
           (change)="onSubmitProductStatus()"
         />
