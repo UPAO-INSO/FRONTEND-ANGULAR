@@ -61,4 +61,9 @@ export class PaymentViewComponent {
         return 'badge-ghost';
     }
   }
+
+  formatAmount(amountInCents: number): number {
+    const amountInSoles = amountInCents / 100;
+    return parseFloat(amountInSoles.toFixed(2));
+  }
 }

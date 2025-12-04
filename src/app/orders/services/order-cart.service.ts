@@ -3,11 +3,14 @@ import {
   Product,
   ProductsType,
 } from '@src/app/products/interfaces/product.type';
+import { UUID } from '../interfaces/order.interface';
 
 export interface CartItem {
   product: Product;
   quantity: number;
   subtotal: number;
+  servedQuantity?: number;
+  orderId?: UUID;
 }
 
 @Injectable({
@@ -156,7 +159,12 @@ export class OrderCartService {
     }
   }
 
-  addProductWithQuantity(product: Product, quantity: number) {
+  addProductWithQuantityAndServed(
+    product: Product,
+    quantity: number,
+    servedQuantity: number = 0,
+    orderId?: UUID
+  ) {
     const tableId = this._currentTableId();
     if (!tableId || quantity <= 0) return;
 
@@ -167,21 +175,49 @@ export class OrderCartService {
 
     if (existingItemIndex >= 0) {
       const updatedItems = [...currentItems];
-      const newQuantity = updatedItems[existingItemIndex].quantity + quantity;
       updatedItems[existingItemIndex] = {
         ...updatedItems[existingItemIndex],
-        quantity: newQuantity,
-        subtotal: updatedItems[existingItemIndex].product.price * newQuantity,
+        quantity: quantity,
+        servedQuantity: servedQuantity,
+        orderId: orderId,
+        subtotal: product.price * quantity,
       };
       this.updateTableCart(tableId, updatedItems);
     } else {
       const newItem: CartItem = {
         product,
         quantity,
+        servedQuantity,
+        orderId,
         subtotal: product.price * quantity,
       };
       this.updateTableCart(tableId, [...currentItems, newItem]);
     }
+  }
+
+  canModifyProduct(productId: number): {
+    canDecrease: boolean;
+    canRemove: boolean;
+    availableToModify: number;
+  } {
+    const tableId = this._currentTableId();
+    if (!tableId)
+      return { canDecrease: false, canRemove: false, availableToModify: 0 };
+
+    const currentItems = this.getTableCart(tableId);
+    const item = currentItems.find((i) => i.product.id === productId);
+
+    if (!item)
+      return { canDecrease: false, canRemove: false, availableToModify: 0 };
+
+    const servedQty = item.servedQuantity || 0;
+    const availableToModify = item.quantity - servedQty;
+
+    return {
+      canDecrease: availableToModify > 0,
+      canRemove: availableToModify > 0,
+      availableToModify,
+    };
   }
 
   removeProduct(productId: number) {
@@ -189,8 +225,21 @@ export class OrderCartService {
     if (!tableId) return;
 
     const currentItems = this.getTableCart(tableId);
+    const item = currentItems.find((i) => i.product.id === productId);
+
+    if (!item) return;
+
+    const servedQty = item.servedQuantity || 0;
+
+    if (servedQty > 0) {
+      console.warn(
+        `No se puede eliminar porque hay ${servedQty} productos ya servidos`
+      );
+      return;
+    }
+
     const updatedItems = currentItems.filter(
-      (item) => item.product.id !== productId
+      (cartItem) => cartItem.product.id !== productId
     );
     this.updateTableCart(tableId, updatedItems);
   }
@@ -199,16 +248,31 @@ export class OrderCartService {
     const tableId = this._currentTableId();
     if (!tableId) return;
 
-    if (quantity <= 0) {
-      this.removeProduct(productId);
+    const currentItems = this.getTableCart(tableId);
+    const item = currentItems.find((i) => i.product.id === productId);
+
+    if (!item) return;
+
+    const servedQty = item.servedQuantity || 0;
+
+    if (quantity < servedQty) {
+      console.warn(
+        `No se puede reducir por debajo de la cantidad servida (${servedQty})`
+      );
       return;
     }
 
-    const currentItems = this.getTableCart(tableId);
-    const updatedItems = currentItems.map((item) =>
-      item.product.id === productId
-        ? { ...item, quantity, subtotal: item.product.price * quantity }
-        : item
+    if (quantity <= 0) {
+      if (servedQty === 0) {
+        this.removeProduct(productId);
+      }
+      return;
+    }
+
+    const updatedItems = currentItems.map((cartItem) =>
+      cartItem.product.id === productId
+        ? { ...cartItem, quantity, subtotal: cartItem.product.price * quantity }
+        : cartItem
     );
     this.updateTableCart(tableId, updatedItems);
   }

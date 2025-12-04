@@ -110,9 +110,11 @@ export class OrderSummaryComponent {
       const product = productsMap.get(productOrder.productId);
 
       if (product) {
-        this.orderCartService.addProductWithQuantity(
+        this.orderCartService.addProductWithQuantityAndServed(
           product,
-          productOrder.quantity
+          productOrder.quantity,
+          productOrder.servedQuantity, // Pasar servedQuantity
+          order.id
         );
       } else {
         console.warn(

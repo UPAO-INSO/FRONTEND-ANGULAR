@@ -20,6 +20,7 @@ import {
 } from '@src/app/shared/interfaces/culqi.interface';
 import { WebSocketService } from '@src/app/shared/services/websocket.service';
 import {
+  ContentPayment,
   CreatePaymentRequest,
   PaymentType,
 } from '../../interfaces/payments.inteface';
@@ -61,6 +62,9 @@ export class PaymentCheckoutComponent {
   isListeningForPayment = signal<boolean>(false);
   showPaymentSuccessModal = signal<boolean>(false);
 
+  showCashPaymentModal = signal<boolean>(false);
+  cashPaymentData = signal<ContentPayment | null>(null);
+
   constructor() {
     effect(() => {
       const isOpen = this.isOpen();
@@ -79,7 +83,9 @@ export class PaymentCheckoutComponent {
       if (!isOpen) {
         this.showQrModal.set(false);
         this.showPaymentSuccessModal.set(false);
+        this.showCashPaymentModal.set(false);
         this.qrResponse.set(null);
+        this.cashPaymentData.set(null);
         this.isListeningForPayment.set(false);
 
         if (this.wsSubscription) {
@@ -264,13 +270,15 @@ export class PaymentCheckoutComponent {
 
   onProcessPaymentCash(payment: CreatePaymentRequest) {
     this.paymentService.createPayment(payment).subscribe({
-      next: () => {
+      next: (response) => {
         this.isProcessing.set(false);
+        this.cashPaymentData.set(response as ContentPayment);
+        this.showCashPaymentModal.set(true);
       },
       error: (error) => {
-        console.error('Error al crear orden:', error);
+        console.error('Error al crear pago:', error);
         this.isProcessing.set(false);
-        this.errorMessage.set('Error al crear orden de pago');
+        this.errorMessage.set('Error al crear pago en efectivo');
         this.paymentError.emit(error);
       },
     });
@@ -323,6 +331,12 @@ export class PaymentCheckoutComponent {
     this.cancel.emit();
   }
 
+  closeCashPaymentModal() {
+    this.showCashPaymentModal.set(false);
+    this.cashPaymentData.set(null);
+    this.cancel.emit();
+  }
+
   copyPaymentCode() {
     const code = this.qrResponse()?.payment_code;
     if (code) {
@@ -359,8 +373,9 @@ export class PaymentCheckoutComponent {
     this.subscribeToOrderUpdates(order.id);
   }
 
-  formatAmount(amount: number): string {
-    return `S/ ${(amount / 100).toFixed(2)}`;
+  formatAmount(amountInCents: number): string {
+    const amountInSoles = amountInCents / 100;
+    return amountInSoles.toFixed(2);
   }
 
   getClientFullName(): string {
