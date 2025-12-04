@@ -6,14 +6,17 @@ import { forkJoin } from 'rxjs';
 
 import { ProductService } from '@src/app/products/services/product.service';
 import { Product, ProductType } from '@src/app/products/interfaces/product.type';
+import { InventoryService } from '../../services/inventory.service';
+import { RecipeModalComponent, RecipeItem } from '../../components/recipe-modal/recipe-modal.component';
 
 @Component({
   selector: 'app-edit-product-page',
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, RecipeModalComponent],
   templateUrl: './edit-product-page.component.html',
 })
 export class EditProductPageComponent implements OnInit {
   private productService = inject(ProductService);
+  private inventoryService = inject(InventoryService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -27,6 +30,10 @@ export class EditProductPageComponent implements OnInit {
   description = signal('');
   selectedTypeId = signal<number>(0);
   available = signal<boolean>(true);
+
+  // Recipe state
+  showRecipeModal = signal(false);
+  recipeItems = signal<RecipeItem[]>([]);
 
   // UI state
   isLoading = signal(true);
@@ -51,8 +58,9 @@ export class EditProductPageComponent implements OnInit {
     forkJoin({
       product: this.productService.fetchProductById(id),
       types: this.productService.fetchProductsType(),
+      recipe: this.inventoryService.getRecipe(id)
     }).subscribe({
-      next: ({ product, types }) => {
+      next: ({ product, types, recipe }) => {
         this.originalProduct.set(product);
         this.name.set(product.name);
         this.price.set(product.price);
@@ -60,6 +68,16 @@ export class EditProductPageComponent implements OnInit {
         this.selectedTypeId.set(product.productTypeId);
         this.available.set(product.available);
         this.productTypes.set(types);
+        
+        // Map recipe response to RecipeItem
+        const mappedRecipe: RecipeItem[] = recipe.map(item => ({
+          inventoryId: item.inventoryId,
+          name: item.inventoryName || 'Insumo', // Backend should provide name
+          quantity: item.quantity,
+          unitOfMeasure: item.unitOfMeasure
+        }));
+        this.recipeItems.set(mappedRecipe);
+        
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -75,6 +93,23 @@ export class EditProductPageComponent implements OnInit {
     this.selectedTypeId.set(+target.value);
   }
 
+  openRecipeModal() {
+    this.showRecipeModal.set(true);
+  }
+
+  closeRecipeModal() {
+    this.showRecipeModal.set(false);
+  }
+
+  onRecipeAdded(items: RecipeItem[]) {
+    this.recipeItems.set(items);
+    this.closeRecipeModal();
+  }
+
+  removeRecipeItem(index: number) {
+    this.recipeItems.update(items => items.filter((_, i) => i !== index));
+  }
+
   onSubmit(event: Event): void {
     event.preventDefault();
 
@@ -85,6 +120,11 @@ export class EditProductPageComponent implements OnInit {
 
     if (this.price() <= 0) {
       this.errorMessage.set('El precio debe ser mayor a 0');
+      return;
+    }
+
+    if (this.recipeItems().length === 0) {
+      this.errorMessage.set('Debe agregar al menos un insumo a la receta');
       return;
     }
 
@@ -99,6 +139,11 @@ export class EditProductPageComponent implements OnInit {
         productTypeId: this.selectedTypeId(),
         active: this.originalProduct()?.active ?? true,
         available: this.available(),
+        recipe: this.recipeItems().map(item => ({
+          inventoryId: item.inventoryId,
+          quantity: item.quantity,
+          unitOfMeasure: item.unitOfMeasure
+        }))
       })
       .subscribe({
         next: () => {
@@ -115,7 +160,7 @@ export class EditProductPageComponent implements OnInit {
   }
 
   onDelete(): void {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) {
       return;
     }
 
@@ -126,9 +171,7 @@ export class EditProductPageComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error deleting product:', err);
-        this.errorMessage.set(
-          err.error?.message || 'Error al eliminar el producto'
-        );
+        this.errorMessage.set('Error al eliminar el producto');
         this.isDeleting.set(false);
       },
     });

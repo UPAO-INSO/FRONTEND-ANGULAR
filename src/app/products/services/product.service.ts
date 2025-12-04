@@ -187,6 +187,11 @@ export class ProductService {
     price: number;
     description: string;
     productTypeId: number;
+    recipe?: {
+      inventoryId: number;
+      quantity: number;
+      unitOfMeasure: string;
+    }[];
   }): Observable<Product> {
     return this.http
       .post<RestProductContent>(`${this.envs.API_URL}/products`, request)
@@ -237,6 +242,11 @@ export class ProductService {
       productTypeId: number;
       active?: boolean;
       available?: boolean;
+      recipe?: {
+        inventoryId: number;
+        quantity: number;
+        unitOfMeasure: string;
+      }[];
     }
   ): Observable<Product> {
     // Asegurar que enviamos el DTO correcto para el backend
@@ -247,6 +257,7 @@ export class ProductService {
       productTypeId: request.productTypeId,
       active: request.active ?? true,
       available: request.available ?? true,
+      recipe: request.recipe,
     };
 
     return this.http
