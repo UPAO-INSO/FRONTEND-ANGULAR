@@ -91,7 +91,6 @@ export class InventoryPageComponent {
             quantity: item.quantity,
             unitOfMeasure: item.unitOfMeasure,
             inventoryType: item.type,
-            status: item.status,
           });
         }
       }
@@ -150,19 +149,6 @@ export class InventoryPageComponent {
   });
 
   // Helpers para template
-  getStatusClass(status: InventoryItem['status'] | undefined): string {
-    switch (status) {
-      case 'in-stock':
-        return 'bg-green-500';
-      case 'low-stock':
-        return 'bg-yellow-500';
-      case 'out-of-stock':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
-    }
-  }
-
   getCategoryLabel(item: UnifiedInventoryItem): string {
     if (item.itemType === 'product') {
       return item.productTypeName ?? 'Producto';

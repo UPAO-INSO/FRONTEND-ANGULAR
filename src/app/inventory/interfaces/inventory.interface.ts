@@ -196,32 +196,7 @@ export interface PaginatedInventoryResponse {
 /**
  * Item de inventario con estado calculado para UI
  */
-export interface InventoryItem extends InventoryResponse {
-  status: 'in-stock' | 'low-stock' | 'out-of-stock';
-}
-
-/**
- * Calcular estado del stock basado en cantidad
- */
-export function calculateStockStatus(quantity: number, type: InventoryType): InventoryItem['status'] {
-  if (quantity <= 0) return 'out-of-stock';
-  
-  // Umbrales diferentes según tipo
-  const lowStockThreshold = type === InventoryType.INGREDIENT ? 10 : 5;
-  
-  if (quantity <= lowStockThreshold) return 'low-stock';
-  return 'in-stock';
-}
-
-/**
- * Mapear response a item con estado
- */
-export function mapToInventoryItem(response: InventoryResponse): InventoryItem {
-  return {
-    ...response,
-    status: calculateStockStatus(response.quantity, response.type),
-  };
-}
+export interface InventoryItem extends InventoryResponse {}
 
 // ===========================================
 // Interfaces para ProductInventory (recetas)
@@ -309,7 +284,6 @@ export interface UnifiedInventoryItem {
   quantity?: number;
   unitOfMeasure?: UnitOfMeasure;
   inventoryType?: InventoryType;
-  status?: InventoryItem['status'];
   // Campos de producto
   price?: number;
   description?: string;

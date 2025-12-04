@@ -204,17 +204,7 @@
                   {{ getCategoryLabel(item) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
-                  @if (item.itemType === 'inventory') {
-                    <div class="flex items-center gap-2">
-                      <span
-                        class="relative h-2 w-2 rounded-full"
-                        [class]="getStatusClass(item.status)"
-                      ></span>
-                      <span>{{ getQuantityDisplay(item) }}</span>
-                    </div>
-                  } @else {
-                    {{ getQuantityDisplay(item) }}
-                  }
+                  {{ getQuantityDisplay(item) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
                   {{ getUnitOrPrice(item) }}

@@ -11,7 +11,6 @@ import {
   PaginatedInventoryResponse,
   InventoryItem,
   InventoryType,
-  mapToInventoryItem,
   ProductInventoryRequest,
   ProductInventoryResponse,
   ProductInventoryUpdate,
@@ -62,7 +61,7 @@ export class InventoryService {
    */
   getById(id: number): Observable<InventoryItem> {
     return this.http.get<InventoryResponse>(`${this.apiUrl}/inventory/${id}`).pipe(
-      map((response) => mapToInventoryItem(response)),
+      map((response) => response as InventoryItem),
       catchError((err) => {
         console.error('Error fetching inventory item:', err);
         return throwError(() => err);
@@ -91,10 +90,6 @@ export class InventoryService {
     return this.http
       .get<PaginatedInventoryResponse>(`${this.apiUrl}/inventory`, { params })
       .pipe(
-        map((response) => ({
-          ...response,
-          content: response.content.map(mapToInventoryItem),
-        })),
         tap((response) => {
           this.inventoryCache.set(cacheKey, response.content as InventoryItem[]);
           this.cacheTimestamps.set(cacheKey, Date.now());
@@ -122,10 +117,6 @@ export class InventoryService {
     return this.http
       .get<PaginatedInventoryResponse>(`${this.apiUrl}/inventory/search`, { params })
       .pipe(
-        map((response) => ({
-          ...response,
-          content: response.content.map(mapToInventoryItem),
-        })),
         catchError((err) => {
           console.error('Error searching inventory:', err);
           return throwError(() => err);
@@ -148,10 +139,6 @@ export class InventoryService {
     return this.http
       .post<PaginatedInventoryResponse>(`${this.apiUrl}/inventory/filter-types`, types, { params })
       .pipe(
-        map((response) => ({
-          ...response,
-          content: response.content.map(mapToInventoryItem),
-        })),
         catchError((err) => {
           console.error('Error filtering inventory by types:', err);
           return throwError(() => err);
@@ -174,10 +161,6 @@ export class InventoryService {
     return this.http
       .post<PaginatedInventoryResponse>(`${this.apiUrl}/inventory/filter`, filter, { params })
       .pipe(
-        map((response) => ({
-          ...response,
-          content: response.content.map(mapToInventoryItem),
-        })),
         catchError((err) => {
           console.error('Error filtering inventory:', err);
           return throwError(() => err);
