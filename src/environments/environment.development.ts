@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  companyName: "Punto D'Sal",
+  companyName: 'Punto de Sal',
   companyName2: 'App',
   companySlogan: 'Gestiona tus pedidos',
 
