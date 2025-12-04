@@ -32,6 +32,12 @@ export const routes: Routes = [
       {
         path: 'payments',
         loadChildren: () => import('./payments/payment.routes'),
+        
+      },
+      {
+        path: 'inventory',
+        loadChildren: () =>
+          import('./inventory/inventory.routes').then((m) => m.inventoryRoutes),
       },
       {
         path: '**',
