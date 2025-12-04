@@ -1,7 +1,7 @@
 <div
   class="bg-side-background rounded-xl font-poppins-medium shadow-md p-4 w-full min-w-[280px] h-[calc(50vh-40px)] flex flex-col gap-3 hover:shadow-lg transition-shadow relative overflow-visible"
 >
-  <div class="flex flex-row justify-between flex-shrink-0">
+  <div class="flex flex-row justify-between shrink-0">
     <div class="flex gap-2 items-start justify-center">
       <span class="font-fira-bold text-2xl">Mesa {{ order().tableId }}</span>
     </div>
@@ -18,7 +18,7 @@
   </div>
 
   <div class="flex-1 overflow-hidden flex flex-col">
-    <div class="text-xs text-gray-400 mb-2 flex-shrink-0">
+    <div class="text-xs text-gray-400 mb-2 shrink-0">
       {{ order().totalItems }} productos:
     </div>
 
@@ -112,7 +112,7 @@
     </ul>
   </div>
 
-  <div class="flex-shrink-0 space-y-2 pt-2 border-t-2 border-gray-500">
+  <div class="shrink-0 space-y-2 pt-2 border-t-2 border-gray-500">
     <!-- Comentario -->
     @if (order().comment) {
     <div
@@ -184,7 +184,7 @@
 
         <ul
           tabindex="0"
-          class="dropdown-content menu bg-side-background rounded-box z-[9999] w-52 p-2 shadow-xl border border-gray-600 mb-1"
+          class="dropdown-content menu bg-side-background rounded-box z-9999 w-52 p-2 shadow-xl border border-gray-600 mb-1"
         >
           <li class="menu-title text-xs text-gray-400 px-2 pb-1">
             <span>Cambiar estado</span>

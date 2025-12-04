@@ -13,6 +13,11 @@ export const routes: Routes = [
     component: DashboardPageComponent,
     children: [
       {
+        path: '',
+        loadComponent: () =>
+          import('./shared/pages/welcome-page/welcome-page.component'),
+      },
+      {
         path: 'tables',
         loadChildren: () => import('./tables/table.routes'),
       },
@@ -23,6 +28,10 @@ export const routes: Routes = [
       {
         path: 'kitchen',
         loadChildren: () => import('./kitchen/kitchen.routes'),
+      },
+      {
+        path: 'payments',
+        loadChildren: () => import('./payments/payment.routes'),
       },
       {
         path: '**',

@@ -1,0 +1,67 @@
+<td
+  class="font-mono text-accent group-hover:text-accent-focus font-semibold transition-colors"
+  (click)="openPaymentDetails()"
+>
+  #{{ payment().id }}
+</td>
+
+<td (click)="openPaymentDetails()" class="cursor-pointer">
+  <div class="flex items-center justify-center gap-2">
+    <i class="fa-regular fa-calendar text-gray-500 text-sm"></i>
+    <span>{{ payment().createdAt | date : "dd/MM/yyyy" }}</span>
+  </div>
+</td>
+
+<td (click)="openPaymentDetails()" class="cursor-pointer">
+  <div class="flex items-center justify-center gap-2">
+    <i class="fa-regular fa-clock text-gray-500 text-sm"></i>
+    <span>{{ payment().createdAt | date : "HH:mm" }}</span>
+  </div>
+</td>
+
+<td class="font-semibold cursor-pointer" (click)="openPaymentDetails()">
+  <div
+    class="font-bold text-lg text-accent group-hover:text-accent-focus transition-colors"
+  >
+    {{ payment().amount.toFixed(2) | currency : "S/ " }}
+  </div>
+</td>
+
+<td (click)="openPaymentDetails()" class="cursor-pointer">
+  <div class="flex items-center justify-center gap-2">
+    <!--  -->
+    @if (payment().paymentType === paymentType.MOBILE_WALLET) {
+    <div class="badge badge-outline gap-2 py-3 px-3">
+      <i class="fa-solid fa-mobile-screen-button text-sm"></i>
+      {{ getPaymentTypeText(payment().paymentType) }}
+    </div>
+    } @else {
+    <div class="badge badge-outline gap-2 py-3 px-3">
+      <i class="fa-solid fa-money-bill-wave text-sm"></i>
+      {{ getPaymentTypeText(payment().paymentType) }}
+    </div>
+    }
+  </div>
+</td>
+
+<td (click)="openPaymentDetails()" class="cursor-pointer">
+  <span
+    class="badge {{
+      getStatusClass(payment().state)
+    }} gap-2 py-3 px-3 font-medium"
+  >
+    @if (payment().state === 'paid') {
+    <i class="fa-solid fa-circle-check text-sm"></i>
+    }
+    <!--  -->
+    @else if (payment().state === 'pending') {
+    <i class="fa-solid fa-clock text-sm"></i>
+    }
+    <!--  -->
+    @else if (payment().state === 'cancelled' || payment().state === 'expired')
+    {
+    <i class="fa-solid fa-circle-xmark text-sm"></i>
+    }
+    {{ getStatusText(payment().state) }}
+  </span>
+</td>

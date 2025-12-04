@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
+import { environment } from '@src/environments/environment';
 
 @Component({
   selector: 'app-login-page',
@@ -14,6 +15,8 @@ export class LoginPageComponent {
   isPosting = signal(false);
   showPassword = signal(false);
   cleanInput = signal(false);
+
+  envs = environment;
 
   private authService = inject(AuthService);
   router = inject(Router);

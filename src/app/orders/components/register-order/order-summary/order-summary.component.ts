@@ -12,7 +12,7 @@ import { TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { OrderCartService } from '@src/app/orders/services/order-cart.service';
-import { Table } from '@src/app/tables/interfaces/table.interface';
+import { Table, TableStatus } from '@src/app/tables/interfaces/table.interface';
 import {
   ContentOrder,
   PersonByFullName,
@@ -174,5 +174,18 @@ export class OrderSummaryComponent {
 
   onRemoveItem(productId: number) {
     this.orderCartService.removeProduct(productId);
+  }
+
+  getOrderStatusText(status: TableStatus): string {
+    switch (status) {
+      case TableStatus.AVAILABLE:
+        return 'Disponible';
+      case TableStatus.OCCUPIED:
+        return 'Ocupada';
+      case TableStatus.RESERVED:
+        return 'Reservada';
+      default:
+        return 'Desconocido';
+    }
   }
 }
