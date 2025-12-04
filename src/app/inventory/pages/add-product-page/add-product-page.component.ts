@@ -5,10 +5,11 @@ import { FormsModule } from '@angular/forms';
 
 import { ProductService } from '@src/app/products/services/product.service';
 import { ProductType } from '@src/app/products/interfaces/product.type';
+import { RecipeModalComponent, RecipeItem } from '../../components/recipe-modal/recipe-modal.component';
 
 @Component({
   selector: 'app-add-product-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RecipeModalComponent],
   templateUrl: './add-product-page.component.html',
 })
 export class AddProductPageComponent implements OnInit {
@@ -20,6 +21,10 @@ export class AddProductPageComponent implements OnInit {
   price = signal<number>(0);
   description = signal('');
   selectedTypeId = signal<number | null>(null);
+
+  // Recipe state
+  showRecipeModal = signal(false);
+  recipeItems = signal<RecipeItem[]>([]);
 
   // UI state
   isLoading = signal(true);
@@ -55,6 +60,27 @@ export class AddProductPageComponent implements OnInit {
     this.selectedTypeId.set(+target.value);
   }
 
+  openRecipeModal() {
+    this.showRecipeModal.set(true);
+  }
+
+  closeRecipeModal() {
+    this.showRecipeModal.set(false);
+  }
+
+  onRecipeAdded(items: RecipeItem[]) {
+    this.recipeItems.set(items);
+    this.closeRecipeModal();
+  }
+
+  removeRecipeItem(index: number) {
+    this.recipeItems.update(items => items.filter((_, i) => i !== index));
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard/inventory']);
+  }
+
   onSubmit(event: Event): void {
     event.preventDefault();
 
@@ -74,6 +100,11 @@ export class AddProductPageComponent implements OnInit {
       return;
     }
 
+    if (this.recipeItems().length === 0) {
+      this.errorMessage.set('Debe agregar al menos un insumo a la receta');
+      return;
+    }
+
     this.errorMessage.set(null);
     this.isSubmitting.set(true);
 
@@ -83,6 +114,11 @@ export class AddProductPageComponent implements OnInit {
         price: this.price(),
         description: this.description().trim(),
         productTypeId: this.selectedTypeId()!,
+        recipe: this.recipeItems().map(item => ({
+          inventoryId: item.inventoryId,
+          quantity: item.quantity,
+          unitOfMeasure: item.unitOfMeasure
+        }))
       })
       .subscribe({
         next: () => {
@@ -96,9 +132,5 @@ export class AddProductPageComponent implements OnInit {
           this.isSubmitting.set(false);
         },
       });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/dashboard/inventory']);
   }
 }
