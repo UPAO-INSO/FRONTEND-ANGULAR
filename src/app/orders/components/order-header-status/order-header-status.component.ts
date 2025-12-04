@@ -36,12 +36,30 @@ export class OrderStatusComponent {
     return this.selectedStatus() === status;
   }
 
+  onSelectChange(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    const value = selectElement.value;
+
+    const status = value === 'all' ? null : (value as OrderStatus);
+    this.selectStatus(status);
+  }
+
+  getSelectedFilterValue(): string {
+    const selectedStatus = this.selectedStatus();
+    return selectedStatus ?? 'all';
+  }
+
   statusFilters: StatusFilter[] = [
     {
       status: null,
       label: 'Todos',
       colorClass: 'text-white',
       icon: 'fa-solid fa-list',
+    },
+    {
+      status: OrderStatus.COMPLETED,
+      label: 'Completado',
+      colorClass: 'text-status-completed',
     },
     {
       status: OrderStatus.PREPARING,
@@ -58,11 +76,6 @@ export class OrderStatusComponent {
       label: 'Pagado',
       colorClass: 'text-status-paid',
     },
-    // {
-    //   status: OrderStatus.CANCELLED,
-    //   label: 'Cancelado',
-    //   colorClass: 'text-status-cancelled',
-    // },
     {
       status: OrderStatus.READY,
       label: 'Listo',

@@ -1,10 +1,29 @@
-import { Component, input, output, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { OrderProductsComponent } from './order-products/order-products.component';
 import { OrderSummaryComponent } from './order-summary/order-summary.component';
-import { ContentOrder, RequestOrder } from '../../interfaces/order.interface';
+import {
+  ContentOrder,
+  RequestOrder,
+  UUID,
+} from '../../interfaces/order.interface';
 
 import { Table } from '@src/app/tables/interfaces/table.interface';
-import { ProductType } from '@src/app/products/interfaces/product.type';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { tap } from 'rxjs';
+import { ProductService } from '@src/app/products/services/product.service';
+import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-modify-modal.component';
+
+interface OrderUpdated {
+  id: UUID;
+  order: RequestOrder;
+}
 
 @Component({
   selector: 'app-register-order',
@@ -12,15 +31,15 @@ import { ProductType } from '@src/app/products/interfaces/product.type';
   templateUrl: './register-order.component.html',
 })
 export class RegisterOrderComponent {
-  selectedTable = input<Table | null>();
-  productTypes = input.required<ProductType[]>({});
+  private productService = inject(ProductService);
+
+  selectedTable = input.required<Table>();
   modifyStatus = input<boolean>();
   activeOrder = input<ContentOrder | null>();
 
   orderCreated = output<RequestOrder>();
-  orderUpdated = output<{ id: number; order: ContentOrder }>();
+  orderUpdated = output<OrderUpdated>();
   closeModal = output<void>();
-  nameProductQuery = output<string>();
   statusModifyModalChange = output<boolean>();
 
   showCreateConfirmModal = signal<boolean>(false);
@@ -28,16 +47,20 @@ export class RegisterOrderComponent {
 
   orderSummary = viewChild(OrderSummaryComponent);
 
-  nameProductValue(name: string) {
-    return this.nameProductQuery.emit(name);
-  }
+  productTypeResource = rxResource({
+    stream: () => {
+      return this.productService
+        .fetchProductsType()
+        .pipe(tap((productTypes) => productTypes));
+    },
+  });
 
   onCreateOrder(orderData: RequestOrder) {
     this.pendingOrderData.set(orderData);
     this.showCreateConfirmModal.set(true);
   }
 
-  onUpdateOrder(id: number, order: RequestOrder) {
+  onUpdateOrder(id: UUID, order: RequestOrder) {
     this.pendingOrderData.set(order);
     this.showCreateConfirmModal.set(true);
   }
@@ -47,14 +70,10 @@ export class RegisterOrderComponent {
     const activeOrder = this.activeOrder();
     if (orderData) {
       if (activeOrder !== null && activeOrder !== undefined) {
-        const order = {
-          ...activeOrder,
-          ...orderData,
-        };
-
+        // Emitir solo RequestOrder (orderData ya tiene el formato correcto)
         this.orderUpdated.emit({
-          id: this.activeOrder()?.id!,
-          order: order as ContentOrder,
+          id: activeOrder.id,
+          order: orderData as RequestOrder,
         });
       } else {
         this.orderCreated.emit(orderData as RequestOrder);

@@ -1,7 +1,16 @@
 import { Component, computed, input, output, signal } from '@angular/core';
-import { ContentOrder, OrderStatus } from '../../interfaces/order.interface';
+import {
+  ContentOrder,
+  OrderStatus,
+  UUID,
+} from '../../interfaces/order.interface';
 import { OrderListItemComponent } from './order-list-item/order-list-item.component';
 import { OrderViewComponent } from '../order-view/order-view.component';
+
+interface StatusChange {
+  orderId: UUID;
+  newStatus: OrderStatus;
+}
 
 @Component({
   selector: 'app-order-list',
@@ -17,14 +26,13 @@ export class OrderListComponent {
 
   selectedOrder = signal<ContentOrder | null>(null);
 
-  statusChange = output<{
-    orderId: number;
-    newStatus: OrderStatus;
-  }>();
+  statusChange = output<StatusChange>();
 
   orderStatus = OrderStatus;
 
-  onChangeStatus(orderId: number, newStatus: OrderStatus) {
+  onChangeStatus(orderId: UUID, newStatus: OrderStatus) {
+    console.log({ orderId, newStatus });
+
     this.statusChange.emit({ orderId, newStatus });
   }
 

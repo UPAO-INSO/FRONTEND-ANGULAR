@@ -1,0 +1,233 @@
+<main class="flex-1 p-8">
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-24">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <span class="ml-4 text-gray-500 text-lg">Cargando...</span>
+    </div>
+  } @else {
+    <div class="max-w-4xl mx-auto">
+        <div class="flex flex-wrap gap-2 mb-4">
+      <a
+        routerLink="/dashboard/inventory"
+        class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal hover:underline"
+      >
+        Inventario
+      </a>
+      <span class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">/</span>
+      <span class="text-[#131811] dark:text-white text-base font-medium leading-normal">
+        Añadir Producto
+      </span>
+    </div>
+      <!-- Header -->
+      <div class="mb-8">
+        <p
+          class="text-[#131811] dark:text-white text-4xl font-bold leading-tight tracking-tight"
+        >
+          Registrar Nuevo Producto
+        </p>
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div
+          class="mb-6 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg"
+        >
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Form Card -->
+      <div class="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800">
+        <form
+          class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6"
+          (submit)="onSubmit($event)"
+        >
+          <!-- Nombre -->
+          <div class="md:col-span-2">
+            <label class="flex flex-col">
+              <p
+                class="text-base font-medium leading-normal pb-2 text-[#131811] dark:text-gray-400"
+              >
+                Nombre del Producto
+              </p>
+              <input
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-800 h-12 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 text-base font-normal leading-normal"
+                placeholder="Ej: Lomo Saltado"
+                [ngModel]="name()"
+                (ngModelChange)="name.set($event)"
+                name="name"
+              />
+            </label>
+          </div>
+
+          <!-- Categoría -->
+          <div>
+            <label class="flex flex-col">
+              <p
+                class="text-base font-medium leading-normal pb-2 text-[#131811] dark:text-gray-400"
+              >
+                Categoría
+              </p>
+              <select
+                class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-800 h-12 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 text-base font-normal leading-normal"
+                [ngModel]="selectedTypeId()"
+                (change)="onTypeChange($event)"
+                name="type"
+              >
+                <option value="" disabled>Seleccionar categoría</option>
+                @for (type of productTypes(); track type.id) {
+                  <option [value]="type.id" class="bg-gray-800">{{ type.name }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <!-- Precio -->
+          <div>
+            <label class="flex flex-col">
+              <p
+                class="text-base font-medium leading-normal pb-2 text-[#131811] dark:text-gray-400"
+              >
+                Precio (S/.)
+              </p>
+              <input
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-800 h-12 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 text-base font-normal leading-normal"
+                placeholder="Ej: 35.50"
+                step="0.1"
+                type="number"
+                min="0"
+                [ngModel]="price()"
+                (ngModelChange)="onPriceChange($event)"
+                name="price"
+              />
+            </label>
+          </div>
+
+          <!-- Descripción -->
+          <div class="md:col-span-2">
+            <label class="flex flex-col">
+              <p
+                class="text-base font-medium leading-normal pb-2 text-[#131811] dark:text-gray-400"
+              >
+                Descripción
+              </p>
+              <textarea
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-800 min-h-[120px] placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4 text-base font-normal leading-normal"
+                placeholder="Describe el producto..."
+                [ngModel]="description()"
+                (ngModelChange)="description.set($event)"
+                name="description"
+              ></textarea>
+            </label>
+          </div>
+
+          <!-- Cantidad Inicial - Solo para bebidas y descartables -->
+          @if (isBeverageOrDisposable()) {
+            <div class="md:col-span-2">
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-[#131811] dark:text-gray-400">
+                  Cantidad Inicial en Inventario (unidades)
+                </p>
+                <input
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-800 h-12 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 text-base font-normal leading-normal"
+                  placeholder="Ej: 24"
+                  type="number"
+                  min="0"
+                  step="1"
+                  [ngModel]="initialQuantity()"
+                  (ngModelChange)="onInitialQuantityChange($event)"
+                  name="initialQuantity"
+                />
+              </label>
+            </div>
+          }
+
+          <!-- Receta - Solo para platos (ENTRADAS, SEGUNDOS, CARTA) -->
+          @if (!isBeverageOrDisposable()) {
+            <div class="md:col-span-2">
+              <div class="flex justify-between items-center mb-4">
+                <p class="text-base font-medium leading-normal text-[#131811] dark:text-gray-400">
+                  Receta / Ingredientes
+                </p>
+                <button 
+                  type="button"
+                  (click)="openRecipeModal()"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                >
+                  Gestionar Receta
+                </button>
+              </div>
+
+              @if (recipeItems().length > 0) {
+                <div class="border rounded-lg overflow-hidden dark:border-gray-700">
+                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                      <tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ingrediente</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cantidad</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Unidad</th>
+                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                      @for (item of recipeItems(); track $index) {
+                        <tr>
+                          <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">{{ item.name }}</td>
+                          <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">{{ item.quantity }}</td>
+                          <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">{{ item.unitOfMeasure }}</td>
+                          <td class="px-4 py-2 text-right">
+                            <button 
+                              type="button"
+                              (click)="removeRecipeItem($index)"
+                              class="text-red-600 hover:text-red-900 dark:hover:text-red-400 text-sm"
+                            >
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 text-center">
+                  <p class="text-gray-500 dark:text-gray-400 text-sm">No se ha definido una receta para este producto.</p>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Actions -->
+          <div class="md:col-span-2 flex justify-end gap-3 pt-4">
+            <button
+              class="px-6 py-2.5 rounded-lg text-base font-semibold leading-normal text-[#131811] dark:text-white bg-gray-100 dark:bg-transparent hover:bg-gray-200 dark:hover:bg-white/5 border border-gray-300 dark:border-gray-700 transition-colors"
+              type="button"
+              (click)="goBack()"
+            >
+              Cancelar
+            </button>
+            <button
+              class="px-6 py-2.5 rounded-lg text-base font-semibold leading-normal text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              type="submit"
+              [disabled]="isSubmitting()"
+            >
+              @if (isSubmitting()) {
+                <span>Guardando...</span>
+              } @else {
+                <span>Guardar Producto</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</main>
+
+@if (showRecipeModal() && !isBeverageOrDisposable()) {
+  <app-recipe-modal
+    [initialItems]="recipeItems()"
+    (close)="closeRecipeModal()"
+    (addRecipe)="onRecipeAdded($event)"
+  ></app-recipe-modal>
+}
