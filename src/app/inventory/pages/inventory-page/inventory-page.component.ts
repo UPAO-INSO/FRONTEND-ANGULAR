@@ -9,6 +9,7 @@ import { InventoryService } from '../../services/inventory.service';
 import { ProductService } from '@src/app/products/services/product.service';
 import {
   InventoryItem,
+  InventoryType,
   INVENTORY_TYPE_LABELS,
   UNIT_OF_MEASURE_SYMBOLS,
   UnifiedInventoryItem,
@@ -66,6 +67,25 @@ export class InventoryPageComponent {
     },
   });
 
+  // Mapa de inventario por nombre para obtener cantidades de bebidas/descartables
+  private inventoryByName = computed<Map<string, { quantity: number; unitOfMeasure: string }>>(() => {
+    const map = new Map<string, { quantity: number; unitOfMeasure: string }>();
+    const inventoryData = this.inventoryResource.value();
+    if (inventoryData?.content) {
+      for (const inv of inventoryData.content) {
+        const item = inv as InventoryItem;
+        // Solo bebidas y descartables
+        if (item.type === InventoryType.BEVERAGE || item.type === InventoryType.DISPOSABLE) {
+          map.set(item.name.toLowerCase(), {
+            quantity: item.quantity,
+            unitOfMeasure: item.unitOfMeasure
+          });
+        }
+      }
+    }
+    return map;
+  });
+
   // Todos los items sin paginar (para calcular total)
   allUnifiedItems = computed<UnifiedInventoryItem[]>(() => {
     const filter = this.viewFilter();
@@ -73,11 +93,17 @@ export class InventoryPageComponent {
     const items: UnifiedInventoryItem[] = [];
 
     // Agregar insumos si corresponde
+    // NOTA: Excluir BEVERAGE y DISPOSABLE ya que ahora son productos
     if (filter === 'all' || filter === 'insumos') {
       const inventoryData = this.inventoryResource.value();
       if (inventoryData?.content) {
         for (const inv of inventoryData.content) {
           const item = inv as InventoryItem;
+          
+          // Excluir bebidas y descartables - ahora se manejan como productos
+          if (item.type === InventoryType.BEVERAGE || item.type === InventoryType.DISPOSABLE) {
+            continue;
+          }
           
           // Filtrar por búsqueda (case-insensitive)
           if (searchQuery && !item.name.toLowerCase().includes(searchQuery)) {
@@ -119,7 +145,6 @@ export class InventoryPageComponent {
             description: prod.description,
             productTypeId: prod.productTypeId,
             productTypeName: prod.productTypeName,
-            available: prod.available,
           });
         }
       }
@@ -161,6 +186,16 @@ export class InventoryPageComponent {
 
   getQuantityDisplay(item: UnifiedInventoryItem): string {
     if (item.itemType === 'product') {
+      // Para productos, verificar si es bebida o descartable (tienen inventario)
+      const typeName = item.productTypeName?.toUpperCase();
+      if (typeName === 'BEBIDAS' || typeName === 'DESCARTABLES') {
+        // Buscar la cantidad en el inventario por nombre
+        const invData = this.inventoryByName().get(item.name.toLowerCase());
+        if (invData) {
+          return invData.quantity.toString();
+        }
+      }
+      // Para platos (ENTRADAS, CARTA, SEGUNDOS) no tienen cantidad directa
       return 'N/A';
     }
     return item.quantity?.toString() ?? '-';

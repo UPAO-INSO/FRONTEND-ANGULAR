@@ -2,7 +2,6 @@ import { TitleCasePipe } from '@angular/common';
 import {
   Component,
   computed,
-  effect,
   input,
   output,
   signal,
@@ -24,16 +23,10 @@ export class OrderProductItemComponent {
 
   updateProductStatus = output<PartialProductUpdate>();
 
-  localAvailable = signal<boolean>(true);
+  // Estado de carga para evitar clics múltiples
+  isUpdating = signal(false);
 
   isProductAvailable = computed(() => this.product().available);
-
-  constructor() {
-    effect(() => {
-      const currentProduct = this.product();
-      this.localAvailable.set(currentProduct.available);
-    });
-  }
 
   partialProduct = computed<PartialProductUpdate>(() => {
     const currentProduct = this.product();
@@ -44,11 +37,11 @@ export class OrderProductItemComponent {
   });
 
   textStatusProduct = computed(() => {
-    return this.localAvailable() ? 'Disponible' : 'No disponible';
+    return this.product().available ? 'Disponible' : 'No disponible';
   });
 
   getColorProductStatus = computed(() => {
-    return this.localAvailable() ? 'text-green-700' : 'text-red-700';
+    return this.product().available ? 'text-green-700' : 'text-red-700';
   });
 
   // Imagen del producto desde assets/products con fallback
@@ -79,6 +72,11 @@ export class OrderProductItemComponent {
   }
 
   onSubmitProductStatus() {
+    // Evitar clics múltiples mientras se procesa
+    if (this.isUpdating()) return;
+    
+    this.isUpdating.set(true);
+    
     const currentProduct = this.product();
     const newStatus = !currentProduct.available;
 
@@ -88,5 +86,8 @@ export class OrderProductItemComponent {
     };
 
     this.updateProductStatus.emit(update);
+    
+    // Reset después de un breve delay para permitir el próximo clic
+    setTimeout(() => this.isUpdating.set(false), 500);
   }
 }

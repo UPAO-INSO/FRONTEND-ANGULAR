@@ -10,7 +10,7 @@
       </a>
       <span class="text-gray-500 dark:text-gray-400 text-base font-medium leading-normal">/</span>
       <span class="text-[#131811] dark:text-white text-base font-medium leading-normal">
-        Añadir Item
+        Añadir Ingrediente
       </span>
     </div>
 
@@ -18,10 +18,10 @@
     <div class="flex flex-wrap justify-between gap-3">
       <div class="flex flex-col gap-2">
         <p class="text-[#131811] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">
-          Añadir Nuevo Item
+          Añadir Nuevo Ingrediente
         </p>
         <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal">
-          Registra un nuevo item.
+          Registra un nuevo ingrediente para usar en las recetas de los platos.
         </p>
       </div>
     </div>
@@ -44,14 +44,14 @@
           <h3
             class="text-lg font-semibold text-[#131811] dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3"
           >
-            Detalles del Item
+            Detalles del Ingrediente
           </h3>
 
           <!-- Nombre -->
           <div class="flex max-w-full flex-wrap items-end gap-4">
             <label class="flex flex-col min-w-40 flex-1">
               <p class="text-[#131811] dark:text-white text-base font-medium leading-normal pb-2">
-                Nombre del Item
+                Nombre del Ingrediente
               </p>
               <input
                 class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:border-blue-500/50 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-4 text-base font-normal leading-normal"
@@ -62,28 +62,6 @@
                 required
               />
             </label>
-          </div>
-
-          <!-- Tipo de Item -->
-          <div class="flex flex-col min-w-40 flex-1">
-            <p class="text-[#131811] dark:text-white text-base font-medium leading-normal pb-2">
-              Tipo de Item
-            </p>
-            <div class="relative">
-              <select
-                class="form-select appearance-none flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:border-blue-500/50 h-14 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 py-3.5 text-base font-normal leading-normal"
-                [ngModel]="selectedType()"
-                (change)="onTypeChange($event)"
-                name="type"
-              >
-                @for (type of inventoryTypes; track type) {
-                  <option [value]="type">{{ typeLabels[type] }}</option>
-                }
-              </select>
-              <span
-                class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-              ></span>
-            </div>
           </div>
 
           <!-- Cantidad y Unidad -->

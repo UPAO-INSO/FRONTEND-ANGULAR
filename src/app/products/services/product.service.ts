@@ -192,6 +192,7 @@ export class ProductService {
       quantity: number;
       unitOfMeasure: string;
     }[];
+    initialQuantity?: number; // Para bebidas y descartables
   }): Observable<Product> {
     return this.http
       .post<RestProductContent>(`${this.envs.API_URL}/products`, request)

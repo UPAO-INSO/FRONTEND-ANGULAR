@@ -289,7 +289,6 @@ export interface UnifiedInventoryItem {
   description?: string;
   productTypeId?: number;
   productTypeName?: string;
-  available?: boolean;
 }
 
 // ===========================================
