@@ -18,12 +18,12 @@ export class AddProductPageComponent implements OnInit {
 
   // Form state
   name = signal('');
-  price = signal<number>(0);
+  price = signal<number | null>(null);
   description = signal('');
   selectedTypeId = signal<number | null>(null);
   
   // Para bebidas y descartables - cantidad inicial en inventario
-  initialQuantity = signal<number>(1);
+  initialQuantity = signal<number | null>(null);
 
   // Recipe state (solo para platos)
   showRecipeModal = signal(false);
@@ -102,14 +102,30 @@ export class AddProductPageComponent implements OnInit {
   }
 
   // Redondear precio a 2 decimales
-  onPriceChange(value: number): void {
+  onPriceChange(value: number | null): void {
+    this.errorMessage.set(null);
+    if (value === null || value === undefined) {
+      this.price.set(null);
+      return;
+    }
     const rounded = Math.round(value * 100) / 100;
     this.price.set(rounded);
   }
 
   // Para bebidas/descartables: solo enteros
-  onInitialQuantityChange(value: number): void {
-    this.initialQuantity.set(Math.round(value));
+  onInitialQuantityChange(value: number | null): void {
+    if (value === null || value === undefined) {
+      this.initialQuantity.set(null);
+      this.errorMessage.set(null);
+      return;
+    }
+    if (!Number.isInteger(value)) {
+      this.errorMessage.set('La cantidad inicial solo acepta números enteros, no decimales');
+      this.initialQuantity.set(Math.floor(value));
+      return;
+    }
+    this.errorMessage.set(null);
+    this.initialQuantity.set(value);
   }
 
   goBack(): void {
@@ -125,7 +141,7 @@ export class AddProductPageComponent implements OnInit {
       return;
     }
 
-    if (this.price() <= 0) {
+    if (this.price() === null || this.price()! <= 0) {
       this.errorMessage.set('El precio debe ser mayor a 0');
       return;
     }
@@ -138,8 +154,8 @@ export class AddProductPageComponent implements OnInit {
     // Validaciones específicas según tipo
     if (this.isBeverageOrDisposable()) {
       // Para bebidas/descartables: validar cantidad inicial
-      if (this.initialQuantity() < 0) {
-        this.errorMessage.set('La cantidad inicial no puede ser negativa');
+      if (this.initialQuantity() === null || this.initialQuantity()! < 0) {
+        this.errorMessage.set('La cantidad inicial es requerida y no puede ser negativa');
         return;
       }
     } else {
@@ -156,14 +172,14 @@ export class AddProductPageComponent implements OnInit {
     // Construir request según el tipo
     const request: any = {
       name: this.name().trim(),
-      price: this.price(),
+      price: this.price()!,
       description: this.description().trim(),
       productTypeId: this.selectedTypeId()!,
     };
 
     if (this.isBeverageOrDisposable()) {
       // Para bebidas/descartables: enviar cantidad inicial
-      request.initialQuantity = this.initialQuantity();
+      request.initialQuantity = this.initialQuantity()!;
     } else {
       // Para platos: enviar receta
       request.recipe = this.recipeItems().map(item => ({

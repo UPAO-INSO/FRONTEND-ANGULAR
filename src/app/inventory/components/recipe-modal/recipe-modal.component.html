@@ -4,27 +4,21 @@
     
     <!-- Search -->
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar Insumo/Producto</label>
-      <div class="flex gap-2">
-        <input 
-          type="text" 
-          [ngModel]="searchTerm()" 
-          (ngModelChange)="searchTerm.set($event)"
-          (keyup.enter)="search()"
-          class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white p-2 border"
-          placeholder="Buscar..."
-        >
-        <button (click)="search()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-          Buscar
-        </button>
-      </div>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar Ingrediente</label>
+      <input 
+        type="text" 
+        [ngModel]="searchTerm()" 
+        (ngModelChange)="onSearchChange($event)"
+        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white p-2 border"
+        placeholder="Escriba para buscar ingredientes..."
+      >
     </div>
 
     <!-- Inventory List (Visible when no search) -->
     @if (searchTerm() === '' && !currentItem()) {
       <div class="mb-4 border rounded-md overflow-hidden dark:border-gray-700">
         <div class="bg-gray-50 dark:bg-gray-700 px-4 py-2 border-b dark:border-gray-600 flex justify-between items-center">
-            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Insumos Disponibles</h3>
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Ingredientes Disponibles</h3>
         </div>
         
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -95,6 +89,14 @@
     @if (currentItem()) {
       <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
         <h3 class="font-semibold mb-2 text-gray-900 dark:text-white">Agregar: {{ currentItem()?.name }}</h3>
+        
+        <!-- Error de cantidad -->
+        @if (quantityError()) {
+          <div class="mb-3 p-2 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 rounded text-sm">
+            {{ quantityError() }}
+          </div>
+        }
+        
         <div class="flex gap-4 items-end">
           <div class="flex-1">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -106,12 +108,13 @@
               (ngModelChange)="onQuantityChange($event)"
               [min]="getMin(currentItem()?.unitOfMeasure || '')" 
               [step]="getStep(currentItem()?.unitOfMeasure || '')"
+              placeholder="Ingrese cantidad"
               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white p-2 border"
             >
           </div>
           <button 
             (click)="addItem()" 
-            [disabled]="quantity() <= 0"
+            [disabled]="quantity() === null || quantity()! <= 0"
             class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Agregar

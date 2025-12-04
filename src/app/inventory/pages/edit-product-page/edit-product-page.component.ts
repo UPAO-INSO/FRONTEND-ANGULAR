@@ -128,7 +128,7 @@ export class EditProductPageComponent implements OnInit {
         // Map recipe response to RecipeItem
         const mappedRecipe: RecipeItem[] = recipe.map(item => ({
           inventoryId: item.inventoryId,
-          name: item.inventoryName || 'Insumo',
+          name: item.inventoryName || 'Ingrediente',
           quantity: item.quantity,
           unitOfMeasure: item.unitOfMeasure
         }));
@@ -249,12 +249,19 @@ export class EditProductPageComponent implements OnInit {
   }
 
   onPriceChange(value: number): void {
+    this.errorMessage.set(null);
     this.price.set(this.roundToTwoDecimals(value));
   }
 
   onInventoryQuantityChange(value: number): void {
     // Para bebidas/descartables, solo enteros
-    this.inventoryQuantity.set(Math.round(value));
+    if (!Number.isInteger(value)) {
+      this.errorMessage.set('La cantidad solo acepta números enteros, no decimales');
+      this.inventoryQuantity.set(Math.floor(value));
+      return;
+    }
+    this.errorMessage.set(null);
+    this.inventoryQuantity.set(value);
   }
 
   private roundToTwoDecimals(value: number): number {

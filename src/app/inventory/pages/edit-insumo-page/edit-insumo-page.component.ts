@@ -31,7 +31,7 @@ export class EditInsumoPageComponent implements OnInit {
 
   // Form state
   name = signal('');
-  quantity = signal<number>(0);
+  quantity = signal<number | null>(null);
   selectedType = signal<InventoryType>(InventoryType.INGREDIENT);
   selectedUnit = signal<UnitOfMeasure>(UnitOfMeasure.G);
 
@@ -86,17 +86,30 @@ export class EditInsumoPageComponent implements OnInit {
     const target = event.target as HTMLSelectElement;
     this.selectedUnit.set(target.value as UnitOfMeasure);
     // Si cambia a UNIDAD, redondear la cantidad actual a entero
-    if (target.value === 'UNIDAD') {
-      this.quantity.set(Math.round(this.quantity()));
+    if (target.value === 'UNIDAD' && this.quantity() !== null) {
+      this.quantity.set(Math.round(this.quantity()!));
     }
     this.clearError();
   }
 
-  // Redondear según unidad: entero para UNIDAD, máximo 2 decimales para otros
-  onQuantityChange(value: number): void {
+  // Validar según unidad: entero para UNIDAD, máximo 2 decimales para otros
+  onQuantityChange(value: number | null): void {
+    if (value === null || value === undefined) {
+      this.quantity.set(null);
+      this.clearError();
+      return;
+    }
     if (this.selectedUnit() === 'UNIDAD') {
-      this.quantity.set(Math.round(value));
+      // Verificar si tiene decimales
+      if (!Number.isInteger(value)) {
+        this.errorMessage.set('Las unidades solo aceptan números enteros, no decimales');
+        this.quantity.set(Math.floor(value));
+        return;
+      }
+      this.clearError();
+      this.quantity.set(value);
     } else {
+      this.clearError();
       const rounded = Math.round(value * 100) / 100;
       this.quantity.set(rounded);
     }
@@ -110,11 +123,16 @@ export class EditInsumoPageComponent implements OnInit {
       return;
     }
 
+    if (this.quantity() === null || this.quantity() === undefined) {
+      this.errorMessage.set('La cantidad es requerida');
+      return;
+    }
+
     // Validación completa
     const validation = validateInventoryItem(
       this.selectedType(),
       this.selectedUnit(),
-      this.quantity()
+      this.quantity()!
     );
 
     if (!validation.valid) {
@@ -127,7 +145,7 @@ export class EditInsumoPageComponent implements OnInit {
 
     const request: InventoryUpdate = {
       name: this.name().trim(),
-      quantity: this.quantity(),
+      quantity: this.quantity()!,
       type: InventoryType.INGREDIENT, // Siempre INGREDIENT
       unitOfMeasure: this.selectedUnit(),
     };
