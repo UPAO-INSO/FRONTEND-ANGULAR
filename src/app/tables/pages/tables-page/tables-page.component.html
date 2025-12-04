@@ -1,5 +1,26 @@
 <app-table-header-status (status)="selectedTableStatus.set($event)" />
 
+<!-- Error Message Toast -->
+@if (errorMessage()) {
+  <div class="fixed top-4 right-4 z-50 max-w-md animate-pulse">
+    <div class="bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl border border-red-500">
+      <div class="flex items-start gap-3">
+        <span class="fa-solid fa-circle-exclamation text-xl mt-0.5"></span>
+        <div class="flex-1">
+          <p class="font-semibold">No se puede crear el pedido</p>
+          <p class="text-sm text-red-100 mt-1">{{ errorMessage() }}</p>
+        </div>
+        <button 
+          (click)="errorMessage.set(null)" 
+          class="text-red-200 hover:text-white transition-colors"
+        >
+          <span class="fa-solid fa-xmark"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
 <app-table-list
   [tables]="tablesResource.value()?.content ?? []"
   [isEmpty]="(tablesResource.value()?.content?.length ?? 0) === 0"

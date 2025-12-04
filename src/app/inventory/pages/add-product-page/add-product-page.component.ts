@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,8 +21,11 @@ export class AddProductPageComponent implements OnInit {
   price = signal<number>(0);
   description = signal('');
   selectedTypeId = signal<number | null>(null);
+  
+  // Para bebidas y descartables - cantidad inicial en inventario
+  initialQuantity = signal<number>(1);
 
-  // Recipe state
+  // Recipe state (solo para platos)
   showRecipeModal = signal(false);
   recipeItems = signal<RecipeItem[]>([]);
 
@@ -33,6 +36,24 @@ export class AddProductPageComponent implements OnInit {
 
   // Opciones
   productTypes = signal<ProductType[]>([]);
+
+  // Computed: detectar si es bebida o descartable
+  isBeverageOrDisposable = computed(() => {
+    const typeId = this.selectedTypeId();
+    if (!typeId) return false;
+    const type = this.productTypes().find(t => t.id === typeId);
+    if (!type) return false;
+    const typeName = type.name.toUpperCase();
+    return typeName === 'BEBIDAS' || typeName === 'DESCARTABLES';
+  });
+
+  // Computed: nombre del tipo seleccionado
+  selectedTypeName = computed(() => {
+    const typeId = this.selectedTypeId();
+    if (!typeId) return '';
+    const type = this.productTypes().find(t => t.id === typeId);
+    return type?.name || '';
+  });
 
   ngOnInit(): void {
     this.loadProductTypes();
@@ -58,6 +79,9 @@ export class AddProductPageComponent implements OnInit {
   onTypeChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.selectedTypeId.set(+target.value);
+    // Limpiar receta cuando cambia el tipo
+    this.recipeItems.set([]);
+    this.errorMessage.set(null);
   }
 
   openRecipeModal() {
@@ -84,7 +108,7 @@ export class AddProductPageComponent implements OnInit {
   onSubmit(event: Event): void {
     event.preventDefault();
 
-    // Validaciones
+    // Validaciones básicas
     if (!this.name().trim()) {
       this.errorMessage.set('El nombre es requerido');
       return;
@@ -100,26 +124,46 @@ export class AddProductPageComponent implements OnInit {
       return;
     }
 
-    if (this.recipeItems().length === 0) {
-      this.errorMessage.set('Debe agregar al menos un insumo a la receta');
-      return;
+    // Validaciones específicas según tipo
+    if (this.isBeverageOrDisposable()) {
+      // Para bebidas/descartables: validar cantidad inicial
+      if (this.initialQuantity() < 0) {
+        this.errorMessage.set('La cantidad inicial no puede ser negativa');
+        return;
+      }
+    } else {
+      // Para platos: validar receta
+      if (this.recipeItems().length === 0) {
+        this.errorMessage.set('Debe agregar al menos un ingrediente a la receta');
+        return;
+      }
     }
 
     this.errorMessage.set(null);
     this.isSubmitting.set(true);
 
+    // Construir request según el tipo
+    const request: any = {
+      name: this.name().trim(),
+      price: this.price(),
+      description: this.description().trim(),
+      productTypeId: this.selectedTypeId()!,
+    };
+
+    if (this.isBeverageOrDisposable()) {
+      // Para bebidas/descartables: enviar cantidad inicial
+      request.initialQuantity = this.initialQuantity();
+    } else {
+      // Para platos: enviar receta
+      request.recipe = this.recipeItems().map(item => ({
+        inventoryId: item.inventoryId,
+        quantity: item.quantity,
+        unitOfMeasure: item.unitOfMeasure
+      }));
+    }
+
     this.productService
-      .createProduct({
-        name: this.name().trim(),
-        price: this.price(),
-        description: this.description().trim(),
-        productTypeId: this.selectedTypeId()!,
-        recipe: this.recipeItems().map(item => ({
-          inventoryId: item.inventoryId,
-          quantity: item.quantity,
-          unitOfMeasure: item.unitOfMeasure
-        }))
-      })
+      .createProduct(request)
       .subscribe({
         next: () => {
           this.router.navigate(['/dashboard/inventory']);

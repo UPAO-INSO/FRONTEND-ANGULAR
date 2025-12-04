@@ -8,11 +8,9 @@ import {
   InventoryRequest,
   InventoryType,
   UnitOfMeasure,
-  INVENTORY_TYPE_LABELS,
   UNIT_OF_MEASURE_LABELS,
   ALLOWED_UNITS_BY_TYPE,
   validateInventoryItem,
-  validateTypeAndUnitConsistency,
 } from '../../interfaces/inventory.interface';
 
 @Component({
@@ -24,85 +22,37 @@ export class AddInsumoPageComponent {
   private inventoryService = inject(InventoryService);
   private router = inject(Router);
 
-  // Form state
+  // Form state - Ahora solo para INGREDIENTES
   name = signal('');
   quantity = signal<number>(0);
-  selectedType = signal<InventoryType>(InventoryType.INGREDIENT);
   selectedUnit = signal<UnitOfMeasure>(UnitOfMeasure.G);
 
   // UI state
   isSubmitting = signal(false);
   errorMessage = signal<string | null>(null);
 
-  // Opciones
-  inventoryTypes = Object.values(InventoryType);
-  typeLabels = INVENTORY_TYPE_LABELS;
+  // Opciones - Solo unidades para ingredientes (MASS y VOLUME)
   unitLabels = UNIT_OF_MEASURE_LABELS;
 
-  // Unidades permitidas según tipo seleccionado
-  // REGLA: BEVERAGE y DISPOSABLE SOLO permiten UNIDAD
+  // Unidades permitidas para ingredientes
   get allowedUnits(): UnitOfMeasure[] {
-    return ALLOWED_UNITS_BY_TYPE[this.selectedType()];
+    return ALLOWED_UNITS_BY_TYPE[InventoryType.INGREDIENT];
   }
 
   // Determinar step para el input de cantidad
-  // REGLA: UNIDAD solo acepta enteros
   get quantityStep(): string {
-    return this.selectedUnit() === UnitOfMeasure.UNIDAD ? '1' : '0.01';
-  }
-
-  onTypeChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    const type = target.value as InventoryType;
-    this.selectedType.set(type);
-
-    // REGLA: Si es BEVERAGE o DISPOSABLE, forzar UNIDAD
-    const allowedUnits = ALLOWED_UNITS_BY_TYPE[type];
-    if (!allowedUnits.includes(this.selectedUnit())) {
-      this.selectedUnit.set(allowedUnits[0]); // Será UNIDAD
-      
-      // Si la cantidad tiene decimales, redondear
-      if (allowedUnits[0] === UnitOfMeasure.UNIDAD && !Number.isInteger(this.quantity())) {
-        this.quantity.set(Math.round(this.quantity()));
-      }
-    }
-    
-    this.clearError();
+    return this.selectedUnit() === UnitOfMeasure.UNIDAD ? '1' : '0.1';
   }
 
   onUnitChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const unit = target.value as UnitOfMeasure;
-    
-    // Validar antes de cambiar
-    const validation = validateTypeAndUnitConsistency(
-      this.selectedType(),
-      unit,
-      this.quantity()
-    );
-    
-    if (!validation.valid) {
-      this.errorMessage.set(validation.message!);
-      return;
-    }
-    
     this.selectedUnit.set(unit);
-    
-    // Si cambia a UNIDAD, redondear cantidad
-    if (unit === UnitOfMeasure.UNIDAD && !Number.isInteger(this.quantity())) {
-      this.quantity.set(Math.round(this.quantity()));
-    }
-    
     this.clearError();
   }
 
   onQuantityChange(value: number): void {
-    // Si es UNIDAD, forzar entero
-    if (this.selectedUnit() === UnitOfMeasure.UNIDAD) {
-      this.quantity.set(Math.round(value));
-    } else {
-      this.quantity.set(value);
-    }
+    this.quantity.set(value);
   }
 
   onSubmit(event: Event): void {
@@ -116,7 +66,7 @@ export class AddInsumoPageComponent {
 
     // Validación completa usando las reglas del backend
     const validation = validateInventoryItem(
-      this.selectedType(),
+      InventoryType.INGREDIENT,
       this.selectedUnit(),
       this.quantity()
     );
@@ -132,7 +82,7 @@ export class AddInsumoPageComponent {
     const request: InventoryRequest = {
       name: this.name().trim(),
       quantity: this.quantity(),
-      type: this.selectedType(),
+      type: InventoryType.INGREDIENT, // Siempre INGREDIENT
       unitOfMeasure: this.selectedUnit(),
     };
 
@@ -143,7 +93,7 @@ export class AddInsumoPageComponent {
       error: (err) => {
         console.error('Error creating inventory item:', err);
         this.errorMessage.set(
-          err.error?.message || 'Error al crear el insumo'
+          err.error?.message || 'Error al crear el ingrediente'
         );
         this.isSubmitting.set(false);
       },

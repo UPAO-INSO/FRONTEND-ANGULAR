@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { ProductService } from '@src/app/products/services/product.service';
 import { Product, ProductType } from '@src/app/products/interfaces/product.type';
@@ -29,7 +30,11 @@ export class EditProductPageComponent implements OnInit {
   price = signal<number>(0);
   description = signal('');
   selectedTypeId = signal<number>(0);
-  available = signal<boolean>(true);
+  originalTypeId = signal<number>(0); // Tipo original para detectar cambios
+  
+  // Para bebidas y descartables - cantidad en inventario
+  inventoryQuantity = signal<number>(0);
+  inventoryId = signal<number | null>(null); // ID del registro en inventory
 
   // Recipe state
   showRecipeModal = signal(false);
@@ -43,6 +48,57 @@ export class EditProductPageComponent implements OnInit {
 
   // Opciones
   productTypes = signal<ProductType[]>([]);
+
+  // Computed: detectar si es bebida o descartable
+  isBeverageOrDisposable = computed(() => {
+    const typeId = this.selectedTypeId();
+    if (!typeId) return false;
+    const type = this.productTypes().find(t => t.id === typeId);
+    if (!type) return false;
+    const typeName = type.name.toUpperCase();
+    return typeName === 'BEBIDAS' || typeName === 'DESCARTABLES';
+  });
+
+  // Computed: nombre del tipo seleccionado
+  selectedTypeName = computed(() => {
+    const typeId = this.selectedTypeId();
+    if (!typeId) return '';
+    const type = this.productTypes().find(t => t.id === typeId);
+    return type?.name || '';
+  });
+
+  // Computed: detectar si el tipo ORIGINAL era bebida o descartable
+  wasOriginallyBeverageOrDisposable = computed(() => {
+    const typeId = this.originalTypeId();
+    if (!typeId) return false;
+    const type = this.productTypes().find(t => t.id === typeId);
+    if (!type) return false;
+    const typeName = type.name.toUpperCase();
+    return typeName === 'BEBIDAS' || typeName === 'DESCARTABLES';
+  });
+
+  // Computed: detectar si hubo cambio de categoría que implica pérdida de datos
+  categoryChangeWarning = computed(() => {
+    const currentTypeId = this.selectedTypeId();
+    const originalTypeId = this.originalTypeId();
+    
+    if (currentTypeId === originalTypeId) return null;
+    
+    const wasBevorDisp = this.wasOriginallyBeverageOrDisposable();
+    const isNowBevOrDisp = this.isBeverageOrDisposable();
+    
+    if (wasBevorDisp && !isNowBevOrDisp) {
+      // De bebida/descartable a plato
+      return 'Al cambiar a esta categoría, se eliminará el registro de inventario asociado y deberás configurar una receta.';
+    }
+    
+    if (!wasBevorDisp && isNowBevOrDisp) {
+      // De plato a bebida/descartable
+      return 'Al cambiar a esta categoría, se eliminará la receta actual y se creará un registro de inventario.';
+    }
+    
+    return null; // Cambio sin pérdida de datos (ej: de entrada a segundo, o de bebida a descartable)
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -66,17 +122,23 @@ export class EditProductPageComponent implements OnInit {
         this.price.set(product.price);
         this.description.set(product.description);
         this.selectedTypeId.set(product.productTypeId);
-        this.available.set(product.available);
+        this.originalTypeId.set(product.productTypeId); // Guardar tipo original
         this.productTypes.set(types);
         
         // Map recipe response to RecipeItem
         const mappedRecipe: RecipeItem[] = recipe.map(item => ({
           inventoryId: item.inventoryId,
-          name: item.inventoryName || 'Insumo', // Backend should provide name
+          name: item.inventoryName || 'Insumo',
           quantity: item.quantity,
           unitOfMeasure: item.unitOfMeasure
         }));
         this.recipeItems.set(mappedRecipe);
+        
+        // Para bebidas/descartables, obtener la cantidad del inventario y el inventoryId
+        if (recipe.length > 0) {
+          this.inventoryQuantity.set(recipe[0].inventoryQuantityAvailable || 0);
+          this.inventoryId.set(recipe[0].inventoryId);
+        }
         
         this.isLoading.set(false);
       },
@@ -123,28 +185,55 @@ export class EditProductPageComponent implements OnInit {
       return;
     }
 
-    if (this.recipeItems().length === 0) {
-      this.errorMessage.set('Debe agregar al menos un insumo a la receta');
+    // Validar según el tipo de producto actual/nuevo
+    const changingToBevOrDisp = !this.wasOriginallyBeverageOrDisposable() && this.isBeverageOrDisposable();
+    const stayingAsPlato = !this.isBeverageOrDisposable();
+    
+    // Solo validar receta para platos que NO están cambiando a bebida/descartable
+    if (stayingAsPlato && !changingToBevOrDisp && this.recipeItems().length === 0) {
+      this.errorMessage.set('Debe agregar al menos un ingrediente a la receta');
       return;
     }
 
     this.errorMessage.set(null);
     this.isSubmitting.set(true);
 
+    const request: any = {
+      name: this.name().trim(),
+      price: this.price(),
+      description: this.description().trim(),
+      productTypeId: this.selectedTypeId(),
+      active: this.originalProduct()?.active ?? true,
+    };
+
+    // Si está cambiando de plato a bebida/descartable, enviar cantidad inicial
+    if (changingToBevOrDisp) {
+      request.initialQuantity = this.inventoryQuantity() || 0;
+    }
+
+    // Solo enviar receta si NO es bebida/descartable
+    if (!this.isBeverageOrDisposable()) {
+      request.recipe = this.recipeItems().map(item => ({
+        inventoryId: item.inventoryId,
+        quantity: item.quantity,
+        unitOfMeasure: item.unitOfMeasure
+      }));
+    }
+
+    // Actualizar el producto
     this.productService
-      .updateProductFull(this.productId(), {
-        name: this.name().trim(),
-        price: this.price(),
-        description: this.description().trim(),
-        productTypeId: this.selectedTypeId(),
-        active: this.originalProduct()?.active ?? true,
-        available: this.available(),
-        recipe: this.recipeItems().map(item => ({
-          inventoryId: item.inventoryId,
-          quantity: item.quantity,
-          unitOfMeasure: item.unitOfMeasure
-        }))
-      })
+      .updateProductFull(this.productId(), request)
+      .pipe(
+        switchMap(() => {
+          // Si es bebida/descartable y tenemos inventoryId, actualizar la cantidad en inventory
+          if (this.isBeverageOrDisposable() && this.inventoryId()) {
+            return this.inventoryService.update(this.inventoryId()!, {
+              quantity: this.inventoryQuantity()
+            });
+          }
+          return of(null);
+        })
+      )
       .subscribe({
         next: () => {
           this.router.navigate(['/dashboard/inventory']);
@@ -175,10 +264,6 @@ export class EditProductPageComponent implements OnInit {
         this.isDeleting.set(false);
       },
     });
-  }
-
-  toggleAvailable(): void {
-    this.available.set(!this.available());
   }
 
   goBack(): void {
