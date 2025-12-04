@@ -22,7 +22,7 @@ import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-mod
 
 interface OrderUpdated {
   id: UUID;
-  order: ContentOrder;
+  order: RequestOrder;
 }
 
 @Component({
@@ -70,14 +70,10 @@ export class RegisterOrderComponent {
     const activeOrder = this.activeOrder();
     if (orderData) {
       if (activeOrder !== null && activeOrder !== undefined) {
-        const order = {
-          ...activeOrder,
-          ...orderData,
-        };
-
+        // Emitir solo RequestOrder (orderData ya tiene el formato correcto)
         this.orderUpdated.emit({
-          id: this.activeOrder()?.id!,
-          order: order as ContentOrder,
+          id: activeOrder.id,
+          order: orderData as RequestOrder,
         });
       } else {
         this.orderCreated.emit(orderData as RequestOrder);

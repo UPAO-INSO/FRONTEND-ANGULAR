@@ -9,6 +9,7 @@ import {
   ProductType,
   RESTProduct,
   RESTProductType,
+  RestProductContent,
 } from '../interfaces/product.type';
 import { ProductMapper, ProductTypeMapper } from '../mapper/product-mapper';
 import { WebSocketService } from '@shared/services/websocket.service';
@@ -144,13 +145,22 @@ export class ProductService {
     this.refreshTrigger.set(true);
   }
 
+  /**
+   * Actualización parcial (disponibilidad)
+   * Backend espera ProductResponseDto pero solo procesa campos no-null
+   * El partialUpdate verifica cada campo con != null
+   */
   updateProduct(partialProduct: PartialProductUpdate) {
     const { id, available } = partialProduct;
 
+    // Solo enviamos el campo que queremos actualizar
+    // El backend verifica: if (product.getAvailable() != null) { updateAvailableById(...) }
+    const partialDto = {
+      available: available,
+    };
+
     return this.http
-      .patch(`${this.envs.API_URL}/products/partial/${id}`, {
-        available,
-      })
+      .patch(`${this.envs.API_URL}/products/partial/${id}`, partialDto)
       .pipe(
         tap(() => {
           const cachedProduct = this.productByIdCache.get(id);
@@ -164,10 +174,125 @@ export class ProductService {
         }),
         catchError((error) => {
           console.log({ error });
-
           return throwError(() => 'No se pudo actualizar el producto');
         })
       );
+  }
+
+  /**
+   * Crear un nuevo producto
+   */
+  createProduct(request: {
+    name: string;
+    price: number;
+    description: string;
+    productTypeId: number;
+    recipe?: {
+      inventoryId: number;
+      quantity: number;
+      unitOfMeasure: string;
+    }[];
+    initialQuantity?: number; // Para bebidas y descartables
+  }): Observable<Product> {
+    return this.http
+      .post<RestProductContent>(`${this.envs.API_URL}/products`, request)
+      .pipe(
+        map((response) => ProductMapper.mapRestProductToProduct(response)),
+        tap(() => this.clearProductsCache()),
+        catchError((error) => {
+          console.error('Error creating product:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  /**
+   * Obtener producto por ID
+   */
+  fetchProductById(id: number, forceRefresh = false): Observable<Product> {
+    if (!forceRefresh) {
+      const cached = this.productByIdCache.get(id);
+      if (cached) {
+        return of(cached);
+      }
+    }
+
+    return this.http
+      .get<RestProductContent>(`${this.envs.API_URL}/products/${id}`)
+      .pipe(
+        map((response) => ProductMapper.mapRestProductToProduct(response)),
+        tap((product) => this.productByIdCache.set(id, product)),
+        catchError((error) => {
+          console.error('Error fetching product:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  /**
+   * Actualizar producto completo
+   * Backend espera ProductRequestDto con: name, description, price, productTypeId (requeridos)
+   * y active, available (opcionales)
+   */
+  updateProductFull(
+    id: number,
+    request: {
+      name: string;
+      price: number;
+      description: string;
+      productTypeId: number;
+      active?: boolean;
+      available?: boolean;
+      recipe?: {
+        inventoryId: number;
+        quantity: number;
+        unitOfMeasure: string;
+      }[];
+    }
+  ): Observable<Product> {
+    // Asegurar que enviamos el DTO correcto para el backend
+    const dto = {
+      name: request.name,
+      description: request.description,
+      price: request.price,
+      productTypeId: request.productTypeId,
+      active: request.active ?? true,
+      available: request.available ?? true,
+      recipe: request.recipe,
+    };
+
+    return this.http
+      .put<RestProductContent>(`${this.envs.API_URL}/products/${id}`, dto)
+      .pipe(
+        map((response) => ProductMapper.mapRestProductToProduct(response)),
+        tap((product) => {
+          this.productByIdCache.set(id, product);
+          this.clearProductsCache();
+          this.triggerRefresh();
+        }),
+        catchError((error) => {
+          console.error('Error updating product:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  /**
+   * Eliminar producto
+   * Backend retorna String, no void
+   */
+  deleteProduct(id: number): Observable<string> {
+    return this.http.delete(`${this.envs.API_URL}/products/${id}`, { responseType: 'text' }).pipe(
+      tap(() => {
+        this.productByIdCache.delete(id);
+        this.clearProductsCache();
+        this.triggerRefresh();
+      }),
+      catchError((error) => {
+        console.error('Error deleting product:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   fetchProducts(forceRefresh = false): Observable<Product[]> {
@@ -202,6 +327,33 @@ export class ProductService {
         catchError((error) => {
           console.log({ error });
 
+          return throwError(() => Error('No se pudo obtener los productos'));
+        })
+      );
+  }
+
+  /**
+   * Obtener todos los productos con límite personalizado
+   * Útil para páginas que necesitan listar todos los productos
+   */
+  fetchAllProducts(limit: number = 500): Observable<Product[]> {
+    return this.http
+      .get<RESTProduct>(`${this.envs.API_URL}/products`, {
+        params: {
+          page: 1,
+          limit: limit,
+        },
+      })
+      .pipe(
+        map(({ content }) =>
+          ProductMapper.mapRestProductsToProductArray(content)
+        ),
+        tap((products) => {
+          // Actualizar el totalPage para referencia
+          this.totalPage.set(Math.ceil(products.length / this.limit()));
+        }),
+        catchError((error) => {
+          console.log({ error });
           return throwError(() => Error('No se pudo obtener los productos'));
         })
       );

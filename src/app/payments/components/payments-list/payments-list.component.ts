@@ -6,6 +6,7 @@ import {
 import { PaginationComponent } from '@src/app/shared/components/pagination/pagination.component';
 import { PaymentListItemComponent } from './payment-list-item/payment-list-item.component';
 import { PaymentViewComponent } from '../payment-view/payment-view.component';
+import { CreateVoucherModalComponent } from '../create-voucher-modal/create-voucher-modal.component';
 
 @Component({
   selector: 'app-payments-list',
@@ -13,6 +14,7 @@ import { PaymentViewComponent } from '../payment-view/payment-view.component';
     PaginationComponent,
     PaymentListItemComponent,
     PaymentViewComponent,
+    CreateVoucherModalComponent,
   ],
   templateUrl: './payments-list.component.html',
 })
@@ -28,6 +30,8 @@ export class PaymentsListComponent {
 
   selectedPayment = signal<ContentPayment | null>(null);
   isModalOpen = signal<boolean>(false);
+  selectedPaymentForVoucher = signal<ContentPayment | null>(null);
+  isVoucherModalOpen = signal<boolean>(false);
 
   onViewPaymentDetails(payment: ContentPayment) {
     this.selectedPayment.set(payment);
@@ -37,6 +41,21 @@ export class PaymentsListComponent {
   onCloseModal() {
     this.isModalOpen.set(false);
     this.selectedPayment.set(null);
+  }
+
+  onCreateVoucher(payment: ContentPayment) {
+    this.selectedPaymentForVoucher.set(payment);
+    this.isVoucherModalOpen.set(true);
+  }
+
+  onCloseVoucherModal() {
+    this.isVoucherModalOpen.set(false);
+    this.selectedPaymentForVoucher.set(null);
+  }
+
+  onVoucherCreated() {
+    // Puedes agregar lógica para refrescar la lista o mostrar notificación
+    console.log('Comprobante creado exitosamente');
   }
 
   onStatusFilterChange(event: Event) {

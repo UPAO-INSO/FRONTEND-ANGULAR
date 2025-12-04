@@ -34,6 +34,15 @@ export const routes: Routes = [
         loadChildren: () => import('./payments/payment.routes'),
       },
       {
+        path: 'vouchers',
+        loadChildren: () => import('./vouchers/voucher.routes'),
+      },
+      {
+        path: 'inventory',
+        loadChildren: () =>
+          import('./inventory/inventory.routes').then((m) => m.inventoryRoutes),
+      },
+      {
         path: '**',
         redirectTo: '',
       },

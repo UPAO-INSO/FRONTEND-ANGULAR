@@ -51,7 +51,7 @@ export class NavbarComponent {
       icon: 'fa-solid fa-file-invoice text-white',
       label: 'Facturación',
       sublabel: 'Comprueba tus facturas',
-      route: '/dashboard/billing',
+      route: '/dashboard/vouchers',
       allowedRoles: ['administrador', 'gerente', 'cajero'],
     },
     {

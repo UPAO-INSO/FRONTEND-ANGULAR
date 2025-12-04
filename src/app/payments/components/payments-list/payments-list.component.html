@@ -101,6 +101,12 @@
                 Estado
               </div>
             </th>
+            <th class="font-semibold text-center">
+              <div class="flex items-center justify-center gap-2">
+                <i class="fa-solid fa-file-invoice text-xs"></i>
+                Comprobante
+              </div>
+            </th>
           </tr>
         </thead>
 
@@ -111,11 +117,12 @@
             app-payment-list-item
             [payment]="payment"
             (viewDetails)="onViewPaymentDetails($event)"
-            class="text-center text-gray-300 hover:bg-gray-800/50 transition-all duration-200 border-b border-gray-700/50 cursor-pointer group"
+            (createVoucher)="onCreateVoucher($event)"
+            class="text-center text-gray-300 hover:bg-gray-800/50 transition-all duration-200 border-b border-gray-700/50 group"
           ></tr>
           } @empty {
           <tr>
-            <td colspan="6" class="text-center py-16">
+            <td colspan="7" class="text-center py-16">
               <div class="flex flex-col items-center gap-4 text-gray-400">
                 <div class="bg-gray-800 rounded-full p-6">
                   <i class="fa-solid fa-receipt text-5xl text-gray-600"></i>
@@ -149,5 +156,15 @@
   [payment]="selectedPayment()!"
   [isOpen]="isModalOpen()"
   (close)="onCloseModal()"
+/>
+}
+
+<!-- Modal de Crear Comprobante -->
+@if (selectedPaymentForVoucher()) {
+<app-create-voucher-modal
+  [payment]="selectedPaymentForVoucher()!"
+  [isOpen]="isVoucherModalOpen()"
+  (close)="onCloseVoucherModal()"
+  (voucherCreated)="onVoucherCreated()"
 />
 }

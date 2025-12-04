@@ -1,0 +1,285 @@
+<main class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 max-h-[calc(100vh-4rem)] overflow-y-auto">
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-24">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <span class="ml-4 text-gray-500 text-lg">Cargando producto...</span>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-8">
+      <!-- Breadcrumb -->
+      <div class="flex flex-wrap items-center gap-2">
+        <a
+          routerLink="/dashboard/inventory"
+          class="text-gray-400 text-sm font-medium leading-normal hover:text-blue-500"
+        >
+          Inventario
+        </a>
+        <span class="text-gray-400 text-sm">/</span>
+        <a
+          routerLink="/dashboard/inventory"
+          class="text-gray-400 text-sm font-medium leading-normal hover:text-blue-500"
+        >
+          Editar Producto
+        </a>
+        <span class="text-gray-400 text-sm">/</span>
+        <span class="text-white text-sm font-medium leading-normal">
+          {{ originalProduct()?.name ?? 'Producto' }}
+        </span>
+      </div>
+
+      <!-- Header -->
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <h1 class="text-white text-4xl font-black leading-tight tracking-tight">
+          Editar: {{ originalProduct()?.name ?? 'Producto' }}
+        </h1>
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div
+          class="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg"
+        >
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Form Card -->
+      <div class="bg-gray-800 rounded-xl p-8">
+        <form class="flex flex-col gap-8" (submit)="onSubmit($event)">
+          <!-- Campos del formulario -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Nombre -->
+            <div class="md:col-span-2 flex flex-col">
+              <label
+                class="text-gray-200 text-base font-medium leading-normal pb-2"
+                for="product-name"
+              >
+                Nombre del producto
+              </label>
+              <input
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 h-14 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                id="product-name"
+                [ngModel]="name()"
+                (ngModelChange)="name.set($event)"
+                name="name"
+              />
+            </div>
+
+            <!-- Categoría -->
+            <div class="flex flex-col">
+              <label
+                class="text-gray-200 text-base font-medium leading-normal pb-2"
+                for="product-type"
+              >
+                Categoría
+              </label>
+              <select
+                class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 h-14 placeholder:text-gray-400 px-4 py-3.5 text-base font-normal leading-normal"
+                id="product-type"
+                [ngModel]="selectedTypeId()"
+                (change)="onTypeChange($event)"
+                name="type"
+              >
+                @for (type of productTypes(); track type.id) {
+                  <option [value]="type.id">{{ type.name }}</option>
+                }
+              </select>
+              @if (categoryChangeWarning()) {
+                <div class="mt-2 p-3 bg-yellow-900/30 rounded-lg border border-yellow-700">
+                  <p class="text-yellow-400 text-xs">
+                    <span class="fa-solid fa-triangle-exclamation mr-1"></span>
+                    {{ categoryChangeWarning() }}
+                  </p>
+                </div>
+              }
+            </div>
+
+            <!-- Precio -->
+            <div class="flex flex-col">
+              <label
+                class="text-gray-200 text-base font-medium leading-normal pb-2"
+                for="product-price"
+              >
+                Precio (S/.)
+              </label>
+              <input
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 h-14 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                id="product-price"
+                type="number"
+                min="0"
+                step="0.1"
+                [ngModel]="price()"
+                (ngModelChange)="onPriceChange($event)"
+                name="price"
+              />
+            </div>
+
+            <!-- Descripción -->
+            <div class="md:col-span-2 flex flex-col">
+              <label
+                class="text-gray-200 text-base font-medium leading-normal pb-2"
+                for="product-description"
+              >
+                Descripción
+              </label>
+              <textarea
+                class="form-textarea flex w-full min-w-0 flex-1 resize-y overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 min-h-28 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                id="product-description"
+                placeholder="Descripción del producto"
+                [ngModel]="description()"
+                (ngModelChange)="description.set($event)"
+                name="description"
+              ></textarea>
+            </div>
+
+            <!-- Cantidad en Inventario - Para bebidas y descartables -->
+            @if (isBeverageOrDisposable()) {
+              <div class="md:col-span-2">
+                @if (inventoryId() || !wasOriginallyBeverageOrDisposable()) {
+                  <!-- Tiene inventario asociado O está cambiando de plato a bebida/descartable -->
+                  <label class="flex flex-col">
+                    <p class="text-gray-200 text-base font-medium leading-normal pb-2">
+                      @if (!wasOriginallyBeverageOrDisposable()) {
+                        Cantidad Inicial en Inventario (unidades)
+                      } @else {
+                        Cantidad en Inventario (unidades)
+                      }
+                    </p>
+                    <input
+                      class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 h-14 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                      type="number"
+                      min="0"
+                      step="1"
+                      [ngModel]="inventoryQuantity()"
+                      (ngModelChange)="onInventoryQuantityChange($event)"
+                      name="inventoryQuantity"
+                    />
+                    <p class="text-gray-400 text-xs mt-2">
+                      @if (!wasOriginallyBeverageOrDisposable()) {
+                        Se creará un registro de inventario con esta cantidad.
+                      } @else {
+                        Stock actual de {{ selectedTypeName() }} disponible para la venta.
+                      }
+                    </p>
+                  </label>
+                } @else {
+                  <!-- No tiene inventario asociado (datos legacy) -->
+                  <div class="p-4 bg-yellow-900/30 rounded-lg border border-yellow-700">
+                    <p class="text-yellow-400 text-sm font-medium mb-1">
+                      <span class="fa-solid fa-triangle-exclamation mr-2"></span>
+                      Producto sin inventario asociado
+                    </p>
+                    <p class="text-yellow-300/70 text-xs">
+                      Este producto fue creado antes de la gestión de inventario. 
+                      La cantidad no puede editarse. Contacte al administrador para migrar los datos.
+                    </p>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Receta - Solo para platos -->
+            @if (!isBeverageOrDisposable()) {
+              <div class="md:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                  <p class="text-base font-medium leading-normal text-gray-200">
+                    Receta / Ingredientes
+                  </p>
+                  <button 
+                    type="button"
+                    (click)="openRecipeModal()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                  >
+                    Gestionar Receta
+                  </button>
+                </div>
+
+                @if (recipeItems().length > 0) {
+                  <div class="border border-gray-700 rounded-lg overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-700">
+                      <thead class="bg-gray-900">
+                        <tr>
+                          <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Ingrediente</th>
+                          <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Cantidad</th>
+                          <th class="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Unidad</th>
+                          <th class="px-4 py-2 text-right text-xs font-medium text-gray-400 uppercase">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-gray-800 divide-y divide-gray-700">
+                        @for (item of recipeItems(); track $index) {
+                          <tr>
+                            <td class="px-4 py-2 text-sm text-white">{{ item.name }}</td>
+                            <td class="px-4 py-2 text-sm text-white">{{ item.quantity }}</td>
+                            <td class="px-4 py-2 text-sm text-white">{{ item.unitOfMeasure }}</td>
+                            <td class="px-4 py-2 text-right">
+                              <button 
+                                type="button"
+                                (click)="removeRecipeItem($index)"
+                                class="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                Eliminar
+                              </button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="p-4 bg-gray-900 rounded-lg border border-dashed border-gray-700 text-center">
+                    <p class="text-gray-400 text-sm">No se ha definido una receta para este producto.</p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-between items-center gap-4 pt-6 border-t border-gray-700">
+            <button
+              type="button"
+              (click)="onDelete()"
+              [disabled]="isDeleting()"
+              class="px-6 py-3 rounded-lg text-red-400 text-base font-semibold leading-normal hover:bg-red-500/10 transition-colors disabled:opacity-50"
+            >
+              @if (isDeleting()) {
+                <span>Eliminando...</span>
+              } @else {
+                <span>Eliminar Producto</span>
+              }
+            </button>
+
+            <div class="flex gap-4">
+              <button
+                type="button"
+                (click)="goBack()"
+                class="px-6 py-3 rounded-lg text-gray-300 text-base font-semibold leading-normal hover:bg-gray-700/50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="px-6 py-3 rounded-lg text-white text-base font-semibold leading-normal bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                @if (isSubmitting()) {
+                  <span>Guardando...</span>
+                } @else {
+                  <span>Guardar Cambios</span>
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</main>
+
+@if (showRecipeModal() && !isBeverageOrDisposable()) {
+  <app-recipe-modal
+    [initialItems]="recipeItems()"
+    (close)="closeRecipeModal()"
+    (addRecipe)="onRecipeAdded($event)"
+  ></app-recipe-modal>
+}
