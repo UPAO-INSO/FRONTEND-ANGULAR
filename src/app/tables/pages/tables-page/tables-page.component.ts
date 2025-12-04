@@ -39,6 +39,9 @@ export class TablesPageComponent {
   selectedTableStatus = signal<TableStatus | null>(null);
   productNameQuery = signal<string | null>(null);
   modifyStatusChanged = signal<boolean>(false);
+  
+  // Error message for user feedback
+  errorMessage = signal<string | null>(null);
 
   private currentTableIds = signal<number[]>([]);
 
@@ -123,18 +126,28 @@ export class TablesPageComponent {
     this.activeOrdersResource.reload();
   }
 
-  onOrderUpdated(id: UUID, order: ContentOrder) {
+  onOrderUpdated(id: UUID, order: RequestOrder) {
+    this.errorMessage.set(null); // Clear previous errors
+    
     this.orderService.updateOrder(id, order).subscribe({
       next: () => {
         this.refreshResources();
       },
       error: (error) => {
-        console.error('Error creating order:', error);
+        console.error('Error updating order:', error);
+        // Extract error message from backend response
+        const message = error.error?.message || error.message || 'Error al actualizar el pedido';
+        this.errorMessage.set(message);
+        
+        // Auto-clear after 10 seconds
+        setTimeout(() => this.errorMessage.set(null), 10000);
       },
     });
   }
 
   onOrderCreated(orderData: RequestOrder) {
+    this.errorMessage.set(null); // Clear previous errors
+    
     this.orderService.createOrder(orderData).subscribe({
       next: (createdOrder) => {
         this.orderSyncService.notifyOrderCreated(
@@ -146,6 +159,12 @@ export class TablesPageComponent {
       },
       error: (error) => {
         console.error('Error creating order:', error);
+        // Show error message to user
+        const message = error.error?.message || error.message || 'Error al crear el pedido';
+        this.errorMessage.set(message);
+        
+        // Auto-clear after 8 seconds
+        setTimeout(() => this.errorMessage.set(null), 8000);
       },
     });
   }

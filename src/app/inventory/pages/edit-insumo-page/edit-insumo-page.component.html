@@ -1,0 +1,162 @@
+<main class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-24">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <span class="ml-4 text-gray-500 text-lg">Cargando insumo...</span>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-8">
+      <!-- Breadcrumb -->
+      <div class="flex flex-wrap items-center gap-2">
+        <a
+          routerLink="/dashboard/inventory"
+          class="text-gray-400 text-sm font-medium leading-normal hover:text-blue-500"
+        >
+          Inventario
+        </a>
+        <span class="text-gray-400 text-sm">/</span>
+        <a
+          routerLink="/dashboard/inventory"
+          class="text-gray-400 text-sm font-medium leading-normal hover:text-blue-500"
+        >
+          Editar Ítem
+        </a>
+        <span class="text-gray-400 text-sm">/</span>
+        <span class="text-white text-sm font-medium leading-normal">
+          {{ originalItem()?.name ?? 'Insumo' }}
+        </span>
+      </div>
+
+      <!-- Header -->
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <h1 class="text-white text-4xl font-black leading-tight tracking-tight">
+          Editar: {{ originalItem()?.name ?? 'Insumo' }}
+        </h1>
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div
+          class="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg"
+        >
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Form Card -->
+      <div class="bg-gray-800 rounded-xl p-8">
+        <form class="flex flex-col gap-8" (submit)="onSubmit($event)">
+          <!-- Categoría Badge -->
+          <div class="flex items-center gap-4">
+            <p class="text-gray-400 text-base font-medium">Categoría:</p>
+            <div
+              class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-blue-500/20 px-4"
+            >
+              <p class="text-gray-200 text-sm font-medium leading-normal">
+                {{ typeLabels[selectedType()] }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Campos del formulario -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Nombre -->
+            <div class="flex flex-col">
+              <label
+                class="text-gray-200 text-base font-medium leading-normal pb-2"
+                for="item-name"
+              >
+                Nombre del insumo
+              </label>
+              <input
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 h-14 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                id="item-name"
+                [ngModel]="name()"
+                (ngModelChange)="name.set($event)"
+                name="name"
+              />
+            </div>
+
+            <!-- Cantidad y Unidad -->
+            <div class="flex items-end gap-4">
+              <div class="flex-grow">
+                <label
+                  class="text-gray-200 text-base font-medium leading-normal pb-2"
+                  for="item-quantity"
+                >
+                  Cantidad actual
+                </label>
+                <input
+                  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 h-14 placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
+                  id="item-quantity"
+                  type="number"
+                  min="0"
+                  [step]="quantityStep"
+                  [ngModel]="quantity()"
+                  (ngModelChange)="onQuantityChange($event)"
+                  name="quantity"
+                />
+              </div>
+              <div>
+                <label
+                  class="text-gray-200 text-base font-medium leading-normal pb-2"
+                  for="item-unit"
+                >
+                  Unidad
+                </label>
+                <select
+                  class="form-select flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-2 focus:ring-blue-500/50 border border-gray-700 bg-gray-900 focus:border-blue-500 h-14 placeholder:text-gray-400 px-4 py-3.5 text-base font-normal leading-normal"
+                  id="item-unit"
+                  [ngModel]="selectedUnit()"
+                  (change)="onUnitChange($event)"
+                  name="unit"
+                >
+                  @for (unit of allowedUnits; track unit) {
+                    <option [value]="unit">{{ unitLabels[unit] }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-between items-center gap-4 pt-6 border-t border-gray-700">
+            <button
+              type="button"
+              (click)="onDelete()"
+              [disabled]="isDeleting()"
+              class="px-6 py-3 rounded-lg text-red-400 text-base font-semibold leading-normal hover:bg-red-500/10 transition-colors disabled:opacity-50"
+            >
+              @if (isDeleting()) {
+                <span>Eliminando...</span>
+              } @else {
+                <span>Eliminar Insumo</span>
+              }
+            </button>
+
+            <div class="flex gap-4">
+              <button
+                type="button"
+                (click)="goBack()"
+                class="px-6 py-3 rounded-lg text-gray-300 text-base font-semibold leading-normal hover:bg-gray-700/50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="px-6 py-3 rounded-lg text-white text-base font-semibold leading-normal bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                @if (isSubmitting()) {
+                  <span>Guardando...</span>
+                } @else {
+                  <span>Guardar Cambios</span>
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</main>
