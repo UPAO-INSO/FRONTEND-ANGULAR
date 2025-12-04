@@ -1,0 +1,48 @@
+<header
+  class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 my-3 font-poppins-semibold px-2 sm:px-0"
+>
+  <h1 class="text-2xl sm:text-3xl md:text-4xl text-gray-100 pt-1 sm:pt-2">
+    Mesas
+  </h1>
+
+  <div
+    class="flex flex-row justify-start sm:justify-center items-center gap-2 sm:gap-4 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0"
+  >
+    <!--  -->
+    <div class="flex gap-2 flex-shrink-0">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer transition-all duration-200 px-2 sm:px-3 py-1 text-xs sm:text-sm md:text-base whitespace-nowrap active:scale-95"
+        [class.text-white]="selectedStatus() === null"
+        [class.border-white]="selectedStatus() === null"
+        (click)="selectStatus(null)"
+      >
+        Todos
+      </button>
+    </div>
+
+    <!-- Disponible -->
+    <div class="flex gap-2 flex-shrink-0">
+      <button
+        class="bg-transparent text-gray-500 border-0 border-b-2 font-bold cursor-pointer transition-all duration-200 px-2 sm:px-3 py-1 text-xs sm:text-sm md:text-base whitespace-nowrap active:scale-95"
+        [class.text-sky-400]="selectedStatus() === tableStatus.AVAILABLE"
+        [class.border-sky-400]="selectedStatus() === tableStatus.AVAILABLE"
+        (click)="selectStatus(tableStatus.AVAILABLE)"
+      >
+        Disponible
+      </button>
+    </div>
+
+    <!-- Ocupada -->
+    <div class="flex gap-2 flex-shrink-0">
+      <button
+        class="bg-transparent border-0 border-b-2 font-bold cursor-pointer transition-all duration-200 px-2 sm:px-3 py-1 text-xs sm:text-sm md:text-base whitespace-nowrap active:scale-95"
+        [class.text-amber-400]="selectedStatus() === tableStatus.OCCUPIED"
+        [class.border-amber-400]="selectedStatus() === tableStatus.OCCUPIED"
+        [class.text-gray-500]="selectedStatus() !== tableStatus.OCCUPIED"
+        (click)="selectStatus(tableStatus.OCCUPIED)"
+      >
+        Ocupada
+      </button>
+    </div>
+  </div>
+</header>

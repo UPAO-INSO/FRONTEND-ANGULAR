@@ -1,0 +1,27 @@
+@if (isOpen()) {
+<dialog class="modal modal-open">
+  <div class="modal-box bg-side-background">
+    <h3 class="font-bold text-lg text-warning">
+      <span class="fa-solid fa-exclamation-triangle mr-2"></span>
+      Confirmar pedido listo
+    </h3>
+    <p class="py-4 text-gray-300">
+      ¿Está seguro que desea marcar este pedido como listo?
+    </p>
+    <p class="text-sm text-yellow-500 mb-4">
+      <span class="fa-solid fa-info-circle mr-1"></span>
+      Todos los platos se marcarán automáticamente como servidos.
+    </p>
+    <div class="flex items-center justify-end modal-action">
+      <button class="btn btn-ghost pt-1" (click)="onCancel()">Cancelar</button>
+      <button class="btn btn-success pt-1" (click)="onConfirm()">
+        <span class="fa-solid fa-check mr-2"></span>
+        <p>Confirmar</p>
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button type="button" (click)="onCancel()">close</button>
+  </form>
+</dialog>
+}

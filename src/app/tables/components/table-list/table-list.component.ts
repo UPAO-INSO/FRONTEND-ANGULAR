@@ -7,14 +7,25 @@ import {
   ContentOrder,
   OrderStatus,
   RequestOrder,
+  UUID,
 } from '@src/app/orders/interfaces/order.interface';
 
-import type {
+import {
   ContentTable,
   Table,
   TableStatus,
 } from '../../interfaces/table.interface';
 import { TableListItemComponent } from './table-list-item/table-list-item.component';
+
+interface StatusChange {
+  orderId: UUID;
+  newStatus: OrderStatus;
+}
+
+interface OrderUpdate {
+  id: UUID;
+  order: RequestOrder;
+}
 
 @Component({
   selector: 'app-table-list',
@@ -24,8 +35,6 @@ import { TableListItemComponent } from './table-list-item/table-list-item.compon
 export class TableListComponent {
   tables = input.required<ContentTable[]>();
   modifyStatus = input.required<boolean>();
-  productTypes = input.required<ProductType[]>({});
-  tableStatusEnum = input.required<typeof TableStatus>();
 
   activeOrdersByTable = input<Map<number, ContentOrder>>(new Map());
   isEmpty = input<boolean>(false);
@@ -34,28 +43,20 @@ export class TableListComponent {
 
   orderStatus = OrderStatus;
 
-  statusChange = output<{
-    orderId: number;
-    newStatus: OrderStatus;
-  }>();
+  statusChange = output<StatusChange>();
   refresh = output<void>();
   orderCreated = output<RequestOrder>();
-  orderUpdated = output<{ id: number; order: ContentOrder }>();
-  productNameQuery = output<string>();
+  orderUpdated = output<OrderUpdate>();
   modifyStatusChanged = output<boolean>();
 
   selectedTable = signal<Table | null>(null);
   selectedProductCategory = signal<ProductType | null>(null);
 
-  productName(name: string) {
-    this.productNameQuery.emit(name);
-  }
-
   onChangeModifyStatus(status: boolean) {
     this.modifyStatusChanged.emit(status);
   }
 
-  onChangeStatus(orderId: number, newStatus: OrderStatus) {
+  onChangeStatus(orderId: UUID, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 
@@ -63,7 +64,7 @@ export class TableListComponent {
     this.orderCreated.emit(orderData);
   }
 
-  onOrderUpdated(id: number, order: ContentOrder) {
+  onOrderUpdated(id: UUID, order: RequestOrder) {
     this.orderUpdated.emit({ id, order });
   }
 

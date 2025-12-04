@@ -1,18 +1,43 @@
-import { Component, computed, input, linkedSignal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, input, output } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-pagination',
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './pagination.component.html',
 })
 export class PaginationComponent {
-  pages = input<number>(0);
-  currentPage = input<number>(1);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
 
-  activePage = linkedSignal(this.currentPage);
+  pages = input.required<number>();
+  currentPage = input.required<number>();
 
-  getPagesList = computed(() => {
-    return Array.from({ length: this.pages() }, (_, i) => i + 1);
-  });
+  pageChange = output<number>();
+
+  onPageChange(page: number) {
+    if (page < 1 || page > this.pages() || page === this.currentPage()) {
+      return;
+    }
+
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: { page: page },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  nextPage() {
+    const next = this.currentPage() + 1;
+    if (next <= this.pages()) {
+      this.onPageChange(next);
+    }
+  }
+
+  previousPage() {
+    const prev = this.currentPage() - 1;
+    if (prev >= 1) {
+      this.onPageChange(prev);
+    }
+  }
 }

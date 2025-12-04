@@ -1,0 +1,237 @@
+@if (isOpen()) {
+<dialog class="modal modal-open">
+  <div class="modal-box bg-side-background max-w-2xl">
+    <h3 class="font-bold text-xl text-white mb-4">
+      <span class="fa-solid fa-users mr-2"></span>
+      Seleccionar Cliente
+    </h3>
+
+    <!-- Barra de búsqueda -->
+    <div class="mb-4">
+      <div class="form-control">
+        <div class="input-group flex flex-row gap-2">
+          <input
+            type="text"
+            placeholder="Buscar por DNI o RUC..."
+            class="input input-bordered w-full bg-gray-800 text-white"
+            [value]="documentQuery()"
+            (input)="onSearchInput($event)"
+          />
+          <!--  -->
+          @if (documentQuery()) {
+          <button
+            class="btn btn-square text-gray-300 bg-gray-900 hover:bg-gray-600 border-0"
+            (click)="clearSearch()"
+          >
+            <span class="fa-solid fa-xmark"></span>
+          </button>
+          }
+
+          <!--  -->
+          <button class="btn btn-square btn-primary">
+            <span class="fa-solid fa-search"></span>
+          </button>
+
+          <!--  -->
+          @if (documentQuery().length >= 8 && getClients().length === 0 &&
+          !clientsResource.isLoading()) {
+          <button
+            class="btn btn-success btn-square"
+            (click)="startClientCreation()"
+            [disabled]="isCreatingClient()"
+            title="Crear nuevo cliente"
+          >
+            @if (isCreatingClient()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            } @else {
+            <span class="fa-solid fa-plus"></span>
+            }
+          </button>
+          }
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mt-1 ml-1">
+        Ingresa al menos 3 caracteres para buscar
+      </p>
+    </div>
+
+    <!--  -->
+    @if (isCreatingClient()) {
+    <div class="alert alert-info mb-4">
+      <span class="loading loading-spinner loading-sm"></span>
+      <span>Consultando documento {{ documentQuery() }}...</span>
+    </div>
+    }
+
+    <!--  -->
+    @if (newClientData()) {
+    <div class="bg-gray-800 rounded-lg p-4 mb-4">
+      <h4 class="font-semibold text-white mb-3 flex items-center">
+        <span class="fa-solid fa-user-plus mr-2 text-success"></span>
+        Confirmar Nuevo Cliente
+      </h4>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="label text-sm text-gray-300">Documento</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.documentNumber"
+            readonly
+          />
+        </div>
+
+        @if (newClientData()!.documentNumber.length === 8) {
+        <div>
+          <label class="label text-sm text-gray-300">Nombres</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.name"
+            (input)="updateNewClientField('name', $event)"
+          />
+        </div>
+        <div>
+          <label class="label text-sm text-gray-300">Apellidos</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.lastname || ''"
+            (input)="updateNewClientField('lastname', $event)"
+          />
+        </div>
+        } @else {
+        <div class="md:col-span-2">
+          <label class="label text-sm text-gray-300">Razón Social</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.name"
+            (input)="updateNewClientField('name', $event)"
+          />
+        </div>
+        }
+
+        <div class="md:col-span-2">
+          <label class="label text-sm text-gray-300">Dirección</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.completeAddress || ''"
+            (input)="updateNewClientField('completeAddress', $event)"
+          />
+        </div>
+
+        <div>
+          <label class="label text-sm text-gray-300">Teléfono</label>
+          <input
+            type="text"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.phone || ''"
+            (input)="updateNewClientField('phone', $event)"
+          />
+        </div>
+
+        <div>
+          <label class="label text-sm text-gray-300">Email</label>
+          <input
+            type="email"
+            class="input input-sm input-bordered bg-gray-700 text-white w-full"
+            [value]="newClientData()!.email || ''"
+            (input)="updateNewClientField('email', $event)"
+          />
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-4">
+        <button class="btn btn-sm btn-ghost" (click)="cancelClientCreation()">
+          Cancelar
+        </button>
+        <button
+          class="btn btn-md btn-success absolute bottom-8 right-10"
+          (click)="confirmClientCreation()"
+          [disabled]="isSavingClient()"
+        >
+          @if (isSavingClient()) {
+          <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+          <span class="fa-solid fa-save mr-1"></span>
+          } Crear Cliente
+        </button>
+      </div>
+    </div>
+    }
+
+    <!--  -->
+    <!-- Error de creación -->
+    @if (creationError()) {
+    <div class="alert alert-error mb-4">
+      <span class="fa-solid fa-exclamation-triangle"></span>
+      <span>{{ creationError() }}</span>
+    </div>
+    }
+
+    <!-- Estado de carga -->
+    @if (clientsResource.isLoading()) {
+    <div class="flex justify-center items-center py-8">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+    }
+
+    <!-- Mensaje de error -->
+    @if (clientsResource.error()) {
+    <div class="alert alert-error">
+      <span class="fa-solid fa-exclamation-triangle"></span>
+      <span>Error al cargar clientes. Intenta nuevamente.</span>
+    </div>
+    }
+
+    <!-- Lista de clientes -->
+    @if (!clientsResource.isLoading() && !clientsResource.error() &&
+    !newClientData()) {
+    <div class="max-h-96 overflow-y-auto custom-scrollbar">
+      @if (getClients().length === 0) {
+      <div class="text-center py-8 text-gray-500">
+        <span class="fa-solid fa-user-slash text-4xl mb-2 block"></span>
+        <p>No se encontraron clientes</p>
+      </div>
+      } @else {
+      <div class="space-y-2">
+        @for (client of getClients(); track client.id) {
+        <app-client-list
+          [client]="client"
+          [selectedClient]="selectedClient()"
+          (selectClient)="onSelectClient($event)"
+        />
+        }
+      </div>
+      }
+    </div>
+
+    <!-- Paginación -->
+    @if (!documentQuery()) {
+    <app-pagination [pages]="getTotalPages()" [currentPage]="currentPage()" />
+    } }
+
+    <!-- Botones de acción -->
+    @if (!newClientData()) {
+    <div class="modal-action">
+      <button class="btn btn-ghost" (click)="close()">Cancelar</button>
+      <button
+        class="btn btn-primary"
+        [disabled]="!selectedClient()"
+        (click)="onConfirm()"
+      >
+        <span class="fa-solid fa-check mr-2"></span>
+        Confirmar Cliente
+      </button>
+    </div>
+    }
+  </div>
+
+  <form method="dialog" class="modal-backdrop">
+    <button class="" (click)="close()">close</button>
+  </form>
+</dialog>
+}

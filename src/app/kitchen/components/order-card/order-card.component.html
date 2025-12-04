@@ -1,14 +1,14 @@
 <div
-  class="bg-side-background rounded-xl font-poppins-medium shadow-md p-4 w-full min-w-[280px] h-[calc(50vh-40px)] flex flex-col gap-3 hover:shadow-lg transition-shadow"
+  class="bg-side-background rounded-xl font-poppins-medium shadow-md p-4 w-full min-w-[280px] h-[calc(50vh-40px)] flex flex-col gap-3 hover:shadow-lg transition-shadow relative overflow-visible"
 >
-  <div class="flex flex-row justify-between flex-shrink-0">
-    <div class="items-start">
+  <div class="flex flex-row justify-between shrink-0">
+    <div class="flex gap-2 items-start justify-center">
       <span class="font-fira-bold text-2xl">Mesa {{ order().tableId }}</span>
     </div>
 
     <div class="flex flex-row items-end gap-3 mb-1">
       <span
-        class="badge pt-1 text-gray-200 font-semibold {{ statusColor() }}"
+        class="badge pt-1 text-gray-300 font-extrabold {{ statusColor() }}"
         >{{ statusLabel() }}</span
       >
       <span class="text-xs pb-0.5 text-gray-500 text-right">
@@ -18,29 +18,114 @@
   </div>
 
   <div class="flex-1 overflow-hidden flex flex-col">
-    <div class="text-xs text-gray-400 mb-2 flex-shrink-0">
+    <div class="text-xs text-gray-400 mb-2 shrink-0">
       {{ order().totalItems }} productos:
     </div>
 
-    <!-- ✅ Lista con altura calculada dinámicamente -->
     <ul
-      class="text-sm text-gray-300 font-poppins-semibold space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-2"
+      class="text-sm text-gray-300 font-poppins-semibold space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2 pb-2"
     >
       @for (prod of order().productOrders; track prod.id) {
-      <li class="flex justify-between text-sm">
-        <span class="truncate mr-2">
-          {{ prod.quantity }}x - {{ prod.productName | titlecase }}
-        </span>
+      <li class="flex flex-row items-center justify-between gap-2">
+        <!-- Nombre del producto -->
+        <div class="flex-1 flex items-center justify-between gap-2">
+          <span
+            class="text-sm flex-1 transition-all duration-200"
+            [class.line-through]="isProductCompleted(prod.id)"
+            [class.text-gray-500]="isProductCompleted(prod.id)"
+            [class.text-gray-300]="!isProductCompleted(prod.id)"
+          >
+            {{ prod.quantity }}x - {{ prod.productName | titlecase }}
+          </span>
+          @if (order().orderStatus === orderStatus.PREPARING) {
+
+          <!-- Checkbox para productos de cantidad 1 -->
+          @if (prod.quantity === 1) {
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm"
+            [checked]="getProductProgress(prod.id).isChecked || false"
+            (change)="toggleProductCheck(prod.id)"
+          />
+          } }
+        </div>
+
+        <!--  -->
+        @if (order().orderStatus === orderStatus.PREPARING) {
+
+        <!-- Barra de progreso -->
+        @if (prod.quantity > 1) {
+        <div
+          class="flex items-center justify-center gap-2 w-[calc(100%-12rem)]"
+        >
+          <!-- Botón decrementar -->
+          <button
+            class="btn btn-circle btn-xs bg-gray-700 hover:bg-gray-600 border-0 text-white"
+            [disabled]="(getProductProgress(prod.id).completed || 0) === 0"
+            (click)="decrementProgress(prod.id)"
+            (click)="
+              onServedProductOrder({
+                orderId: order().id,
+                productOrderId: prod.id,
+                quantity: -1
+              })
+            "
+          >
+            <span class="fa-solid fa-minus text-xs"></span>
+          </button>
+
+          <!-- Barra de progreso -->
+          <div class="flex flex-1 relative">
+            <progress
+              class="progress progress-success w-full h-4"
+              [value]="getProgressPercentage(prod.id)"
+              max="100"
+            ></progress>
+            <!-- Texto del progreso -->
+            <span
+              class="absolute inset-0 flex items-center justify-center text-[10px] h-4.5 font-bold text-white drop-shadow-md"
+            >
+              {{ getProductProgress(prod.id).completed }} /
+              {{ prod.quantity }}
+            </span>
+          </div>
+
+          <!-- Botón incrementar -->
+          <button
+            class="btn btn-circle btn-xs bg-gray-600 hover:bg-gray-500 border-0 text-white"
+            [disabled]="isProductCompleted(prod.id)"
+            (click)="incrementProgress(prod.id)"
+            (click)="
+              onServedProductOrder({
+                orderId: order().id,
+                productOrderId: prod.id,
+                quantity: 1
+              })
+            "
+          >
+            <span class="fa-solid fa-plus text-xs"></span>
+          </button>
+        </div>
+        } }
       </li>
       }
     </ul>
   </div>
 
-  <div class="flex-shrink-0 space-y-2 pt-2 border-t border-gray-600/30">
-    <div class="text-sm text-yellow-500 italic">
-      Comentario: {{ order().comment }}
+  <div class="shrink-0 space-y-2 pt-2 border-t-2 border-gray-500">
+    <!-- Comentario -->
+    @if (order().comment) {
+    <div
+      class="flex flex-row gap-1 items-center text-sm text-yellow-500 italic"
+    >
+      <span class="fa-solid fa-comment"></span>
+      <p>
+        {{ order().comment }}
+      </p>
     </div>
+    }
 
+    <!-- Empleado -->
     @if (order().orderEmployees.length > 0) {
     <div class="pb-2 flex flex-row gap-3">
       <span class="fa-solid fa-user text-xs text-gray-400"></span>
@@ -53,34 +138,42 @@
     </div>
     }
 
+    <!-- Botones de acción -->
     <div class="flex items-center gap-2 pb-2">
       @if (order().orderStatus === orderStatus.PENDING) {
       <button
-        class="btn bg-status-to-preparation flex-1 btn-sm text-white font-poppins-semibold text-[17px] p-6"
+        class="btn bg-status-to-preparation flex-1 items-center justify-center btn-sm text-white font-poppins-semibold text-[15px] p-6"
         (click)="onStatusChange(orderStatus.PREPARING)"
       >
-        <span class="fa-solid fa-play mr-1 text-sm"></span>
-        Iniciar Preparación
+        <div class="flex gap-2">
+          <span class="fa-solid fa-play"></span>
+          <span> Iniciar Preparación </span>
+        </div>
       </button>
       } @else if (order().orderStatus === orderStatus.PREPARING) {
       <button
-        class="btn bg-status-to-ready flex-1 btn-sm text-white font-poppins-semibold text-[17px] p-6"
+        class="btn bg-status-to-ready flex-1 items-center justify-center btn-sm text-white font-poppins-semibold text-[15px] p-6"
         (click)="onStatusChange(orderStatus.READY)"
       >
-        <span class="fa-solid fa-check mr-1 text-sm"></span>
-        Marcar como Listo
+        <div class="flex gap-2">
+          <span class="fa-solid fa-check"></span>
+          <span> Marcar como Listo </span>
+        </div>
       </button>
       } @else if (order().orderStatus === orderStatus.READY) {
       <button
-        class="btn flex-1 btn-sm btn-disabled font-semibold text-lg p-6"
+        class="btn flex-1 items-center justify-center btn-sm btn-disabled font-semibold text-[15px] p-6"
         disabled
       >
-        <span class="fa-solid fa-clock mr-1 text-sm"></span>
-        Esperando Entrega
+        <div class="flex gap-2">
+          <span class="fa-solid fa-clock"></span>
+          <span> Esperando Entrega </span>
+        </div>
       </button>
       }
 
-      <div class="dropdown dropdown-end">
+      <!-- Menú de opciones -->
+      <div class="dropdown dropdown-end dropdown-top">
         <div
           tabindex="0"
           role="button"
@@ -91,7 +184,7 @@
 
         <ul
           tabindex="0"
-          class="dropdown-content menu bg-side-background rounded-box z-[1] w-52 p-2 shadow-xl border border-gray-600"
+          class="dropdown-content menu bg-side-background rounded-box z-9999 w-52 p-2 shadow-xl border border-gray-600 mb-1"
         >
           <li class="menu-title text-xs text-gray-400 px-2 pb-1">
             <span>Cambiar estado</span>
@@ -117,3 +210,10 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de confirmación -->
+<app-confirm-ready-modal
+  [isOpen]="showConfirmModal()"
+  (confirm)="confirmReady()"
+  (cancel)="cancelReady()"
+/>

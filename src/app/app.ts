@@ -1,6 +1,5 @@
-import { Component, signal, input, inject } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HeaderStateService } from './shared/services/header-state.service';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +8,4 @@ import { HeaderStateService } from './shared/services/header-state.service';
 })
 export class App {
   protected readonly title = signal('pov-app');
-
-  headerStateService = inject(HeaderStateService);
 }

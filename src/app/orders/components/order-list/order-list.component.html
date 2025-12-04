@@ -1,38 +1,62 @@
-<div class="font-display h-[calc(100vh-243px)]">
+<div
+  class="font-display h-[calc(100vh-16rem)] sm:h-[calc(100vh-15rem)] md:h-[calc(100vh-243px)]"
+>
   <!--  -->
   @if (isLoading()) {
-  <div class="flex flex-col items-center justify-center h-full">
-    <span class="loading loading-bars loading-lg"></span>
-    <span class="text-white font-medium mt-5">Cargando pedidos...</span>
+  <div class="flex flex-col items-center justify-center h-full px-4">
+    <span class="loading loading-bars loading-md sm:loading-lg"></span>
+    <span class="text-white font-medium mt-3 sm:mt-5 text-sm sm:text-base">
+      Cargando pedidos...
+    </span>
   </div>
   }
 
   <!--  -->
   @else if (errorMessage()) {
-  <div class="flex flex-col items-center justify-center h-full text-red-400">
-    <span class="fa-solid fa-exclamation-triangle text-4xl mb-3"></span>
-    <span class="text-lg">{{ errorMessage() }}</span>
+  <div
+    class="flex flex-col items-center justify-center h-full text-red-400 px-4 text-center"
+  >
+    <span
+      class="fa-solid fa-exclamation-triangle text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3"
+    ></span>
+    <span class="text-base sm:text-lg md:text-xl font-medium mb-1"
+      >Error al cargar</span
+    >
+    <span class="text-xs sm:text-sm text-red-300">{{ errorMessage() }}</span>
   </div>
   }
 
   <!--  -->
   @else if (isEmpty()) {
-  <div class="flex flex-col items-center justify-center h-full text-gray-400">
-    <span class="fa-solid fa-clipboard-list text-4xl mb-3"></span>
-    <span class="text-lg font-medium">No se encontraron órdenes</span>
+  <div
+    class="flex flex-col items-center justify-center h-full text-gray-400 px-4 text-center"
+  >
+    <span
+      class="fa-solid fa-clipboard-list text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3"
+    ></span>
+    <span class="text-base sm:text-lg md:text-xl font-medium mb-1">
+      No se encontraron órdenes
+    </span>
+    <span class="text-xs sm:text-sm text-gray-500">
+      Las órdenes aparecerán aquí cuando se creen
+    </span>
   </div>
   }
 
   <!--  -->
   @else if (orders().length > 0) {
-  <div class="px-6 pt-6 border-t">
-    @for (order of orders(); track order.id) {
-    <app-order-list-item
-      class="flex flex-col mb-4"
-      [order]="order"
-      (orderSelected)="openViewOrder($event)"
-    />
-    }
+  <div
+    class="px-2 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 border-t border-gray-700 overflow-y-auto h-full custom-secondary-scrollbar"
+  >
+    <div class="space-y-3 sm:space-y-4 pb-4">
+      @for (order of orders(); track order.id) {
+      <app-order-list-item
+        class="block"
+        [order]="order"
+        (orderSelected)="openViewOrder($event)"
+      />
+      }
+    </div>
   </div>
   } @if (selectedOrder() !== null) {
   <app-order-view

@@ -1,8 +1,20 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import { OrderCardComponent } from '../order-card/order-card.component';
+import {
+  OrderCardComponent,
+  ServedProductOrder,
+} from '../order-card/order-card.component';
 
-import { ContentOrder, OrderStatus } from '@orders/interfaces/order.interface';
+import {
+  ContentOrder,
+  OrderStatus,
+  UUID,
+} from '@orders/interfaces/order.interface';
+
+export interface StatusChange {
+  orderId: UUID;
+  newStatus: OrderStatus;
+}
 
 @Component({
   selector: 'app-kitchen-order-list',
@@ -14,7 +26,8 @@ export class KitchenOrderListComponent {
   isLoading = input<boolean>(false);
   error = input<Error | undefined>();
 
-  statusChange = output<{ orderId: number; newStatus: OrderStatus }>();
+  statusChange = output<StatusChange>();
+  servedProductOrder = output<ServedProductOrder>();
   refresh = output<void>();
 
   filteredOrders = computed(() => {
@@ -48,11 +61,15 @@ export class KitchenOrderListComponent {
     return [...sortedNonReady, ...sortedReady];
   });
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
+  onStatusChange(orderId: UUID, newStatus: OrderStatus) {
     this.statusChange.emit({ orderId, newStatus });
   }
 
   onRefresh() {
     this.refresh.emit();
+  }
+
+  onServedProductOrder(served: ServedProductOrder) {
+    this.servedProductOrder.emit(served);
   }
 }

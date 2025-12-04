@@ -1,12 +1,33 @@
-<!-- order-tabs.component.html -->
-<div class="flex flex-wrap mb-6 gap-2 font-poppins-medium">
-  @for (category of productCategories(); track category.id) {
-  <button
-    class="py-2 px-4 text-gray-500 hover:text-red-400 cursor-pointer border-b-2"
-    (click)="selectCategory(category)"
-    [class.text-red-600]="selectedCategory() === category"
-  >
-    {{ category.name | titlecase }}
-  </button>
-  }
+<div class="mb-4 sm:mb-6 font-poppins-medium">
+  <!-- Mobile: Dropdown -->
+  <div class="block sm:hidden">
+    <select
+      class="select select-bordered w-full bg-background text-white border-gray-600 focus:border-red-500"
+      (change)="onSelectChange($event)"
+    >
+      <option disabled selected>Seleccionar categoría</option>
+      @for (category of productCategories(); track category.id) {
+      <option [value]="category.id">
+        {{ category.name | titlecase }}
+      </option>
+      }
+    </select>
+  </div>
+
+  <!-- Desktop: Tabs with horizontal scroll -->
+  <div class="hidden sm:block overflow-x-auto">
+    <div class="flex flex-nowrap gap-1 md:gap-2 pb-2 min-w-max">
+      @for (category of productCategories(); track category.id) {
+      <button
+        class="py-2 px-3 md:px-4 text-xs sm:text-sm md:text-base text-gray-500 hover:text-red-400 cursor-pointer border-b-2 transition-colors whitespace-nowrap active:scale-95 flex-shrink-0"
+        (click)="selectCategory(category)"
+        [class.text-red-600]="selectedCategory() === category"
+        [class.border-red-600]="selectedCategory() === category"
+        [class.font-semibold]="selectedCategory() === category"
+      >
+        {{ category.name | titlecase }}
+      </button>
+      }
+    </div>
+  </div>
 </div>

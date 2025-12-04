@@ -5,8 +5,8 @@
     <app-kitchen-nav
       [productTypes]="productTypeResource.value() ?? []"
       [orders]="ordersResource.value()?.content ?? []"
-      [currentPage]="paginationService.currentPage()"
-      [totalPages]="ordersResource.value()?.totalPages"
+      [currentPage]="currentPage()"
+      [totalPages]="ordersResource.value()?.totalPages ?? 0"
       [error]="ordersResource.error()"
       [isLoading]="ordersResource.isLoading()"
       [refreshTrigger]="refreshProductsTrigger()"
@@ -23,6 +23,7 @@
       [error]="ordersResource.error()"
       (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
       (refresh)="onRefresh()"
+      (servedProductOrder)="onServerProductOrder($event)"
     />
   </main>
 </div>

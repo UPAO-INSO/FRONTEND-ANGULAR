@@ -31,10 +31,13 @@
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 pb-4"
     >
       @for (order of filteredOrders(); track order.id) {
-      <app-order-card
-        [order]="order"
-        (changeStatus)="onStatusChange(order.id, $event)"
-      />
+      <div class="relative">
+        <app-order-card
+          [order]="order"
+          (changeStatus)="onStatusChange(order.id, $event)"
+          (servedProductOrder)="onServedProductOrder($event)"
+        />
+      </div>
       }
     </div>
     <div class="h-8"></div>

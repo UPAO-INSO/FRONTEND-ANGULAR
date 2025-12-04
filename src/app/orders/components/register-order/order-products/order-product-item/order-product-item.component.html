@@ -1,65 +1,104 @@
 <div
-  class="border border-gray-200 font-poppins-medium rounded-lg overflow-hidden shadow-sm relative group"
+  class="border border-gray-200 font-poppins-medium rounded-lg overflow-hidden shadow-sm relative group h-full flex flex-col hover:shadow-md transition-shadow duration-200"
 >
-  <img
-    [alt]="product().name"
-    class="w-full h-32 object-cover"
-    [class.group-hover:opacity-30]="!isKitchen()"
-    [class.duration-300]="!isKitchen()"
-    [class.transition-opacity]="!isKitchen()"
-    src="https://lh3.googleusercontent.com/aida-public/AB6AXuArr8YlVyZU0vwnMlylp53O7qh2SNZPUIvqsT6FWs5gwQ6Z7TmyHtvsQOqMzjVoKjH2kj_alwVpqKiapFe3A5t1fAy8T9lpScigCM5qDG0Kl1UXgAoyeJfJX1QleYQPEu3MsYO1HvX_X98sUyD8KUSkG5nKtAqsvXpRyo-wICO4FMZIO7kQACf6FgivDb5scXNltNBc-eSNcFSpLILYn8y8qEyee7pYWcRlsMoUnCfHPNcjkvnOcyDV-2iQrxfvShFt0ekAkf-wCaJ9"
-  />
-  <!--  -->
-  @if (!isKitchen() && isProductAvailable()) {
-  <div
-    class="absolute inset-0 bg-gray-900/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4"
-  >
-    <div class="text-center text-white">
-      <h4 class="font-bold text-lg mb-2">Descripción</h4>
-      <p class="text-sm text-gray-200 leading-relaxed">
-        {{ product().description || "No hay descripción disponible" }}
+  <!-- Image Container -->
+  <div class="relative w-full pt-[75%] sm:pt-[66.67%] overflow-hidden">
+    <img
+      [alt]="product().name"
+      class="absolute inset-0 w-full h-full object-cover"
+      [class.group-hover:opacity-30]="!isKitchen()"
+      [class.duration-300]="!isKitchen()"
+      [class.transition-opacity]="!isKitchen()"
+      [src]="getProductImageSrc()"
+      (error)="onImgError($event)"
+      loading="lazy"
+    />
+
+    <!--  Description Overlay -->
+    @if (!isKitchen() && isProductAvailable()) {
+    <div
+      class="absolute inset-0 bg-gray-900/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2 sm:p-3 md:p-4"
+    >
+      <div class="text-center text-white max-w-full overflow-hidden">
+        <h4
+          class="font-bold text-xs sm:text-sm md:text-base lg:text-lg mb-1 sm:mb-2"
+        >
+          Descripción
+        </h4>
+        <p
+          class="text-[10px] sm:text-xs md:text-sm text-gray-200 leading-relaxed line-clamp-3 sm:line-clamp-4"
+        >
+          {{ product().description || "No hay descripción disponible" }}
+        </p>
+      </div>
+    </div>
+    }
+
+    <!-- Not Available Overlay -->
+    @if (!isProductAvailable() && !isKitchen()) {
+    <div
+      class="absolute inset-0 bg-red-950/80 flex items-center justify-center z-10"
+    >
+      <div class="text-center text-white p-2 sm:p-3 md:p-4">
+        <div class="mb-1 sm:mb-2">
+          <i
+            class="fa-solid fa-ban text-xl sm:text-2xl md:text-3xl text-red-300"
+          ></i>
+        </div>
+        <h4
+          class="font-bold text-xs sm:text-sm md:text-base lg:text-lg mb-0.5 sm:mb-1"
+        >
+          NO DISPONIBLE
+        </h4>
+        <p class="text-[10px] sm:text-xs md:text-sm text-red-200">
+          Producto temporalmente agotado
+        </p>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Product Info -->
+  <div class="p-2 sm:p-3 md:p-4 flex-1 flex flex-col justify-between">
+    <div>
+      <h3
+        class="font-semibold text-white text-xs sm:text-sm md:text-base line-clamp-2"
+        [class.text-xs]="isKitchen()"
+        [class.sm:text-sm]="isKitchen()"
+      >
+        {{ product().name | titlecase }}
+      </h3>
+      <p
+        class="text-white mt-1 text-xs sm:text-sm md:text-base font-medium"
+        [class.text-xs]="isKitchen()"
+        [class.sm:text-sm]="isKitchen()"
+      >
+        S/. {{ product().price.toFixed(2) }}
       </p>
     </div>
-  </div>
-  }
 
-  <!--  -->
-  @if (!isProductAvailable() && !isKitchen()) {
-  <div
-    class="absolute inset-0 bg-red-950/80 flex items-center justify-center z-10"
-  >
-    <div class="text-center text-white p-4">
-      <div class="mb-2">
-        <i class="fa-solid fa-ban text-3xl text-red-300"></i>
+    <!-- Kitchen Status Toggle -->
+    @if (isKitchen()) {
+    <div
+      class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-700"
+    >
+      <span
+        class="text-[10px] sm:text-xs md:text-sm {{
+          getColorProductStatus()
+        }} font-medium"
+      >
+        {{ textStatusProduct() }}
+      </span>
+      <div class="relative cursor-pointer" [class.opacity-50]="isUpdating()" [class.pointer-events-none]="isUpdating()">
+        <input
+          type="checkbox"
+          [checked]="product().available"
+          [disabled]="isUpdating()"
+          class="toggle toggle-xs sm:toggle-sm"
+          (change)="onSubmitProductStatus()"
+        />
       </div>
-      <h4 class="font-bold text-lg mb-1">NO DISPONIBLE</h4>
-      <p class="text-sm text-red-200">Producto temporalmente agotado</p>
     </div>
+    }
   </div>
-  }
-
-  <div class="p-4">
-    <h3 class="font-semibold text-white" [class.text-sm]="isKitchen()">
-      {{ product().name | titlecase }}
-    </h3>
-    <p class="text-white" [class.text-sm]="isKitchen()">
-      S/. {{ product().price.toFixed(2) }}
-    </p>
-  </div>
-  <!--  -->
-  @if (isKitchen()) {
-  <div class="flex flex-col p-5">
-    <span class="text-[15px] {{ getColorProductStatus() }}">{{
-      textStatusProduct()
-    }}</span>
-    <div class="relative cursor-pointer">
-      <input
-        type="checkbox"
-        [checked]="product().available"
-        class="toggle absolute right-0 bottom-0"
-        (change)="onSubmitProductStatus()"
-      />
-    </div>
-  </div>
-  }
 </div>

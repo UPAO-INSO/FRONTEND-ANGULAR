@@ -51,15 +51,15 @@ export class NavbarComponent {
       icon: 'fa-solid fa-file-invoice text-white',
       label: 'Facturación',
       sublabel: 'Comprueba tus facturas',
-      route: '/dashboard/billing',
-      allowedRoles: ['administrador', 'gerente', 'contador'],
+      route: '/dashboard/vouchers',
+      allowedRoles: ['administrador', 'gerente', 'cajero'],
     },
     {
       icon: 'fa-solid fa-briefcase text-white',
       label: 'Inventario',
       sublabel: 'Gestiona tu inventario',
       route: '/dashboard/inventory',
-      allowedRoles: ['gerente', 'almacenero'],
+      allowedRoles: ['gerente', 'cocinero'],
     },
     {
       icon: 'fa-solid fa-cash-register text-white',

@@ -6,28 +6,54 @@
     <p class="text-gray-400 text-xs">
       S/. {{ cartItem().product.price.toFixed(2) }}
     </p>
+
+    @if (cartItem().servedQuantity && cartItem().servedQuantity! > 0) {
+    <p class="text-green-400 text-xs flex items-center gap-1 mt-1">
+      <span class="fa-solid fa-check-circle"></span>
+      <span>{{ cartItem().servedQuantity }} servido(s)</span>
+    </p>
+    }
   </div>
 
   <div class="flex items-center gap-2">
     <!-- Controles de cantidad -->
     <button
-      class="w-6 h-6 rounded-full bg-gray-600 text-white text-xs hover:bg-gray-500"
+      class="w-6 h-6 rounded-full text-white text-sm transition-colors cursor-pointer"
+      [class.bg-gray-600]="modificationStatus().canDecrease"
+      [class.hover:bg-gray-500]="modificationStatus().canDecrease"
+      [class.bg-gray-800]="!modificationStatus().canDecrease"
+      [class.cursor-not-allowed]="!modificationStatus().canDecrease"
+      [disabled]="!modificationStatus().canDecrease"
       (click)="decreaseQuantity()"
     >
       -
     </button>
 
-    <span class="min-w-[2rem] text-center">{{ cartItem().quantity }}</span>
+    <div class="min-w-8 text-center">
+      <span class="font-semibold">{{ cartItem().quantity }}</span>
+      @if (availableQuantity() < cartItem().quantity) {
+      <span class="text-xs text-gray-400 block">
+        ({{ availableQuantity() }} mod.)
+      </span>
+      }
+    </div>
 
     <button
-      class="w-6 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-500"
+      class="w-6 h-6 rounded-full bg-red-600 text-white text-sm hover:bg-red-500 cursor-pointer"
       (click)="increaseQuantity()"
     >
       +
     </button>
 
     <!-- Botón eliminar -->
-    <button class="text-red-400 hover:text-red-300 ml-2" (click)="onRemove()">
+    <button
+      class="text-red-400 ml-2 transition-colors cursor-pointer"
+      [class.hover:text-red-300]="modificationStatus().canRemove"
+      [class.opacity-40]="!modificationStatus().canRemove"
+      [class.cursor-not-allowed]="!modificationStatus().canRemove"
+      [disabled]="!modificationStatus().canRemove"
+      (click)="onRemove()"
+    >
       <span class="fa-solid fa-trash text-xs"></span>
     </button>
   </div>

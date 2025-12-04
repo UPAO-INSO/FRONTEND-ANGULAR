@@ -27,7 +27,7 @@
           d="m8.1 13.34l2.83-2.83L3.91 3.5a4.01 4.01 0 0 0 0 5.66zm6.78-1.81c1.53.71 3.68.21 5.27-1.38c1.91-1.91 2.28-4.65.81-6.12c-1.46-1.46-4.2-1.1-6.12.81c-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88l1.41-1.41L13.41 13z"
         />
       </svg>
-      <h1 class="text-4xl font-bold text-white">El Punto de Sal</h1>
+      <h1 class="text-4xl font-bold text-white">El {{ envs.companyName }}</h1>
     </div>
     <p class="text-gray-300 text-sm">Bienvenido de nuevo</p>
   </div>
@@ -64,7 +64,7 @@
     <div class="form-control">
       <div class="relative">
         <div
-          class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          class="absolute inset-y-0 left-4 flex items-center pointer-events-none"
         >
           <!-- Icono usuario -->
           <svg
@@ -84,7 +84,7 @@
           type="text"
           placeholder="Usuario"
           formControlName="username"
-          class="input input-bordered w-full h-12 px-12 bg-gray-800/60 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-200"
+          class="input w-full h-12 px-12 bg-gray-800/60 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-200"
         />
 
         <!-- Tooltip Usuario -->
@@ -116,7 +116,7 @@
     <div class="form-control">
       <div class="relative">
         <div
-          class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          class="absolute inset-y-0 left-4 flex items-center pointer-events-none"
         >
           <svg
             class="h-5 w-5 text-gray-400"
@@ -137,7 +137,7 @@
           [type]="showPassword() ? 'text' : 'password'"
           placeholder="Contraseña"
           formControlName="password"
-          class="input input-bordered w-full h-12 px-12 bg-gray-800/60 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-200"
+          class="input w-full h-12 px-12 bg-gray-800/60 border-gray-600 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-200"
         />
         <button
           type="button"
