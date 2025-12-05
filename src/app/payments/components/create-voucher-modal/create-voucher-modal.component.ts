@@ -115,7 +115,7 @@ export class CreateVoucherModalComponent {
     }-${today.getFullYear()}`;
 
     // Número de comprobante: Boletas desde 5, Facturas desde 25
-    const numero = this.voucherType() === VoucherType.RECEIPT ? 5 : 25;
+    const numero = this.voucherType() === VoucherType.RECEIPT ? 7 : 25;
 
     // Para facturas se requiere RUC (tipo 6), para boletas puede ser DNI (tipo 1)
     const tipoDocumento = this.voucherType() === VoucherType.RECEIPT ? 1 : 6;
