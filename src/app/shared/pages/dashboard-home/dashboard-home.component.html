@@ -1,0 +1,329 @@
+<main class="pds-page font-display">
+
+  <!-- ── Header ────────────────────────────────────────────────── -->
+  <div class="pds-page-header">
+    <div>
+      <h1 class="pds-page-title flex items-center gap-2">
+        <span class="fa-solid fa-gauge-high text-brand"></span>
+        Dashboard
+      </h1>
+      <p class="pds-page-subtitle capitalize">{{ today }}</p>
+    </div>
+
+    <button
+      class="pds-btn-secondary btn-sm gap-2"
+      (click)="refresh()"
+      [disabled]="loading()"
+    >
+      <span
+        class="fa-solid fa-rotate text-xs"
+        [class.animate-spin]="loading()"
+      ></span>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- ── Error ─────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="pds-alert-error mb-5">
+      <span class="fa-solid fa-circle-exclamation shrink-0"></span>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- ── Skeleton / Loading inicial ────────────────────────────── -->
+  @if (loading() && !stats()) {
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="pds-card h-28 animate-pulse bg-surface-nav"></div>
+      }
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="lg:col-span-2 pds-card h-72 animate-pulse bg-surface-nav"></div>
+      <div class="pds-card h-72 animate-pulse bg-surface-nav"></div>
+    </div>
+  }
+
+  @if (stats(); as s) {
+
+    <!-- ── KPIs ───────────────────────────────────────────────── -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+      <!-- Pedidos activos -->
+      <div class="pds-card p-5 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <span class="pds-section-title mb-0">Pedidos activos</span>
+          <span class="fa-solid fa-fire text-status-to-preparation text-lg"></span>
+        </div>
+        <p class="text-3xl font-bold text-text-primary font-mono">
+          {{ s.activeOrders.length }}
+        </p>
+        <div class="flex gap-1.5 flex-wrap">
+          @for (b of activeBadges(); track b.status) {
+            <span class="badge badge-xs {{ statusBg[b.status] }} text-white">
+              {{ b.count }} {{ statusLabels[b.status] | lowercase }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- Mesas ocupadas -->
+      <div class="pds-card p-5 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <span class="pds-section-title mb-0">Mesas ocupadas</span>
+          <span class="fa-solid fa-chair text-table-occupied text-lg"></span>
+        </div>
+        <p class="text-3xl font-bold text-text-primary font-mono">
+          {{ s.occupiedTables }}<span class="text-lg text-text-muted">/{{ s.totalTables }}</span>
+        </p>
+        <!-- Barra de ocupación -->
+        <div class="h-1.5 rounded-full bg-background-secondary overflow-hidden">
+          <div
+            class="h-full rounded-full transition-all duration-slow"
+            [class.bg-status-to-preparation]="tableOccupancyPct() >= 80"
+            [class.bg-brand]="tableOccupancyPct() < 80"
+            [style.width.%]="tableOccupancyPct()"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Ingresos del día -->
+      <div class="pds-card p-5 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <span class="pds-section-title mb-0">Ingresos hoy</span>
+          <span class="fa-solid fa-circle-dollar-to-slot text-brand text-lg"></span>
+        </div>
+        <p class="text-3xl font-bold text-brand font-mono">
+          S/ {{ revenue() }}
+        </p>
+        <p class="text-xs text-text-muted">
+          {{ s.todayPayments.length }} pago{{ s.todayPayments.length !== 1 ? 's' : '' }} registrado{{ s.todayPayments.length !== 1 ? 's' : '' }}
+        </p>
+      </div>
+
+      <!-- Completados hoy -->
+      <div class="pds-card p-5 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <span class="pds-section-title mb-0">Completados hoy</span>
+          <span class="fa-solid fa-circle-check text-status-ready text-lg"></span>
+        </div>
+        <p class="text-3xl font-bold text-text-primary font-mono">
+          {{ s.completedToday }}
+        </p>
+        <p class="text-xs text-text-muted">pedidos finalizados</p>
+      </div>
+
+    </div>
+
+    <!-- ── Fila central: pedidos recientes + mesas ────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+
+      <!-- Pedidos recientes -->
+      <div class="pds-card lg:col-span-2 flex flex-col">
+        <div class="pds-card-header">
+          <h2 class="pds-card-title flex items-center gap-2">
+            <span class="fa-solid fa-list-check text-brand"></span>
+            Pedidos recientes
+          </h2>
+          <a routerLink="/dashboard/orders" class="text-xs text-brand hover:text-brand-light transition-colors">
+            Ver todos →
+          </a>
+        </div>
+
+        @if (s.recentOrders.length === 0) {
+          <div class="pds-empty">
+            <div class="pds-empty-icon">
+              <span class="fa-solid fa-receipt"></span>
+            </div>
+            <p class="text-sm">Sin pedidos recientes</p>
+          </div>
+        } @else {
+          <div class="divide-y divide-border/30">
+            @for (order of s.recentOrders; track order.id) {
+              <div class="flex items-center gap-4 px-5 py-3 hover:bg-surface-nav transition-colors">
+                <!-- Mesa -->
+                <div class="shrink-0 w-10 h-10 rounded-lg bg-background-secondary flex items-center justify-center">
+                  <span class="text-xs font-bold text-text-primary font-mono">
+                    {{ order.tableId }}
+                  </span>
+                </div>
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-text-primary truncate">
+                    Mesa {{ order.tableId }}
+                    <span class="text-text-muted font-normal text-xs ml-1">
+                      · {{ order.totalItems }} {{ order.totalItems === 1 ? 'ítem' : 'ítems' }}
+                    </span>
+                  </p>
+                  <p class="text-xs text-text-muted">
+                    {{ order.createdAt | date : 'HH:mm' }}
+                    <span class="mx-1">·</span>
+                    {{ order.createdAt | date : 'dd/MM' }}
+                  </p>
+                </div>
+                <!-- Estado -->
+                <app-status-badge [status]="order.orderStatus" />
+                <!-- Total -->
+                <span class="text-sm font-semibold font-mono text-text-primary shrink-0">
+                  S/ {{ order.totalPrice.toFixed(2) }}
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Estado de mesas -->
+      <div class="pds-card flex flex-col">
+        <div class="pds-card-header">
+          <h2 class="pds-card-title flex items-center gap-2">
+            <span class="fa-solid fa-table text-brand"></span>
+            Estado de mesas
+          </h2>
+          <a routerLink="/dashboard/tables" class="text-xs text-brand hover:text-brand-light transition-colors">
+            Ver mesas →
+          </a>
+        </div>
+
+        @if (s.tables.content.length === 0) {
+          <div class="pds-empty">
+            <span class="fa-solid fa-chair text-3xl"></span>
+            <p class="text-sm">Sin mesas registradas</p>
+          </div>
+        } @else {
+          <div class="p-4 grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 gap-2">
+            @for (table of s.tables.content; track table.id) {
+              <div
+                class="aspect-square rounded-lg border flex flex-col items-center justify-center gap-0.5 text-center cursor-default transition-all
+                  {{ tableStatusClass(table.status) }}"
+                [title]="'Mesa ' + table.number + ' — ' + (table.status | titlecase)"
+              >
+                <span class="text-xs font-bold font-mono leading-none">{{ table.number }}</span>
+                @if (table.status === TableStatus.OCCUPIED) {
+                  <span class="fa-solid fa-circle text-[6px] animate-pulse"></span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Leyenda -->
+          <div class="px-4 pb-4 flex gap-3 text-xs text-text-muted flex-wrap">
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded bg-surface-nav border border-border"></div>
+              Disponible
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded bg-status-preparing/20 border border-status-preparing"></div>
+              Ocupada
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-3 h-3 rounded bg-status-pending/20 border border-status-pending"></div>
+              Reservada
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- ── Breakdown de estados ───────────────────────────────── -->
+    @if (statusBreakdown().length > 0) {
+      <div class="pds-card mb-5">
+        <div class="pds-card-header">
+          <h2 class="pds-card-title flex items-center gap-2">
+            <span class="fa-solid fa-chart-pie text-brand"></span>
+            Distribución de pedidos
+          </h2>
+        </div>
+        <div class="pds-card-body">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            @for (b of statusBreakdown(); track b.status) {
+              <div class="pds-info-panel text-center py-3">
+                <p class="text-2xl font-bold font-mono text-text-primary">{{ b.count }}</p>
+                <span class="badge badge-xs mt-1 {{ statusBg[b.status] }} text-white">
+                  {{ b.label }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Pedidos activos (detalle) ─────────────────────────── -->
+    @if (s.activeOrders.length > 0) {
+      <div class="pds-card mb-5">
+        <div class="pds-card-header">
+          <h2 class="pds-card-title flex items-center gap-2">
+            <span class="fa-solid fa-fire text-status-to-preparation"></span>
+            Pedidos en curso
+            <span class="badge badge-sm bg-status-to-preparation text-white border-0 ml-1">
+              {{ s.activeOrders.length }}
+            </span>
+          </h2>
+          <a routerLink="/dashboard/kitchen" class="text-xs text-brand hover:text-brand-light transition-colors">
+            Ver cocina →
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="pds-table">
+            <thead class="pds-table-head">
+              <tr>
+                <th class="pds-table-th">Mesa</th>
+                <th class="pds-table-th">Productos</th>
+                <th class="pds-table-th">Hora</th>
+                <th class="pds-table-th">Estado</th>
+                <th class="pds-table-th-center">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of s.activeOrders; track order.id) {
+                <tr class="pds-table-row">
+                  <td class="pds-table-td-primary">Mesa {{ order.tableId }}</td>
+                  <td class="pds-table-td">
+                    <span class="line-clamp-1 max-w-[200px]">
+                      {{ productNames(order) | titlecase }}
+                    </span>
+                  </td>
+                  <td class="pds-table-td font-mono text-xs">
+                    {{ order.createdAt | date : 'HH:mm' }}
+                  </td>
+                  <td class="pds-table-td">
+                    <app-status-badge [status]="order.orderStatus" />
+                  </td>
+                  <td class="pds-table-td-primary pds-table-td-center font-mono">
+                    S/ {{ order.totalPrice.toFixed(2) }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── Accesos rápidos ────────────────────────────────────── -->
+    <div class="pds-card">
+      <div class="pds-card-header">
+        <h2 class="pds-card-title flex items-center gap-2">
+          <span class="fa-solid fa-bolt text-brand"></span>
+          Accesos rápidos
+        </h2>
+      </div>
+      <div class="pds-card-body grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        @for (link of quickLinks; track link.route) {
+          <a
+            [routerLink]="link.route"
+            class="pds-info-panel flex flex-col items-center justify-center gap-2 py-4 text-center
+                   hover:bg-surface-nav cursor-pointer transition-all hover:scale-[0.97] active:scale-95"
+          >
+            <span class="{{ link.icon }} text-2xl {{ link.color }}"></span>
+            <span class="text-xs font-medium text-text-secondary">{{ link.label }}</span>
+          </a>
+        }
+      </div>
+    </div>
+
+  } <!-- end @if(stats) -->
+
+</main>
