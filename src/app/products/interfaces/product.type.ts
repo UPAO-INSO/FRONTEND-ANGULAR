@@ -39,6 +39,7 @@ export interface Product {
   available: boolean;
   productTypeId: number;
   productTypeName: string;
+  imageUrl?: string;
 }
 
 export interface RESTProduct {
@@ -59,6 +60,7 @@ export interface RestProductContent {
   productTypeName: string;
   active: boolean;
   available: boolean;
+  imageUrl?: string;
 }
 
 /**
