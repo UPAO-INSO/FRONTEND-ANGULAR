@@ -1,12 +1,9 @@
-import {
-  Component,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { DatePipe, TitleCasePipe } from '@angular/common';
+import {
+  ORDER_STATUS_BADGE_CLASS,
+  ORDER_STATUS_LABELS,
+} from '@src/app/shared/utils/order-status.utils';
 
 import {
   ContentOrder,
@@ -156,33 +153,8 @@ export class OrderCardComponent {
     return allProgress.every((p) => p.completed === p.total);
   }
 
-  statusColor() {
-    const status = this.order().orderStatus;
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'bg-status-pending text-status-text-pending';
-      case OrderStatus.PREPARING:
-        return 'bg-status-preparing text-status-text-preparing';
-      case OrderStatus.READY:
-        return 'bg-status-ready text-status-text-ready';
-      default:
-        return '';
-    }
-  }
-
-  statusLabel() {
-    const status = this.order().orderStatus;
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'Pendiente';
-      case OrderStatus.PREPARING:
-        return 'Preparando';
-      case OrderStatus.READY:
-        return 'Listo';
-      default:
-        return '';
-    }
-  }
+  readonly statusColor = () => ORDER_STATUS_BADGE_CLASS[this.order().orderStatus] ?? '';
+  readonly statusLabel = () => ORDER_STATUS_LABELS[this.order().orderStatus]      ?? '';
 
   onStatusChange(status: OrderStatus) {
     if (status === OrderStatus.READY) {
