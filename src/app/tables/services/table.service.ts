@@ -23,7 +23,7 @@ export class TableService {
   private tableByIdCache = new Map<number, Table>();
   private tablesByStatusCache = new Map<TableStatus, Table[]>();
 
-  private readonly CACHE_TTL = 3 * 60 * 1000;
+  private readonly CACHE_TTL = 2 * 60 * 1000;
   private cacheTimestamps = new Map<string, number>();
 
   private isCacheValid(key: string): boolean {
@@ -53,11 +53,11 @@ export class TableService {
     this.tablesByStatusCache.delete(status);
   }
 
-  fetchTables(options: Options, forceRefresh = false): Observable<RESTTable> {
+  fetchTables(options: Options): Observable<RESTTable> {
     const { limit = 8, page = 1, status = '' } = options;
     const cacheKey = `tables_${page}_${limit}_${status}`;
 
-    if (!forceRefresh && this.isCacheValid(cacheKey)) {
+    if (this.isCacheValid(cacheKey)) {
       const cached = this.tablesCache.get(cacheKey);
       if (cached) {
         return of(cached);

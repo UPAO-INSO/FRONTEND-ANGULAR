@@ -2,6 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
+import { InactivityService } from '@shared/services/inactivity.service';
+import { environment } from '@src/environments/environment';
 
 @Component({
   selector: 'app-login-page',
@@ -15,12 +17,23 @@ export class LoginPageComponent {
   showPassword = signal(false);
   cleanInput = signal(false);
 
-  private authService = inject(AuthService);
+  envs = environment;
+
+  private authService   = inject(AuthService);
+  private inactivity    = inject(InactivityService);
   router = inject(Router);
 
   loginForm = this.fb.group({
     username: ['', [Validators.required, Validators.minLength(4)]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(20),
+        Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,20}$/),
+      ],
+    ],
   });
 
   togglePasswordVisibility() {
@@ -42,6 +55,7 @@ export class LoginPageComponent {
       .login(username!, password!)
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
+          this.inactivity.start();
           this.router.navigateByUrl('/dashboard');
           return;
         }

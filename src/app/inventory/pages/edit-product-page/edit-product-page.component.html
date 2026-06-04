@@ -1,0 +1,255 @@
+<main class="pds-page max-w-5xl mx-auto">
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-24">
+      <span class="loading loading-bars loading-lg text-brand"></span>
+      <span class="ml-4 text-text-secondary text-base">Cargando producto...</span>
+    </div>
+  } @else {
+
+    <!-- Breadcrumb -->
+    <nav class="pds-breadcrumb">
+      <a routerLink="/dashboard/inventory" class="pds-breadcrumb-link">Inventario</a>
+      <span class="pds-breadcrumb-sep fa-solid fa-chevron-right"></span>
+      <a routerLink="/dashboard/inventory" class="pds-breadcrumb-link">Editar Producto</a>
+      <span class="pds-breadcrumb-sep fa-solid fa-chevron-right"></span>
+      <span class="pds-breadcrumb-current">{{ originalProduct()?.name ?? 'Producto' }}</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="pds-page-header">
+      <h1 class="pds-page-title">Editar: {{ originalProduct()?.name ?? 'Producto' }}</h1>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="pds-alert-error mb-6">
+        <span class="fa-solid fa-exclamation-circle shrink-0"></span>
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Form Card -->
+    <div class="pds-card">
+      <div class="pds-card-body">
+        <form class="flex flex-col gap-6" (submit)="onSubmit($event)">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Nombre -->
+            <div class="md:col-span-2 pds-field">
+              <label class="pds-label" for="product-name">Nombre del producto</label>
+              <input
+                class="pds-input"
+                id="product-name"
+                [ngModel]="name()"
+                (ngModelChange)="name.set($event)"
+                name="name"
+              />
+            </div>
+
+            <!-- Categoría -->
+            <div class="pds-field">
+              <label class="pds-label" for="product-type">Categoría</label>
+              <div class="relative">
+                <select
+                  class="pds-select"
+                  id="product-type"
+                  [ngModel]="selectedTypeId()"
+                  (change)="onTypeChange($event)"
+                  name="type"
+                >
+                  @for (type of productTypes(); track type.id) {
+                    <option [value]="type.id">{{ type.name }}</option>
+                  }
+                </select>
+                <span class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-text-muted text-xs"></span>
+              </div>
+              @if (categoryChangeWarning()) {
+                <div class="pds-alert-warning mt-2">
+                  <span class="fa-solid fa-triangle-exclamation shrink-0"></span>
+                  {{ categoryChangeWarning() }}
+                </div>
+              }
+            </div>
+
+            <!-- Precio -->
+            <div class="pds-field">
+              <label class="pds-label" for="product-price">Precio (S/.)</label>
+              <input
+                class="pds-input"
+                id="product-price"
+                type="number"
+                min="0"
+                step="0.1"
+                [ngModel]="price()"
+                (ngModelChange)="onPriceChange($event)"
+                name="price"
+              />
+            </div>
+
+            <!-- Descripción -->
+            <div class="md:col-span-2 pds-field">
+              <label class="pds-label" for="product-description">Descripción</label>
+              <textarea
+                class="pds-textarea min-h-28"
+                id="product-description"
+                placeholder="Descripción del producto"
+                [ngModel]="description()"
+                (ngModelChange)="description.set($event)"
+                name="description"
+              ></textarea>
+            </div>
+
+            <!-- Cantidad en Inventario - Para bebidas y descartables -->
+            @if (isBeverageOrDisposable()) {
+              <div class="md:col-span-2">
+                @if (inventoryId() || !wasOriginallyBeverageOrDisposable()) {
+                  <div class="pds-field">
+                    <label class="pds-label">
+                      @if (!wasOriginallyBeverageOrDisposable()) {
+                        Cantidad Inicial en Inventario (unidades)
+                      } @else {
+                        Cantidad en Inventario (unidades)
+                      }
+                    </label>
+                    <input
+                      class="pds-input"
+                      type="number"
+                      min="0"
+                      step="1"
+                      [ngModel]="inventoryQuantity()"
+                      (ngModelChange)="onInventoryQuantityChange($event)"
+                      name="inventoryQuantity"
+                    />
+                    <p class="text-text-muted text-xs mt-1">
+                      @if (!wasOriginallyBeverageOrDisposable()) {
+                        Se creará un registro de inventario con esta cantidad.
+                      } @else {
+                        Stock actual de {{ selectedTypeName() }} disponible para la venta.
+                      }
+                    </p>
+                  </div>
+                } @else {
+                  <div class="pds-alert-warning">
+                    <span class="fa-solid fa-triangle-exclamation shrink-0"></span>
+                    <div>
+                      <p class="font-medium">Producto sin inventario asociado</p>
+                      <p class="text-xs mt-0.5 opacity-80">
+                        Este producto fue creado antes de la gestión de inventario.
+                        La cantidad no puede editarse. Contacte al administrador para migrar los datos.
+                      </p>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Receta - Solo para platos -->
+            @if (!isBeverageOrDisposable()) {
+              <div class="md:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                  <label class="pds-label mb-0">Receta / Ingredientes</label>
+                  <button
+                    type="button"
+                    (click)="openRecipeModal()"
+                    class="pds-btn-primary btn-sm"
+                  >
+                    Gestionar Receta
+                  </button>
+                </div>
+
+                @if (recipeItems().length > 0) {
+                  <div class="pds-table-container">
+                    <table class="pds-table">
+                      <thead class="pds-table-head">
+                        <tr>
+                          <th class="pds-table-th">Ingrediente</th>
+                          <th class="pds-table-th">Cantidad</th>
+                          <th class="pds-table-th">Unidad</th>
+                          <th class="pds-table-th text-right">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of recipeItems(); track $index) {
+                          <tr class="pds-table-row">
+                            <td class="pds-table-td-primary">{{ item.name }}</td>
+                            <td class="pds-table-td">{{ item.quantity }}</td>
+                            <td class="pds-table-td">{{ item.unitOfMeasure }}</td>
+                            <td class="pds-table-td text-right">
+                              <button
+                                type="button"
+                                (click)="removeRecipeItem($index)"
+                                class="pds-btn-icon text-red-400 hover:text-red-300"
+                              >
+                                <span class="fa-solid fa-trash text-xs"></span>
+                              </button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="pds-empty border border-dashed border-border rounded-lg py-6">
+                    <div class="pds-empty-icon">
+                      <span class="fa-solid fa-flask"></span>
+                    </div>
+                    <p class="text-sm">No se ha definido una receta para este producto.</p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-between items-center gap-4 pt-4 border-t border-border">
+            <button
+              type="button"
+              (click)="onDelete()"
+              [disabled]="isDeleting()"
+              class="pds-btn-danger disabled:opacity-50"
+            >
+              @if (isDeleting()) {
+                <span class="loading loading-spinner loading-xs"></span>
+                Eliminando...
+              } @else {
+                <span class="fa-solid fa-trash text-sm"></span>
+                Eliminar Producto
+              }
+            </button>
+
+            <div class="flex gap-3">
+              <button
+                type="button"
+                (click)="goBack()"
+                class="pds-btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="pds-btn-primary disabled:opacity-50"
+              >
+                @if (isSubmitting()) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                  Guardando...
+                } @else {
+                  Guardar Cambios
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</main>
+
+@if (showRecipeModal() && !isBeverageOrDisposable()) {
+  <app-recipe-modal
+    [initialItems]="recipeItems()"
+    (close)="closeRecipeModal()"
+    (addRecipe)="onRecipeAdded($event)"
+  ></app-recipe-modal>
+}

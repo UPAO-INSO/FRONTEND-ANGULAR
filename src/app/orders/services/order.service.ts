@@ -8,10 +8,12 @@ import {
   PersonResponse,
   RequestOrder,
   RESTOrder,
+  UUID,
 } from '../interfaces/order.interface';
 import { environment } from '@environments/environment';
 
 const atmStatus = [
+  OrderStatus.COMPLETED,
   OrderStatus.PENDING,
   OrderStatus.PREPARING,
   OrderStatus.READY,
@@ -40,10 +42,9 @@ export class OrderService {
   envs = environment;
 
   private ordersCache = new Map<string, RESTOrder>();
-  private orderByIdCache = new Map<number, ContentOrder>();
+  private orderByIdCache = new Map<UUID, ContentOrder>();
   private personCache = new Map<string, PersonResponse>();
-  private ordersByTableCache = new Map<number, ContentOrder[]>();
-
+  private ordersByTableCache = new Map<string, ContentOrder[]>();
   private readonly CACHE_TTL = 2 * 60 * 1000;
   private cacheTimestamps = new Map<string, number>();
 
@@ -67,7 +68,16 @@ export class OrderService {
   }
 
   clearTableCache(tableId: number): void {
-    this.ordersByTableCache.delete(tableId);
+    const keysToDelete: string[] = [];
+    this.ordersByTableCache.forEach((value, key) => {
+      if (key.includes(`_${tableId}_`) || key.startsWith(`tables_${tableId}`)) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach((key) => {
+      this.ordersByTableCache.delete(key);
+      this.cacheTimestamps.delete(key);
+    });
   }
 
   createOrder(order: RequestOrder): Observable<ContentOrder> {
@@ -82,8 +92,10 @@ export class OrderService {
           this.clearCache();
         }),
         catchError((error) => {
-          console.error('OrderService error:', error);
-          return throwError(() => 'No se pudo crear ordenes');
+          console.error('CreateOrder error:', error);
+          // Extract meaningful error message from backend
+          const errorMessage = error.error?.message || error.statusText || 'Error al crear la orden';
+          return throwError(() => ({ message: errorMessage, error: error.error }));
         })
       );
   }
@@ -94,7 +106,6 @@ export class OrderService {
     if (this.isCacheValid(cacheKey)) {
       const cached = this.personCache.get(cacheKey);
       if (cached) {
-        console.log('📦 Returning cached person');
         return of(cached);
       }
     }
@@ -105,7 +116,6 @@ export class OrderService {
         tap((personResponse) => {
           this.personCache.set(cacheKey, personResponse);
           this.setCache(cacheKey, personResponse);
-          console.log('💾 Person cached');
         }),
         catchError((error) => {
           console.log({ error });
@@ -146,16 +156,29 @@ export class OrderService {
       );
   }
 
+  clearOrdersByTablesCache(tableIds: number[]): void {
+    const cacheKey = `tables_${tableIds.sort().join('_')}`;
+    const keysToDelete: string[] = [];
+    this.ordersByTableCache.forEach((value, key) => {
+      if (key.startsWith(cacheKey)) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach((key) => {
+      this.ordersByTableCache.delete(key);
+      this.cacheTimestamps.delete(key);
+    });
+  }
+
   fetchOrderByTablesIds(
     tableIds: number[],
-    options: Options,
-    forceRefresh = false
+    options: Options
   ): Observable<ContentOrder[]> {
-    const { page = 1, limit = 8 } = options;
+    const { page = 1, limit = 8, direction = Direction.DESC } = options;
     const cacheKey = `tables_${tableIds.sort().join('_')}_${page}_${limit}`;
 
-    if (!forceRefresh && this.isCacheValid(cacheKey)) {
-      const cached = this.ordersByTableCache.get(tableIds[0]);
+    if (this.isCacheValid(cacheKey)) {
+      const cached = this.ordersByTableCache.get(cacheKey);
       if (cached) {
         return of(cached);
       }
@@ -176,6 +199,7 @@ export class OrderService {
           params: {
             page,
             limit,
+            direction,
           },
         }
       )
@@ -184,9 +208,7 @@ export class OrderService {
           return response.content || [];
         }),
         tap((orders) => {
-          tableIds.forEach((tableId) => {
-            this.ordersByTableCache.set(tableId, orders);
-          });
+          this.ordersByTableCache.set(cacheKey, orders);
           this.setCache(cacheKey, orders);
         }),
         catchError((error) => {
@@ -235,8 +257,13 @@ export class OrderService {
     options: Options,
     forceRefresh = false
   ): Observable<RESTOrder> {
-    const { page = 1, limit = 5 } = options;
-    const cacheKey = `atm_orders_${page}_${limit}`;
+    const {
+      page = 1,
+      limit = 5,
+      direction = Direction.ASC,
+      sortField = 'id',
+    } = options;
+    const cacheKey = `atm_orders_${page}_${limit}_${direction}_${sortField}`;
 
     if (!forceRefresh && this.isCacheValid(cacheKey)) {
       const cached = this.ordersCache.get(cacheKey);
@@ -253,6 +280,8 @@ export class OrderService {
           params: {
             page,
             limit,
+            direction,
+            sortField,
           },
         }
       )
@@ -270,7 +299,7 @@ export class OrderService {
   }
 
   updateOrderStatus(
-    orderId: number,
+    orderId: UUID,
     status: OrderStatus
   ): Observable<ContentOrder[]> {
     return this.http
@@ -281,6 +310,7 @@ export class OrderService {
           if (cachedOrder) {
             cachedOrder.orderStatus = status;
             this.orderByIdCache.set(orderId, cachedOrder);
+            this.clearTableCache(cachedOrder.tableId);
           }
 
           this.clearCache();
@@ -294,7 +324,7 @@ export class OrderService {
       );
   }
 
-  updateOrder(id: number, order: ContentOrder): Observable<ContentOrder> {
+  updateOrder(id: UUID, order: RequestOrder): Observable<ContentOrder> {
     return this.http
       .put<ContentOrder>(`${this.envs.API_URL}/orders/${id}`, order)
       .pipe(
@@ -304,9 +334,12 @@ export class OrderService {
           this.clearCache();
         }),
         catchError((error) => {
-          console.error({ error });
+          console.error('Update order error:', error);
 
-          return throwError(() => new Error('Error al actualizar la orden'));
+          // Extract meaningful error message from backend
+          const errorMessage = error.error?.message || error.statusText || 'Error al actualizar la orden';
+          // Return error with original structure preserved
+          return throwError(() => ({ message: errorMessage, error: error.error }));
         })
       );
   }

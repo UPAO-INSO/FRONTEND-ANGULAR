@@ -1,0 +1,60 @@
+<main class="pds-page">
+
+  <!-- Header -->
+  <div class="pds-page-header">
+    <div>
+      <h1 class="pds-page-title">
+        <span class="fa-solid fa-file-invoice text-brand text-xl mr-3"></span>
+        Comprobantes Electrónicos
+      </h1>
+      <p class="pds-page-subtitle">Visualiza todos los comprobantes generados</p>
+    </div>
+
+    <!-- Stat de total -->
+    <div class="pds-card px-5 py-3 flex flex-col items-center shrink-0">
+      <span class="text-xs text-text-muted uppercase tracking-wider">Total</span>
+      <span class="text-2xl font-bold text-brand font-mono">{{ vouchers().length }}</span>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="pds-table-container overflow-x-auto">
+    <table class="pds-table">
+      <thead class="pds-table-head">
+        <tr>
+          <th class="pds-table-th-center">ID</th>
+          <th class="pds-table-th-center">Enlace PDF</th>
+          <th class="pds-table-th-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (voucher of vouchers(); track voucher.id) {
+          <tr
+            app-voucher-list-item
+            [voucher]="voucher"
+            class="pds-table-row text-center"
+          ></tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="pds-table-empty">
+              <div class="pds-empty">
+                <div class="pds-empty-icon">
+                  <span class="fa-solid fa-file-invoice"></span>
+                </div>
+                <p class="font-semibold text-text-secondary">No se encontraron comprobantes</p>
+                <p class="text-xs">Los comprobantes aparecerán aquí cuando se generen</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="mt-5">
+    <app-pagination [currentPage]="currentPage()" [pages]="totalPages()" />
+  </div>
+
+</main>

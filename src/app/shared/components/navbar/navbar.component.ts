@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
+import { ThemeService } from '@shared/services/theme.service';
 import { environment } from '@environments/environment';
 
 interface MenuOption {
@@ -27,49 +28,50 @@ export interface UserData {
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
-  authService = inject(AuthService);
+  authService  = inject(AuthService);
+  themeService = inject(ThemeService);
   envs = environment;
 
   userJobTitle = signal<string>('');
 
   allMenuOptions: MenuOption[] = [
     {
-      icon: 'fa-solid fa-list-check text-white',
+      icon: 'fa-solid fa-list-check',
       label: 'Mesas',
       sublabel: 'Seleccionar mesa',
       route: '/dashboard/tables',
       allowedRoles: ['mesero', 'gerente'],
     },
     {
-      icon: 'fa-solid fa-table-list text-white',
+      icon: 'fa-solid fa-table-list',
       label: 'Pedidos',
       sublabel: 'Revisa tus pedidos',
       route: '/dashboard/orders',
       allowedRoles: ['gerente', 'cocina'],
     },
     {
-      icon: 'fa-solid fa-file-invoice text-white',
+      icon: 'fa-solid fa-file-invoice',
       label: 'Facturación',
       sublabel: 'Comprueba tus facturas',
-      route: '/dashboard/billing',
-      allowedRoles: ['administrador', 'gerente', 'contador'],
+      route: '/dashboard/vouchers',
+      allowedRoles: ['administrador', 'gerente', 'cajero'],
     },
     {
-      icon: 'fa-solid fa-briefcase text-white',
+      icon: 'fa-solid fa-briefcase',
       label: 'Inventario',
       sublabel: 'Gestiona tu inventario',
       route: '/dashboard/inventory',
-      allowedRoles: ['gerente', 'almacenero'],
+      allowedRoles: ['gerente', 'cocinero'],
     },
     {
-      icon: 'fa-solid fa-cash-register text-white',
+      icon: 'fa-solid fa-cash-register',
       label: 'Pagos',
       sublabel: 'Valida tus pagos',
       route: '/dashboard/payments',
       allowedRoles: ['gerente', 'cajero'],
     },
     {
-      icon: 'fa-solid fa-utensils text-white',
+      icon: 'fa-solid fa-utensils',
       label: 'Cocina',
       sublabel: 'Gestiona los pedidos en cocina',
       route: '/dashboard/kitchen',
@@ -78,23 +80,14 @@ export class NavbarComponent {
   ];
 
   menuOptions = computed(() => {
-    const currentJobTitle = this.userJobTitle().toLowerCase();
-
-    if (!currentJobTitle) {
-      return [];
-    }
-
-    return this.allMenuOptions.filter((option) => {
-      if (!option.allowedRoles || option.allowedRoles.length === 0) {
-        return true;
-      }
-
-      return option.allowedRoles.some(
-        (role) =>
-          role.toLowerCase() === currentJobTitle ||
-          currentJobTitle.includes(role.toLowerCase())
-      );
-    });
+    const jobTitle = this.userJobTitle().toLowerCase();
+    if (!jobTitle) return [];
+    return this.allMenuOptions.filter(opt =>
+      !opt.allowedRoles?.length ||
+      opt.allowedRoles.some(r =>
+        r.toLowerCase() === jobTitle || jobTitle.includes(r.toLowerCase())
+      )
+    );
   });
 
   constructor() {
@@ -103,37 +96,22 @@ export class NavbarComponent {
 
   private loadUserJobTitle() {
     try {
-      const userData = localStorage.getItem('user-data');
-      if (userData) {
-        const parsedUserData: UserData = JSON.parse(userData);
-
-        const jobTitle = parsedUserData.jobTitle || parsedUserData.role || '';
-        this.userJobTitle.set(jobTitle);
-      } else {
-        console.warn('No user-data found in localStorage');
-        this.userJobTitle.set('');
+      const raw = localStorage.getItem('user-data');
+      if (raw) {
+        const data: UserData = JSON.parse(raw);
+        this.userJobTitle.set(data.jobTitle || data.role || '');
       }
-    } catch (error) {
-      console.error('Error parsing user-data from localStorage:', error);
+    } catch {
       this.userJobTitle.set('');
     }
   }
 
-  refreshUserData() {
-    this.loadUserJobTitle();
-  }
-
-  getCurrentUserInfo() {
+  get currentUser(): UserData | null {
     try {
-      const userData = localStorage.getItem('user-data');
-      return userData ? JSON.parse(userData) : null;
-    } catch (error) {
-      console.error('Error getting user data:', error);
+      const raw = localStorage.getItem('user-data');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
       return null;
     }
-  }
-
-  get currentUser(): UserData | null {
-    return this.getCurrentUserInfo();
   }
 }

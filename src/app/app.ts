@@ -1,6 +1,6 @@
-import { Component, signal, input, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HeaderStateService } from './shared/services/header-state.service';
+import { ThemeService } from '@shared/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -8,7 +8,6 @@ import { HeaderStateService } from './shared/services/header-state.service';
   templateUrl: './app.html',
 })
 export class App {
-  protected readonly title = signal('pov-app');
-
-  headerStateService = inject(HeaderStateService);
+  // ThemeService se inicializa aquí para aplicar data-theme antes del primer render
+  private _theme = inject(ThemeService);
 }

@@ -1,0 +1,49 @@
+@if (isOpen()) {
+  <div
+    class="pds-modal-overlay z-60"
+    (click)="onCancel()"
+  >
+    <div
+      class="pds-modal max-w-sm"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div class="pds-modal-header">
+        <span class="fa-solid fa-pen-to-square text-brand text-lg shrink-0"></span>
+        <h3 class="pds-modal-title">Confirmar Modificación</h3>
+        <button
+          class="btn btn-ghost btn-xs btn-circle text-text-muted hover:text-text-primary"
+          (click)="onCancel()"
+          aria-label="Cerrar"
+        >
+          <span class="fa-solid fa-xmark text-sm"></span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="pds-modal-body">
+        <p class="text-sm text-text-secondary">
+          ¿Estás seguro de que deseas modificar la orden
+          <span class="font-semibold text-text-primary">#{{ orderId() }}</span>?
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="pds-modal-footer">
+        <button
+          class="btn btn-sm flex-1 sm:flex-none bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-nav transition-all"
+          (click)="onCancel()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn btn-sm flex-1 sm:flex-none bg-brand hover:bg-brand-dark text-white border-0 transition-all"
+          (click)="onConfirm()"
+        >
+          <span class="fa-solid fa-check text-xs"></span>
+          Sí, Modificar
+        </button>
+      </div>
+    </div>
+  </div>
+}

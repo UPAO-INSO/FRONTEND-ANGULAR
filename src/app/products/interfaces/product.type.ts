@@ -39,6 +39,7 @@ export interface Product {
   available: boolean;
   productTypeId: number;
   productTypeName: string;
+  imageUrl?: string;
 }
 
 export interface RESTProduct {
@@ -59,4 +60,27 @@ export interface RestProductContent {
   productTypeName: string;
   active: boolean;
   available: boolean;
+  imageUrl?: string;
+}
+
+/**
+ * Request para crear un producto
+ */
+export interface ProductRequest {
+  name: string;
+  price: number;
+  description: string;
+  productTypeId: number;
+}
+
+/**
+ * Request para actualizar un producto
+ */
+export interface ProductUpdateRequest {
+  name?: string;
+  price?: number;
+  description?: string;
+  productTypeId?: number;
+  active?: boolean;
+  available?: boolean;
 }

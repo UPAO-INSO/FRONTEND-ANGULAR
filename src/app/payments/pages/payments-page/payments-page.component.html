@@ -1,0 +1,5 @@
+<app-payments-list
+  [payments]="paymentsResource.value() ?? []"
+  (statusChange)="onStatusFilterChange($event)"
+  (paymentTypeChange)="onPaymentTypeFilterChange($event)"
+/>

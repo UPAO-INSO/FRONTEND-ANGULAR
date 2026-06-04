@@ -1,27 +1,19 @@
-<section class="flex justify-between items-center p-6 pb-4 flex-shrink-0">
-  <div class="flex flex-row gap-5">
-    <label class="input w-40 bg-side-background">
-      <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
+<section class="flex justify-between items-center p-6 pb-4 shrink-0 font-display">
+
+  <div class="flex flex-row gap-4">
+    <div class="pds-search w-40">
+      <span class="pds-search-icon fa-solid fa-magnifying-glass"></span>
       <app-search-table-input (value)="tableNumberValue($event)" />
-    </label>
-    <!--  -->
+    </div>
+
     <button
-      class="btn btn-sm bg-side-background font-bold text-white text-center py-5 shadow-2xl"
+      class="pds-btn-secondary btn-sm py-5 shadow-lg"
       (click)="onSelectedButton()"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 2048 2048"
-        class="pb-0.5"
-      >
-        <path
-          fill="currentColor"
-          d="M1024 1000v959l-64 32l-832-415V536l832-416l832 416v744h-128V680zm-64-736L719 384l621 314l245-122zm-64 1552v-816L256 680v816zM335 576l625 312l238-118l-622-314zm1073 1216v-128h640v128zm0-384h640v128h-640zm-256 640v-128h128v128zm0-512v-128h128v128zm0 256v-128h128v128zm-128 24h1zm384 232v-128h640v128z"
-        />
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 2048 2048" class="shrink-0">
+        <path fill="currentColor" d="M1024 1000v959l-64 32l-832-415V536l832-416l832 416v744h-128V680zm-64-736L719 384l621 314l245-122zm-64 1552v-816L256 680v816zM335 576l625 312l238-118l-622-314zm1073 1216v-128h640v128zm0-384h640v128h-640zm-256 640v-128h128v128zm0-512v-128h128v128zm0 256v-128h128v128zm-128 24h1zm384 232v-128h640v128z"/>
       </svg>
-      <p class="pt-1">Productos</p>
+      <span class="pt-0.5">Productos</span>
     </button>
   </div>
 
@@ -31,7 +23,7 @@
 
   <div class="flex items-center gap-4">
     <button
-      class="btn btn-sm bg-side-background font-bold text-white py-5 shadow-2xl"
+      class="pds-btn-secondary btn-sm py-5 shadow-lg"
       (click)="onRefresh()"
       [disabled]="isLoading()"
     >
@@ -42,30 +34,25 @@
       Recargar
     </button>
 
-    <div
-      class="badge bg-active-orders text-white rounded-lg font-bold py-4 mr-6.5"
-    >
+    <div class="badge bg-active-orders text-text-primary rounded-lg font-bold py-4">
       {{ activeOrdersCount() }} órdenes activas
     </div>
   </div>
-  <!--  -->
+
+  <!-- Modal de productos -->
   @if (modalStatus()) {
-  <div
-    class="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4"
-  >
-    <div
-      class="bg-side-background rounded-lg shadow-xl w-full max-w-5xl mx-auto p-2 sm:p-4 flex flex-col lg:flex-row gap-6 h-[calc(100vh-8rem)] min-h-[600px]"
-    >
-      <div class="w-full">
-        <app-change-status-product
-          [productTypes]="productTypes()"
-          [refreshTrigger]="refreshTrigger()"
-          (updateProductStaus)="onProductStatusUpdated($event)"
-          (closeModal)="onCloseModal()"
-        />
+    <div class="pds-modal-overlay z-60">
+      <div class="pds-modal max-w-5xl h-[calc(100vh-8rem)] min-h-[600px] p-2 sm:p-4">
+        <div class="w-full h-full">
+          <app-change-status-product
+            [productTypes]="productTypes()"
+            [refreshTrigger]="refreshTrigger()"
+            (updateProductStaus)="onProductStatusUpdated($event)"
+            (closeModal)="onCloseModal()"
+          />
+        </div>
       </div>
     </div>
-  </div>
   }
+
 </section>
-<!--  -->

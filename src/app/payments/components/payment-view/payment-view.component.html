@@ -1,0 +1,158 @@
+@if (isOpen()) {
+  <div class="pds-modal-overlay">
+    <div class="pds-modal max-w-3xl">
+
+      <!-- Header -->
+      <div class="pds-modal-header">
+        <div class="flex flex-col gap-0.5">
+          <h3 class="pds-modal-title text-xl font-bold">Detalles del Pago</h3>
+          <p class="text-text-secondary font-mono text-sm">ID: {{ payment().id }}</p>
+        </div>
+        <button (click)="onClose()" class="pds-modal-close">
+          <span class="fa-solid fa-xmark text-xl"></span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="pds-modal-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Información del Pago -->
+          <div class="space-y-4">
+            <div class="pds-info-panel">
+              <p class="pds-section-title">Información del Pago</p>
+
+              <!-- Estado -->
+              <div class="mb-3">
+                <p class="pds-label">Estado</p>
+                <div class="mt-1">
+                  <span class="badge {{ getStatusClass(payment().state) }} gap-1.5">
+                    @if (payment().state === 'paid') {
+                      <span class="fa-solid fa-circle-check text-sm"></span>
+                    } @else if (payment().state === 'pending') {
+                      <span class="fa-solid fa-clock text-sm"></span>
+                    }
+                    <span class="leading-none pb-1">{{ getStatusText(payment().state) }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Monto -->
+              <div class="mb-3">
+                <p class="pds-label">Monto</p>
+                <p class="text-2xl font-bold text-brand">
+                  {{ formatAmount(payment().amount) | currency : "S/ " }}
+                </p>
+              </div>
+
+              <!-- Método de Pago -->
+              <div class="mb-3">
+                <p class="pds-label">Método de Pago</p>
+                <p class="pds-info-value">{{ getPaymentTypeText(payment().paymentType) }}</p>
+              </div>
+
+              <!-- Proveedor -->
+              <div class="mb-3">
+                <p class="pds-label">Proveedor</p>
+                <p class="pds-info-value capitalize">{{ payment().provider }}</p>
+              </div>
+
+              <!-- Descripción -->
+              <div>
+                <p class="pds-label">Descripción</p>
+                <p class="text-text-secondary">{{ payment().description }}</p>
+              </div>
+            </div>
+
+            <!-- Fechas -->
+            <div class="pds-info-panel">
+              <p class="pds-section-title">Fechas</p>
+              <div class="space-y-3">
+                <div class="pds-info-row">
+                  <span class="pds-info-label">Creado</span>
+                  <span class="pds-info-value">{{ payment().createdAt | date : "dd/MM/yyyy HH:mm:ss" }}</span>
+                </div>
+
+                @if (payment().paidAt) {
+                  <div class="pds-info-row">
+                    <span class="pds-info-label">Pagado</span>
+                    <span class="pds-info-value">{{ payment().paidAt | date : "dd/MM/yyyy HH:mm:ss" }}</span>
+                  </div>
+                }
+
+                @if (payment().expirationDate) {
+                  <div class="pds-info-row">
+                    <span class="pds-info-label">Expiración</span>
+                    <span class="pds-info-value">{{ payment().expirationDate | date : "dd/MM/yyyy HH:mm:ss" }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- QR Code y Enlaces -->
+          <div class="space-y-4">
+            @if (payment().qr) {
+              <div class="pds-info-panel">
+                <p class="pds-section-title">Código QR</p>
+                <div class="flex justify-center bg-white p-4 rounded-lg">
+                  <img
+                    [src]="payment().qr"
+                    alt="QR Code"
+                    class="w-64 h-64 object-contain"
+                  />
+                </div>
+              </div>
+            }
+
+            @if (payment().urlPe) {
+              <div class="pds-info-panel">
+                <p class="pds-section-title">Link de Pago</p>
+                <a
+                  [href]="payment().urlPe"
+                  target="_blank"
+                  class="pds-btn-primary w-full justify-center"
+                >
+                  <span class="fa-solid fa-external-link"></span>
+                  Abrir Link de Pago
+                </a>
+              </div>
+            }
+
+            <!-- Información de la Orden -->
+            @if (payment().order) {
+              <div class="pds-info-panel">
+                <p class="pds-section-title">Orden Asociada</p>
+                <div class="space-y-2">
+                  <div class="pds-info-row">
+                    <span class="pds-info-label">ID Orden</span>
+                    <span class="font-mono text-text-primary text-sm">{{ payment().order.id }}</span>
+                  </div>
+                  <div class="pds-info-row">
+                    <span class="pds-info-label">Mesa</span>
+                    <span class="pds-info-value">{{ payment().order.tableId }}</span>
+                  </div>
+                  <div class="pds-info-row">
+                    <span class="pds-info-label">Total Items</span>
+                    <span class="pds-info-value">{{ payment().order.totalItems }}</span>
+                  </div>
+                  <div class="pds-info-row">
+                    <span class="pds-info-label">Total</span>
+                    <span class="pds-info-value font-semibold">{{ payment().order.totalPrice | currency : "S/ " }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="pds-modal-footer">
+        <button (click)="onClose()" class="pds-btn-secondary">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+}

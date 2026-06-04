@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client';
 import { Subject, BehaviorSubject } from 'rxjs';
 import { environment } from '@environments/environment';
 import { WebSocketMessage } from '@shared/interfaces/websocket-message.interface';
+import { RESTChangeStatusCulqiOrder } from '../interfaces/culqi.interface';
 
 export interface ProductUpdateMessage {
   type: 'PRODUCT_UPDATE';
@@ -12,15 +13,6 @@ export interface ProductUpdateMessage {
   timestamp: string;
   updatedBy: string;
 }
-
-// export interface OrderUpdateMessage {
-//   type: 'ORDER_UPDATE';
-//   orderId: number;
-//   status: string;
-//   timestamp: string;
-// }
-
-// export type WebSocketMessage = ProductUpdateMessage | OrderUpdateMessage;
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +30,9 @@ export class WebSocketService {
   private productUpdateSubject =
     new BehaviorSubject<ProductUpdateMessage | null>(null);
   productUpdates$ = this.productUpdateSubject.asObservable();
+
+  private culqiOrderUpdateSubject = new Subject<RESTChangeStatusCulqiOrder>();
+  culqiOrderUpdates$ = this.culqiOrderUpdateSubject.asObservable();
 
   private messageSubject = new Subject<any>();
   messages$ = this.messageSubject.asObservable();
@@ -57,17 +52,15 @@ export class WebSocketService {
 
     this.stompClient.connect(
       {},
-      (frame: any) => this.onConnected(frame),
-      (error: any) => this.onError(error)
+      (frame: any) => {
+        console.log('WebSocket connected successfully:', frame);
+        this.connectionStatus.set('connected');
+        this.reconnectAttempts = 0;
+        this.subscribeToProductUpdates();
+        this.subscribeToCulqiOrderUpdates();
+      },
+      (error: any) => this.onError(error),
     );
-  }
-
-  private onConnected(frame: any) {
-    console.log('WebSocket connected successfully:', frame);
-    this.connectionStatus.set('connected');
-    this.reconnectAttempts = 0;
-
-    this.subscribeToProductUpdates();
   }
 
   private onError(error: any) {
@@ -88,11 +81,25 @@ export class WebSocketService {
     });
   }
 
+  private subscribeToCulqiOrderUpdates() {
+    this.stompClient.subscribe('/topic/culqi-order', (message) => {
+      try {
+        const orderUpdate: RESTChangeStatusCulqiOrder = JSON.parse(
+          message.body,
+        );
+        console.log('Culqi order update received:', orderUpdate);
+        this.culqiOrderUpdateSubject.next(orderUpdate);
+      } catch (error) {
+        console.error('Error parsing Culqi order update:', error);
+      }
+    });
+  }
+
   private attemptReconnect() {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       console.log(
-        `Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`
+        `Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`,
       );
 
       setTimeout(() => {
@@ -118,16 +125,15 @@ export class WebSocketService {
         updatedBy: userId,
       };
 
-      // ✅ Enviar a /app/product-update que será procesado por el backend
+      // Enviar a /app/product-update que será procesado por el backend
       this.stompClient.send('/app/product-update', {}, JSON.stringify(message));
-      console.log('📤 Product update sent via WebSocket:', message);
+      console.log('Product update sent via WebSocket:', message);
 
       return true;
     } else {
-      console.warn('⚠️ Cannot send product update - WebSocket not connected');
-      console.warn('Current status:', this.connectionStatus());
+      console.log('Cannot send product update - WebSocket not connected');
+      console.log('Current status:', this.connectionStatus());
 
-      // ✅ Intentar reconectar
       this.attemptReconnect();
       return false;
     }
@@ -147,12 +153,12 @@ export class WebSocketService {
       this.stompClient.send(
         `/app/sendMessage/${roomId}`,
         {},
-        JSON.stringify(message)
+        JSON.stringify(message),
       );
 
       return true;
     } else {
-      console.warn('Cannot send message - WebSocket not connected');
+      console.log('Cannot send message - WebSocket not connected');
       return false;
     }
   }
