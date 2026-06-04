@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, map, throwError } from 'rxjs';
 import { environment } from '@environments/environment';
-import { RESTVoucher } from '../interfaces/voucher.interface';
+import { RESTVoucher, VoucherResponse } from '../interfaces/voucher.interface';
 import {
   CreateVoucherRequest,
   VoucherType,
@@ -44,12 +44,31 @@ export class VoucherService {
     const endpoint = type === VoucherType.RECEIPT ? 'receipt' : 'invoice';
 
     return this.http
-      .post(`${environment.API_URL}/nubefact/${endpoint}`, voucherData)
+      .post<VoucherResponse>(
+        `${environment.API_URL}/nubefact/${endpoint}`,
+        voucherData
+      )
       .pipe(
         catchError((error) => {
           console.error('Error al crear comprobante:', error);
           return throwError(
             () => new Error('Error al generar el comprobante electrónico')
+          );
+        })
+      );
+  }
+
+  associatePayment(voucherId: number, paymentId: number) {
+    return this.http
+      .patch<VoucherResponse>(
+        `${environment.API_URL}/vouchers/${voucherId}/payment/${paymentId}`,
+        {}
+      )
+      .pipe(
+        catchError((error) => {
+          console.error('Error al asociar pago con comprobante:', error);
+          return throwError(
+            () => new Error('Error al asociar el pago con el comprobante')
           );
         })
       );
