@@ -1,174 +1,138 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, NgZone, signal } from '@angular/core';
+import { Subject } from 'rxjs';
 import { CompatClient, Stomp } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { Subject, BehaviorSubject } from 'rxjs';
 import { environment } from '@environments/environment';
-import { WebSocketMessage } from '@shared/interfaces/websocket-message.interface';
 import { RESTChangeStatusCulqiOrder } from '../interfaces/culqi.interface';
 
-export interface ProductUpdateMessage {
-  type: 'PRODUCT_UPDATE';
-  productId: number;
-  available: boolean;
+// ── Event types ───────────────────────────────────────────────────
+
+export type WsConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+
+export interface WsOrderEvent {
+  type: 'ORDER_CREATED' | 'ORDER_UPDATED' | 'ORDER_STATUS_CHANGED' | 'PRODUCT_SERVED';
+  orderId: string;
+  tableId: number;
+  orderStatus: string;
   timestamp: string;
-  updatedBy: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+export interface WsTableEvent {
+  type: 'TABLE_STATUS_CHANGED';
+  tableId: number;
+  tableStatus: string;   // AVAILABLE | OCCUPIED | RESERVED
+  timestamp: string;
+}
+
+export interface WsProductEvent {
+  type: 'PRODUCT_AVAILABILITY';
+  productId: number;
+  productName: string;
+  available: boolean;
+  timestamp: string;
+  updatedBy?: string;
+}
+
+// ── Service ───────────────────────────────────────────────────────
+
+@Injectable({ providedIn: 'root' })
 export class WebSocketService {
-  private stompClient!: CompatClient;
+  private client!: CompatClient;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private envs = environment;
+  private readonly MAX_RECONNECT = 5;
+  private readonly RECONNECT_BASE_MS = 3000;
+  private reconnectTimer?: ReturnType<typeof setTimeout>;
 
-  connectionStatus = signal<
-    'connected' | 'disconnected' | 'connecting' | 'error'
-  >('disconnected');
+  readonly connectionStatus = signal<WsConnectionStatus>('disconnected');
 
-  private productUpdateSubject =
-    new BehaviorSubject<ProductUpdateMessage | null>(null);
-  productUpdates$ = this.productUpdateSubject.asObservable();
-
-  private culqiOrderUpdateSubject = new Subject<RESTChangeStatusCulqiOrder>();
-  culqiOrderUpdates$ = this.culqiOrderUpdateSubject.asObservable();
-
-  private messageSubject = new Subject<any>();
-  messages$ = this.messageSubject.asObservable();
+  // ── Streams públicos ────────────────────────────────────────────
+  readonly orderEvents$   = new Subject<WsOrderEvent>();
+  readonly tableEvents$   = new Subject<WsTableEvent>();
+  readonly productEvents$ = new Subject<WsProductEvent>();
+  readonly culqiEvents$   = new Subject<RESTChangeStatusCulqiOrder>();
 
   constructor() {
-    this.initConnectionSocket();
+    this.connect();
   }
 
-  initConnectionSocket() {
-    const url = `${this.envs.WS_URL}/api/ws`;
-    const socket = new SockJS(url);
-    this.stompClient = Stomp.over(socket);
+  // ── Conexión ────────────────────────────────────────────────────
 
-    this.stompClient.debug = (str) => {
-      console.log('STOMP:', str);
-    };
+  connect(): void {
+    if (this.client?.connected) return;
 
-    this.stompClient.connect(
+    this.connectionStatus.set('connecting');
+
+    const socket = new SockJS(`${environment.WS_URL}/api/ws`);
+    this.client = Stomp.over(socket);
+    this.client.debug = () => {};  // deshabilitar logs verbosos
+
+    this.client.connect(
       {},
-      (frame: any) => {
-        console.log('WebSocket connected successfully:', frame);
-        this.connectionStatus.set('connected');
-        this.reconnectAttempts = 0;
-        this.subscribeToProductUpdates();
-        this.subscribeToCulqiOrderUpdates();
-      },
-      (error: any) => this.onError(error),
+      () => this._onConnected(),
+      (err: any) => this._onError(err),
     );
   }
 
-  private onError(error: any) {
-    console.error('WebSocket connection error:', error);
-    this.connectionStatus.set('error');
-    this.attemptReconnect();
-  }
-
-  private subscribeToProductUpdates() {
-    this.stompClient.subscribe('/topic/product-updates', (message) => {
-      try {
-        const productUpdate: ProductUpdateMessage = JSON.parse(message.body);
-        console.log('Product update received via WebSocket:', productUpdate);
-        this.productUpdateSubject.next(productUpdate);
-      } catch (error) {
-        console.error('Error parsing product update:', error);
-      }
-    });
-  }
-
-  private subscribeToCulqiOrderUpdates() {
-    this.stompClient.subscribe('/topic/culqi-order', (message) => {
-      try {
-        const orderUpdate: RESTChangeStatusCulqiOrder = JSON.parse(
-          message.body,
-        );
-        console.log('Culqi order update received:', orderUpdate);
-        this.culqiOrderUpdateSubject.next(orderUpdate);
-      } catch (error) {
-        console.error('Error parsing Culqi order update:', error);
-      }
-    });
-  }
-
-  private attemptReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(
-        `Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`,
-      );
-
-      setTimeout(() => {
-        this.initConnectionSocket();
-      }, 3000 * this.reconnectAttempts);
-    } else {
-      console.log('Max reconnection attempts reached');
-      this.connectionStatus.set('error');
+  disconnect(): void {
+    clearTimeout(this.reconnectTimer);
+    if (this.client?.connected) {
+      this.client.disconnect(() => this.connectionStatus.set('disconnected'));
     }
   }
 
   isConnected(): boolean {
-    return this.stompClient && this.stompClient.connected;
+    return !!this.client?.connected;
   }
 
-  sendProductUpdate(productId: number, available: boolean, userId: string) {
-    if (this.isConnected()) {
-      const message: ProductUpdateMessage = {
-        type: 'PRODUCT_UPDATE',
-        productId,
-        available,
-        timestamp: new Date().toISOString(),
-        updatedBy: userId,
-      };
+  // ── Publicar desde frontend → backend ──────────────────────────
 
-      // Enviar a /app/product-update que será procesado por el backend
-      this.stompClient.send('/app/product-update', {}, JSON.stringify(message));
-      console.log('Product update sent via WebSocket:', message);
+  /** Envía un cambio de disponibilidad de producto al backend. */
+  sendProductAvailability(productId: number, available: boolean, updatedBy: string): boolean {
+    if (!this.isConnected()) return false;
+    const event: WsProductEvent = {
+      type: 'PRODUCT_AVAILABILITY',
+      productId,
+      productName: '',
+      available,
+      updatedBy,
+      timestamp: new Date().toISOString(),
+    };
+    this.client.send('/app/product-update', {}, JSON.stringify(event));
+    return true;
+  }
 
-      return true;
-    } else {
-      console.log('Cannot send product update - WebSocket not connected');
-      console.log('Current status:', this.connectionStatus());
+  // ── Privados ─────────────────────────────────────────────────────
 
-      this.attemptReconnect();
-      return false;
+  private _onConnected(): void {
+    this.connectionStatus.set('connected');
+    this.reconnectAttempts = 0;
+
+    this.client.subscribe('/topic/orders',   msg => this._emit(msg.body, this.orderEvents$));
+    this.client.subscribe('/topic/tables',   msg => this._emit(msg.body, this.tableEvents$));
+    this.client.subscribe('/topic/products', msg => this._emit(msg.body, this.productEvents$));
+    this.client.subscribe('/topic/culqi-order', msg => this._emit(msg.body, this.culqiEvents$));
+  }
+
+  private _onError(err: any): void {
+    this.connectionStatus.set('error');
+    this._scheduleReconnect();
+  }
+
+  private _scheduleReconnect(): void {
+    if (this.reconnectAttempts >= this.MAX_RECONNECT) {
+      this.connectionStatus.set('error');
+      return;
     }
+    this.reconnectAttempts++;
+    const delay = this.RECONNECT_BASE_MS * this.reconnectAttempts;
+    this.reconnectTimer = setTimeout(() => this.connect(), delay);
   }
 
-  joinRoom(roomId: string) {
-    this.stompClient.connect({}, () => {
-      this.stompClient.subscribe(`/topic/${roomId}`, (messages: any) => {
-        const messageContent = JSON.parse(messages.body);
-        console.log(messageContent);
-      });
-    });
-  }
-
-  sendMessage(roomId: string, message: WebSocketMessage) {
-    if (this.isConnected()) {
-      this.stompClient.send(
-        `/app/sendMessage/${roomId}`,
-        {},
-        JSON.stringify(message),
-      );
-
-      return true;
-    } else {
-      console.log('Cannot send message - WebSocket not connected');
-      return false;
-    }
-  }
-
-  disconnect() {
-    if (this.stompClient && this.stompClient.connected) {
-      this.stompClient.disconnect(() => {
-        console.log('🔌 WebSocket disconnected');
-        this.connectionStatus.set('disconnected');
-      });
+  private _emit<T>(body: string, subject: Subject<T>): void {
+    try {
+      subject.next(JSON.parse(body) as T);
+    } catch {
+      // ignorar mensajes malformados
     }
   }
 }
