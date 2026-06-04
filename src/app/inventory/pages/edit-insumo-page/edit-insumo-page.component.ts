@@ -1,6 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { InventoryService } from '../../services/inventory.service';
@@ -17,7 +16,7 @@ import {
 
 @Component({
   selector: 'app-edit-insumo-page',
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule],
   templateUrl: './edit-insumo-page.component.html',
 })
 export class EditInsumoPageComponent implements OnInit {

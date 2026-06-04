@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import DashboardPageComponent from './shared/pages/dashboard-page/dashboard-page.component';
 import { NotAuthenticatedGuard } from '@auth/guards/not-authenticated.guard';
+import { TermsPageComponent } from './shared/pages/terms-page/terms-page.component';
+import { AboutPageComponent } from './shared/pages/about-page/about-page.component';
 
 export const routes: Routes = [
   {
@@ -15,7 +17,7 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () =>
-          import('./shared/pages/welcome-page/welcome-page.component'),
+          import('./shared/pages/dashboard-home/dashboard-home.component'),
       },
       {
         path: 'tables',
@@ -39,14 +41,21 @@ export const routes: Routes = [
       },
       {
         path: 'inventory',
-        loadChildren: () =>
-          import('./inventory/inventory.routes').then((m) => m.inventoryRoutes),
+        loadChildren: () => import('./inventory/inventory.routes'),
       },
       {
         path: '**',
         redirectTo: '',
       },
     ],
+  },
+  {
+    path: 'terms',
+    component: TermsPageComponent,
+  },
+  {
+    path: 'about',
+    component: AboutPageComponent,
   },
   {
     path: '**',

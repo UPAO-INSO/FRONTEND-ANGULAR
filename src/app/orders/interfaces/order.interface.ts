@@ -92,6 +92,6 @@ export interface RequestProductOrder {
   quantity: number;
   unitPrice: number;
   subtotal: number;
-  orderId: UUID;
+  orderId?: UUID;
   productId: number;
 }

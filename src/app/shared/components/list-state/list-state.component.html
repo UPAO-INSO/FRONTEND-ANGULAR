@@ -1,0 +1,31 @@
+@if (loading()) {
+  <div class="flex flex-col items-center justify-center h-full px-4">
+    <span class="loading loading-bars loading-md sm:loading-lg"></span>
+    <span class="text-text-secondary font-medium mt-3 sm:mt-5 text-sm sm:text-base">
+      {{ loadingMessage() }}
+    </span>
+  </div>
+
+} @else if (error()) {
+  <div class="flex flex-col items-center justify-center h-full px-4 text-center">
+    <div class="pds-alert-error flex-col items-center text-center">
+      <span class="fa-solid fa-exclamation-triangle text-3xl sm:text-5xl mb-2"></span>
+      <span class="text-base sm:text-xl font-medium mb-1">Error al cargar</span>
+      <span class="text-xs sm:text-sm opacity-80">{{ error() }}</span>
+    </div>
+  </div>
+
+} @else if (empty()) {
+  <div class="pds-empty">
+    <div class="pds-empty-icon">
+      <span class="fa-solid fa-{{ emptyIcon() }}"></span>
+    </div>
+    <span class="text-base sm:text-xl font-medium text-text-secondary">{{ emptyTitle() }}</span>
+    @if (emptyMessage()) {
+      <span class="text-xs sm:text-sm text-text-muted">{{ emptyMessage() }}</span>
+    }
+  </div>
+
+} @else {
+  <ng-content />
+}

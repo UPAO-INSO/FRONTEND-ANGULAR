@@ -1,40 +1,44 @@
-<app-table-header-status (status)="selectedTableStatus.set($event)" />
+<div class="pds-page">
 
-<!-- Error Message Toast -->
-@if (errorMessage()) {
-  <div class="fixed top-4 right-4 z-50 max-w-lg">
-    <div class="bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl border border-red-500">
-      <div class="flex items-start gap-3">
-        <span class="fa-solid fa-circle-exclamation text-xl mt-0.5"></span>
-        <div class="flex-1">
-          <p class="font-semibold">Error en el pedido</p>
-          <p class="text-sm text-red-100 mt-1 whitespace-pre-wrap">{{ errorMessage() }}</p>
+  <!-- Header de estado de mesas -->
+  <app-table-header-status (status)="selectedTableStatus.set($event)" />
+
+  <!-- Toast de error -->
+  @if (errorMessage()) {
+    <div class="fixed top-4 right-4 z-50 max-w-lg animate-fade-in">
+      <div class="pds-alert-error shadow-xl backdrop-blur-sm">
+        <span class="fa-solid fa-circle-exclamation text-lg shrink-0"></span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm">Error en el pedido</p>
+          <p class="text-xs mt-0.5 opacity-80 whitespace-pre-wrap">{{ errorMessage() }}</p>
         </div>
-        <button 
-          (click)="errorMessage.set(null)" 
-          class="text-red-200 hover:text-white transition-colors"
+        <button
+          (click)="errorMessage.set(null)"
+          class="text-red-400/60 hover:text-red-300 transition-colors shrink-0"
         >
-          <span class="fa-solid fa-xmark"></span>
+          <span class="fa-solid fa-xmark text-sm"></span>
         </button>
       </div>
     </div>
-  </div>
-}
+  }
 
-<app-table-list
-  [tables]="tablesResource.value()?.content ?? []"
-  [isEmpty]="(tablesResource.value()?.content?.length ?? 0) === 0"
-  [isLoading]="tablesResource.isLoading()"
-  [activeOrdersByTable]="activeOrdersByTable()"
-  [modifyStatus]="modifyStatusChanged()"
-  (modifyStatusChanged)="onModifyStatusChanged($event)"
-  (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
-  (orderCreated)="onOrderCreated($event)"
-  (orderUpdated)="onOrderUpdated($event.id, $event.order)"
-  (refresh)="onRefresh()"
-/>
+  <!-- Grid de mesas -->
+  <app-table-list
+    [tables]="tablesResource.value()?.content ?? []"
+    [isEmpty]="(tablesResource.value()?.content?.length ?? 0) === 0"
+    [isLoading]="tablesResource.isLoading()"
+    [activeOrdersByTable]="activeOrdersByTable()"
+    [modifyStatus]="modifyStatusChanged()"
+    (modifyStatusChanged)="onModifyStatusChanged($event)"
+    (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
+    (orderCreated)="onOrderCreated($event)"
+    (orderUpdated)="onOrderUpdated($event.id, $event.order)"
+    (refresh)="onRefresh()"
+  />
 
-<app-pagination
-  [pages]="tablesResource.value()?.totalPages ?? 0"
-  [currentPage]="this.paginationService.currentPage()"
-/>
+  <app-pagination
+    [pages]="tablesResource.value()?.totalPages ?? 0"
+    [currentPage]="this.paginationService.currentPage()"
+  />
+
+</div>

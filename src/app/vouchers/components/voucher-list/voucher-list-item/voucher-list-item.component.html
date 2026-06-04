@@ -1,22 +1,22 @@
-<td class="font-mono text-accent font-semibold">#{{ voucher().id }}</td>
+<td class="pds-table-td font-mono text-brand font-semibold">#{{ voucher().id }}</td>
 
-<td>
+<td class="pds-table-td-center">
   <div class="flex items-center justify-center gap-2">
     <i class="fa-solid fa-file-pdf text-red-400"></i>
     <a
       [href]="voucher().pdfUrl"
       target="_blank"
-      class="text-blue-400 hover:text-blue-300 underline text-sm truncate max-w-xs"
+      class="text-brand hover:text-brand-dark underline text-sm truncate max-w-xs transition-colors"
     >
       Ver comprobante
     </a>
   </div>
 </td>
 
-<td>
+<td class="pds-table-td-center">
   <div class="flex items-center justify-center gap-2">
     <button
-      class="btn btn-sm btn-primary gap-2"
+      class="pds-btn-primary btn-sm"
       (click)="openPdf()"
       title="Abrir PDF"
     >
@@ -25,7 +25,7 @@
     </button>
 
     <button
-      class="btn btn-sm btn-ghost gap-2"
+      class="pds-btn-secondary btn-sm"
       (click)="copyLink()"
       title="Copiar enlace"
     >

@@ -52,18 +52,15 @@ export class WebSocketService {
 
     this.stompClient.connect(
       {},
-      (frame: any) => this.onConnected(frame),
-      (error: any) => this.onError(error)
+      (frame: any) => {
+        console.log('WebSocket connected successfully:', frame);
+        this.connectionStatus.set('connected');
+        this.reconnectAttempts = 0;
+        this.subscribeToProductUpdates();
+        this.subscribeToCulqiOrderUpdates();
+      },
+      (error: any) => this.onError(error),
     );
-  }
-
-  private onConnected(frame: any) {
-    console.log('WebSocket connected successfully:', frame);
-    this.connectionStatus.set('connected');
-    this.reconnectAttempts = 0;
-
-    this.subscribeToProductUpdates();
-    this.subscribeToCulqiOrderUpdates();
   }
 
   private onError(error: any) {
@@ -88,7 +85,7 @@ export class WebSocketService {
     this.stompClient.subscribe('/topic/culqi-order', (message) => {
       try {
         const orderUpdate: RESTChangeStatusCulqiOrder = JSON.parse(
-          message.body
+          message.body,
         );
         console.log('Culqi order update received:', orderUpdate);
         this.culqiOrderUpdateSubject.next(orderUpdate);
@@ -102,7 +99,7 @@ export class WebSocketService {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       console.log(
-        `Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`
+        `Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`,
       );
 
       setTimeout(() => {
@@ -156,7 +153,7 @@ export class WebSocketService {
       this.stompClient.send(
         `/app/sendMessage/${roomId}`,
         {},
-        JSON.stringify(message)
+        JSON.stringify(message),
       );
 
       return true;

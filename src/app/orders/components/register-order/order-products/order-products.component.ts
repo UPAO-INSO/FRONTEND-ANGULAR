@@ -86,49 +86,4 @@ export class OrderProductsComponent {
   onCategorySelected(category: ProductType) {
     this.selectedCategoryId.set(category.id);
   }
-
-  // products = [
-  //   {
-  //     id: 1,
-  //     name: 'Product 1',
-  //     quantity: 2,
-  //     price: 10.0,
-  //     subtotal: 20.0,
-  //   },
-  //   {
-  //     id: 2,
-  //     name: 'Product 2',
-  //     quantity: 2,
-  //     price: 10.0,
-  //     subtotal: 20.0,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: 'Product 3',
-  //     quantity: 2,
-  //     price: 10.0,
-  //     subtotal: 20.0,
-  //   },
-  //   {
-  //     id: 4,
-  //     name: 'Product 4',
-  //     quantity: 2,
-  //     price: 10.0,
-  //     subtotal: 20.0,
-  //   },
-  //   {
-  //     id: 5,
-  //     name: 'Product 5',
-  //     quantity: 2,
-  //     price: 10.0,
-  //     subtotal: 20.0,
-  //   },
-  //   {
-  //     id: 6,
-  //     name: 'Product 6',
-  //     quantity: 2,
-  //     price: 10.0,
-  //     subtotal: 20.0,
-  //   },
-  // ];
 }

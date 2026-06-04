@@ -1,76 +1,66 @@
 <div
-  class="h-[calc(100vh-14rem)] font-poppins-semibold relative overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-5"
+  class="font-display relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 my-4 min-h-[300px]"
   #groupDiv
 >
-  <!--  -->
   @if (isLoading()) {
-  <div
-    class="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg z-10"
-  >
-    <div class="flex flex-col items-center justify-center">
-      <span class="loading loading-bars loading-lg bg-white mb-3"></span>
-      <span class="text-white font-medium">Cargando mesas...</span>
+    <div class="absolute inset-0 flex items-center justify-center bg-surface/80 backdrop-blur-sm rounded-xl z-10">
+      <div class="flex flex-col items-center gap-3">
+        <span class="loading loading-bars loading-lg text-brand"></span>
+        <span class="text-text-primary font-medium text-sm">Cargando mesas...</span>
+      </div>
     </div>
-  </div>
-  } @else if (errorMessage()) {
-  <div
-    class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg z-10"
-  >
-    <div class="flex flex-col items-center justify-center text-red-400">
-      <span class="fa-solid fa-exclamation-triangle text-6xl mb-4"></span>
-      <span class="text-xl font-bold mb-2">Error al cargar</span>
-      <span class="text-center">{{ errorMessage() }}</span>
-    </div>
-  </div>
-  }
-  <!--  -->
-  @else if (tables().length > 0) {
 
-  <!-- All tables -->
-  @for (table of tables(); track table.id) {
-  <app-table-list-item
-    class="min-h-[200px] max-h-[300px]"
-    [table]="table"
-    [activeOrder]="getActiveOrderByTable(table.id)"
-    (tableSelected)="openRegisterOrder($event)"
-  />
-  }
-  <!--  -->
-  } @else {
-  <div
-    class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded-lg z-10"
-  >
-    <div class="flex flex-col items-center justify-center text-gray-400">
-      <span class="fa-solid fa-chair text-6xl mb-4"></span>
-      <span class="text-xl font-bold mb-2">No hay mesas disponibles</span>
-      <span class="text-center">No se encontraron mesas en el sistema</span>
+  } @else if (errorMessage()) {
+    <div class="absolute inset-0 flex items-center justify-center bg-surface/90 rounded-xl z-10">
+      <div class="flex flex-col items-center gap-3 text-red-400">
+        <span class="fa-solid fa-exclamation-triangle text-5xl"></span>
+        <span class="text-lg font-bold">Error al cargar</span>
+        <span class="text-sm text-center px-4">{{ errorMessage() }}</span>
+      </div>
     </div>
-  </div>
+
+  } @else if (tables().length > 0) {
+    @for (table of tables(); track table.id) {
+      <app-table-list-item
+        class="min-h-[180px] sm:min-h-[200px]"
+        [table]="table"
+        [activeOrder]="getActiveOrderByTable(table.id)"
+        (tableSelected)="openRegisterOrder($event)"
+      />
+    }
+
+  } @else {
+    <div class="absolute inset-0 flex items-center justify-center bg-surface/90 rounded-xl z-10">
+      <div class="flex flex-col items-center gap-3 text-text-muted">
+        <span class="fa-solid fa-chair text-5xl"></span>
+        <span class="text-lg font-bold text-text-secondary">No hay mesas disponibles</span>
+        <span class="text-sm">No se encontraron mesas en el sistema</span>
+      </div>
+    </div>
   }
+
 </div>
 
 @if (selectedTable()) {
-<!--  -->
-@if(getActiveOrderByTable(selectedTable()!.id) && !modifyStatus()) {
-<app-order-view
-  [selectedTable]="selectedTable()!"
-  [activeOrder]="getActiveOrderByTable(selectedTable()!.id)!"
-  [isAtm]="false"
-  [textConfirm]="'Completar Pedido'"
-  [changeStatusQuery]="orderStatus.COMPLETED"
-  (statusModifyModalChange)="onChangeModifyStatus($event)"
-  (statusChange)="onChangeStatus($event.orderId, $event.newStatus)"
-  (closeModal)="closeRegisterOrder()"
-/>
+  @if (getActiveOrderByTable(selectedTable()!.id) && !modifyStatus()) {
+    <app-order-view
+      [selectedTable]="selectedTable()!"
+      [activeOrder]="getActiveOrderByTable(selectedTable()!.id)!"
+      [isAtm]="false"
+      textConfirm="Completar Pedido"
+      [changeStatusQuery]="orderStatus.COMPLETED"
+      (statusModifyModalChange)="onChangeModifyStatus($event)"
+      (statusChange)="onChangeStatus($event.orderId, $event.newStatus)"
+      (closeModal)="closeRegisterOrder()"
+    />
+  } @else {
+    <app-register-order
+      [selectedTable]="selectedTable()!"
+      [activeOrder]="getActiveOrderByTable(selectedTable()!.id)"
+      (orderCreated)="onOrderCreated($event)"
+      (orderUpdated)="onOrderUpdated($event.id, $event.order)"
+      (closeModal)="closeRegisterOrder()"
+      (statusModifyModalChange)="onChangeModifyStatus($event)"
+    />
+  }
 }
-<!--  -->
-@else {
-<app-register-order
-  [selectedTable]="selectedTable()!"
-  [activeOrder]="getActiveOrderByTable(selectedTable()!.id)"
-  (orderCreated)="onOrderCreated($event)"
-  (orderUpdated)="onOrderUpdated($event.id, $event.order)"
-  (closeModal)="closeRegisterOrder()"
-  (statusModifyModalChange)="onChangeModifyStatus($event)"
-/>
-} }

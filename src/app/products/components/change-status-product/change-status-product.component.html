@@ -1,13 +1,10 @@
-<div class="h-full flex flex-col">
+<div class="h-full flex flex-col font-display">
+
   <!-- Header -->
-  <div
-    class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2 sm:gap-4 px-2 sm:px-0"
-  >
-    <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white">
-      Gestión de productos
-    </h1>
+  <div class="pds-modal-header">
+    <h1 class="pds-modal-title text-xl sm:text-2xl">Gestión de productos</h1>
     <button
-      class="text-gray-400 hover:text-gray-200 cursor-pointer text-xl sm:text-2xl transition-colors p-2 hover:bg-gray-800 rounded-full active:scale-95"
+      class="pds-modal-close"
       (click)="onCloseModal()"
       aria-label="Cerrar"
     >
@@ -16,12 +13,12 @@
   </div>
 
   <!-- Search -->
-  <div class="relative mb-4 sm:mb-6 px-2 sm:px-0">
+  <div class="pds-search px-5 py-3 border-b border-border">
     <app-search-product-input (value)="debouncedSearch.set($event)" />
   </div>
 
   <!-- Tabs -->
-  <div class="border-0 px-2 sm:px-0">
+  <div class="px-5 pt-3">
     <app-order-product-tabs
       [productCategories]="productTypes()"
       (categorySelected)="onCategorySelected($event)"
@@ -29,87 +26,62 @@
   </div>
 
   <!-- Products Grid -->
-  <div
-    class="flex-1 overflow-y-auto px-2 sm:px-4 custom-scrollbar"
-    [class.max-h-[calc(100vh-20rem)]]="true"
-    [class.sm:max-h-[calc(100vh-23rem)]]="true"
-  >
+  <div class="flex-1 overflow-y-auto px-2 sm:px-4 custom-scrollbar pb-4">
+
     <!-- Loading state -->
     @if (filteredProducts.isLoading()) {
-    <div class="flex flex-col items-center justify-center py-8 sm:py-12">
-      <span
-        class="loading loading-bars loading-md sm:loading-lg text-white mb-2"
-      ></span>
-      <span class="text-gray-400 text-xs sm:text-sm"
-        >Cargando productos...</span
-      >
-    </div>
+      <div class="flex flex-col items-center justify-center py-8 sm:py-12">
+        <span class="loading loading-bars loading-md sm:loading-lg text-brand mb-2"></span>
+        <span class="text-text-secondary text-xs sm:text-sm">Cargando productos...</span>
+      </div>
     }
 
     <!-- Error state -->
     @else if (filteredProducts.error()) {
-    <div
-      class="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4"
-    >
-      <span
-        class="fa-solid fa-exclamation-triangle text-red-400 text-3xl sm:text-4xl mb-3"
-      ></span>
-      <span class="text-red-400 text-sm sm:text-base font-medium mb-2">
-        Error al cargar productos
-      </span>
-      <span class="text-gray-500 text-xs sm:text-sm">
-        {{ filteredProducts.error() }}
-      </span>
-    </div>
+      <div class="pds-alert-error justify-center py-4 mx-4 mt-4">
+        <span class="fa-solid fa-exclamation-triangle shrink-0"></span>
+        <div class="text-center">
+          <p class="font-medium">Error al cargar productos</p>
+          <p class="text-xs mt-1 opacity-80">{{ filteredProducts.error() }}</p>
+        </div>
+      </div>
     }
 
     <!-- Products grid -->
     @else if (filteredProducts.value()) {
-    <div
-      class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6 pb-4"
-    >
-      @for (product of filteredProducts.value(); track product.id) {
-      <app-order-product-item
-        [product]="product"
-        [isKitchen]="true"
-        (updateProductStatus)="onProductStatusUpdated($event)"
-        class="h-full"
-      />
-      }
-    </div>
+      <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+        @for (product of filteredProducts.value(); track product.id) {
+          <app-order-product-item
+            [product]="product"
+            [isKitchen]="true"
+            (updateProductStatus)="onProductStatusUpdated($event)"
+            class="h-full"
+          />
+        }
+      </div>
 
-    <!-- Empty state -->
-    @if (filteredProducts.value()?.length === 0) {
-    <div
-      class="flex flex-col items-center justify-center py-8 sm:py-12 text-gray-400 px-4 text-center"
-    >
-      <span
-        class="fa-solid fa-box-open text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3"
-      ></span>
-      <p class="text-sm sm:text-base md:text-lg font-medium mb-1">
-        No hay productos en esta categoría
-      </p>
-      <p class="text-xs sm:text-sm text-gray-500">
-        Selecciona otra categoría o agrega nuevos productos
-      </p>
-    </div>
-    } }
+      <!-- Empty state -->
+      @if (filteredProducts.value()?.length === 0) {
+        <div class="pds-empty">
+          <div class="pds-empty-icon">
+            <span class="fa-solid fa-box-open"></span>
+          </div>
+          <p class="font-medium">No hay productos en esta categoría</p>
+          <p class="text-xs text-text-muted">Selecciona otra categoría o agrega nuevos productos</p>
+        </div>
+      }
+    }
 
     <!-- Initial state -->
     @else {
-    <div
-      class="flex flex-col items-center justify-center py-8 sm:py-12 text-gray-400 px-4 text-center"
-    >
-      <span
-        class="fa-solid fa-utensils text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3"
-      ></span>
-      <p class="text-sm sm:text-base md:text-lg font-medium mb-1">
-        Selecciona una categoría
-      </p>
-      <p class="text-xs sm:text-sm text-gray-500">
-        Elige una categoría para ver los productos disponibles
-      </p>
-    </div>
+      <div class="pds-empty">
+        <div class="pds-empty-icon">
+          <span class="fa-solid fa-utensils"></span>
+        </div>
+        <p class="font-medium">Selecciona una categoría</p>
+        <p class="text-xs text-text-muted">Elige una categoría para ver los productos disponibles</p>
+      </div>
     }
+
   </div>
 </div>
