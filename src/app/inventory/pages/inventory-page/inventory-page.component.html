@@ -1,279 +1,163 @@
-<main class="py-8">
+<main class="pds-page">
+
   <!-- Header -->
-  <div class="flex flex-wrap justify-between items-center gap-4 px-4 pb-4">
-    <p class="text-[#131811] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">
-      Inventario de Cocina
-    </p>
+  <div class="pds-page-header">
+    <h1 class="pds-page-title flex items-center gap-2">
+      <span class="fa-solid fa-warehouse text-brand"></span>
+      Inventario
+    </h1>
+
     <div class="flex gap-2">
       <a
         routerLink="/dashboard/inventory/add-insumo"
-        class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-gray-800 hover:bg-gray-700 dark:bg-gray-800 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 border border-gray-700"
+        class="pds-btn-secondary btn-sm"
       >
-        <span class="fa-solid fa-plus text-sm"></span>
-        <span class="truncate">Añadir Ingrediente</span>
+        <span class="fa-solid fa-flask text-xs"></span>
+        Añadir Ingrediente
       </a>
       <a
         routerLink="/dashboard/inventory/add-product"
-        class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-white hover:bg-gray-200 text-black gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4"
+        class="pds-btn-primary btn-sm"
       >
-        <span class="fa-solid fa-plus text-sm"></span>
-        <span class="truncate">Añadir Producto</span>
+        <span class="fa-solid fa-plus text-xs"></span>
+        Añadir Producto
       </a>
     </div>
   </div>
 
   <!-- Filtros -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-3">
+  <div class="pds-filters">
+
     <!-- Búsqueda -->
-    <div>
-      <label class="flex flex-col min-w-40 h-12 w-full">
-        <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
-          <div
-            class="text-[#6b8961] dark:text-gray-400 flex border-none bg-[#f1f4f0] dark:bg-gray-900 items-center justify-center pl-4 rounded-l-lg border border-gray-800"
-          >
-            <span class="fa-solid fa-search"></span>
-          </div>
-          <input
-            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#131811] dark:text-white focus:outline-0 focus:ring-0 border-none bg-[#f1f4f0] dark:bg-gray-900 focus:border-none h-full placeholder:text-[#6b8961] dark:placeholder:text-gray-400 px-4 rounded-l-none pl-2 text-base font-normal leading-normal"
-            placeholder="Buscar por nombre..."
-            [value]="searchTerm()"
-            (input)="onSearch($event)"
-          />
-        </div>
-      </label>
+    <div class="pds-search">
+      <span class="pds-search-icon fa-solid fa-search"></span>
+      <input
+        class="pds-search-input"
+        placeholder="Buscar por nombre..."
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+      />
     </div>
 
-    <!-- Radio de filtros -->
-    <div class="flex items-center">
-      <div
-        class="flex h-12 flex-1 items-center justify-center rounded-lg bg-[#f1f4f0] dark:bg-gray-900 p-1 border border-gray-800"
-      >
-        <label
-          class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 text-sm font-medium leading-normal"
-          [class.bg-white]="viewFilter() === 'all'"
-          [class.dark:bg-gray-700]="viewFilter() === 'all'"
-          [class.shadow-sm]="viewFilter() === 'all'"
-          [class.text-[#131811]]="viewFilter() === 'all'"
-          [class.dark:text-white]="viewFilter() === 'all'"
-          [class.text-[#6b8961]]="viewFilter() !== 'all'"
-          [class.dark:text-gray-400]="viewFilter() !== 'all'"
+    <!-- Tabs de vista -->
+    <div class="flex h-10 bg-background rounded-lg border border-border p-1 gap-1">
+      @for (tab of viewTabs; track tab.value) {
+        <button
+          class="flex-1 px-3 rounded-md text-sm font-medium transition-all {{ viewTabClass(tab.value) }}"
+          (click)="setFilter(tab.value)"
         >
-          <span class="truncate">Todos</span>
-          <input
-            class="invisible w-0"
-            type="radio"
-            name="inventory-filter"
-            value="all"
-            [checked]="viewFilter() === 'all'"
-            (change)="setFilter('all')"
-          />
-        </label>
-        <label
-          class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 text-sm font-medium leading-normal"
-          [class.bg-white]="viewFilter() === 'products'"
-          [class.dark:bg-gray-700]="viewFilter() === 'products'"
-          [class.shadow-sm]="viewFilter() === 'products'"
-          [class.text-[#131811]]="viewFilter() === 'products'"
-          [class.dark:text-white]="viewFilter() === 'products'"
-          [class.text-[#6b8961]]="viewFilter() !== 'products'"
-          [class.dark:text-gray-400]="viewFilter() !== 'products'"
-        >
-          <span class="truncate">Productos</span>
-          <input
-            class="invisible w-0"
-            type="radio"
-            name="inventory-filter"
-            value="products"
-            [checked]="viewFilter() === 'products'"
-            (change)="setFilter('products')"
-          />
-        </label>
-        <label
-          class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 text-sm font-medium leading-normal"
-          [class.bg-white]="viewFilter() === 'insumos'"
-          [class.dark:bg-gray-700]="viewFilter() === 'insumos'"
-          [class.shadow-sm]="viewFilter() === 'insumos'"
-          [class.text-[#131811]]="viewFilter() === 'insumos'"
-          [class.dark:text-white]="viewFilter() === 'insumos'"
-          [class.text-[#6b8961]]="viewFilter() !== 'insumos'"
-          [class.dark:text-gray-400]="viewFilter() !== 'insumos'"
-        >
-          <span class="truncate">Items</span>
-          <input
-            class="invisible w-0"
-            type="radio"
-            name="inventory-filter"
-            value="insumos"
-            [checked]="viewFilter() === 'insumos'"
-            (change)="setFilter('insumos')"
-          />
-        </label>
-      </div>
+          {{ tab.label }}
+        </button>
+      }
     </div>
+
   </div>
 
-  <!-- Filtro de Categorías de Productos (solo visible cuando se filtra por productos) -->
+  <!-- Chips de categoría (solo en vista Productos) -->
   @if (viewFilter() === 'products') {
-    <div class="px-4 py-2">
-      <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button
+        class="px-3 py-1 rounded-full text-xs font-medium transition-all {{ categoryBtnClass(null) }}"
+        (click)="setCategoryFilter(null)"
+      >
+        Todas las categorías
+      </button>
+      @for (type of productTypes(); track type.id) {
         <button
-          (click)="setCategoryFilter(null)"
-          class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
-          [class.bg-gray-800]="productCategoryFilter() === null"
-          [class.text-white]="productCategoryFilter() === null"
-          [class.bg-gray-200]="productCategoryFilter() !== null"
-          [class.dark:bg-gray-700]="productCategoryFilter() !== null"
-          [class.text-gray-700]="productCategoryFilter() !== null"
-          [class.dark:text-gray-300]="productCategoryFilter() !== null"
+          class="px-3 py-1 rounded-full text-xs font-medium transition-all {{ categoryBtnClass(type.id) }}"
+          (click)="setCategoryFilter(type.id)"
         >
-          Todas las categorías
+          {{ type.name }}
         </button>
-        @for (type of productTypes(); track type.id) {
-          <button
-            (click)="setCategoryFilter(type.id)"
-            class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
-            [class.bg-gray-800]="productCategoryFilter() === type.id"
-            [class.text-white]="productCategoryFilter() === type.id"
-            [class.bg-gray-200]="productCategoryFilter() !== type.id"
-            [class.dark:bg-gray-700]="productCategoryFilter() !== type.id"
-            [class.text-gray-700]="productCategoryFilter() !== type.id"
-            [class.dark:text-gray-300]="productCategoryFilter() !== type.id"
-          >
-            {{ type.name }}
-          </button>
-        }
-      </div>
+      }
     </div>
   }
 
   <!-- Tabla -->
-  <div class="mt-6 px-4">
-    <div
-      class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50"
+  <div class="pds-table-container">
+
+    <app-list-state
+      [loading]="isLoading()"
+      [empty]="unifiedItems().length === 0"
+      emptyIcon="box-open"
+      emptyTitle="Sin elementos"
+      emptyMessage="No se encontraron resultados para los filtros aplicados"
+      loadingMessage="Cargando inventario..."
     >
-      @if (isLoading()) {
-        <div class="flex items-center justify-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-          <span class="ml-3 text-gray-500">Cargando...</span>
-        </div>
-      } @else if (unifiedItems().length === 0) {
-        <div class="flex flex-col items-center justify-center py-12 text-gray-500">
-          <span class="fa-solid fa-box-open text-5xl mb-2"></span>
-          <p>No se encontraron elementos</p>
-        </div>
-      } @else {
-        <table class="min-w-full text-sm divide-y divide-gray-200 dark:divide-gray-800">
-          <thead class="bg-gray-50 dark:bg-transparent">
-            <tr>
-              <th
-                class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                scope="col"
-              >
-                Nombre
-              </th>
-              <th
-                class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                scope="col"
-              >
-                Categoría
-              </th>
-              <th
-                class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                scope="col"
-              >
-                Cantidad
-              </th>
-              <th
-                class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                scope="col"
-              >
-                Unidad / Precio
-              </th>
-              <th class="relative px-6 py-3" scope="col">
-                <span class="sr-only">Editar</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-            @for (item of unifiedItems(); track item.id + '-' + item.itemType) {
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td class="px-6 py-4 whitespace-nowrap font-medium text-[#131811] dark:text-white">
-                  {{ item.name }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
+      <table class="pds-table">
+        <thead class="pds-table-head">
+          <tr>
+            <th scope="col" class="pds-table-th">Nombre</th>
+            <th scope="col" class="pds-table-th">Categoría</th>
+            <th scope="col" class="pds-table-th">Cantidad</th>
+            <th scope="col" class="pds-table-th">Unidad / Precio</th>
+            <th scope="col" class="relative px-4 py-3"><span class="sr-only">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of unifiedItems(); track item.id + '-' + item.itemType) {
+            <tr class="pds-table-row">
+              <td class="pds-table-td-primary">{{ item.name }}</td>
+              <td class="pds-table-td">
+                <span class="px-2 py-0.5 rounded-md bg-background text-text-secondary text-xs font-medium">
                   {{ getCategoryLabel(item) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
-                  {{ getQuantityDisplay(item) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-gray-300">
-                  {{ getUnitOrPrice(item) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    (click)="editItem(item)"
-                    class="p-2 text-gray-500 hover:text-white dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                    title="Editar"
-                  >
-                    <span class="fa-solid fa-pen-to-square text-sm"></span>
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </div>
+                </span>
+              </td>
+              <td class="pds-table-td">{{ getQuantityDisplay(item) }}</td>
+              <td class="pds-table-td">{{ getUnitOrPrice(item) }}</td>
+              <td class="px-4 py-3 text-right">
+                <button
+                  (click)="editItem(item)"
+                  class="pds-btn-icon"
+                  title="Editar"
+                >
+                  <span class="fa-solid fa-pen-to-square text-sm"></span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </app-list-state>
+
   </div>
 
   <!-- Paginación -->
   @if (totalPages() > 1) {
-    <div class="px-4 mt-4">
-      <div class="flex items-center justify-center gap-2">
-        <!-- Botón anterior -->
+    <div class="flex flex-col items-center gap-2 mt-4">
+
+      <div class="flex items-center gap-1">
         <button
           (click)="goToPage(currentPage() - 1)"
           [disabled]="currentPage() === 1"
-          class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn btn-sm btn-ghost text-text-secondary hover:text-text-primary disabled:opacity-30"
         >
-          <span class="fa-solid fa-chevron-left text-sm"></span>
+          <span class="fa-solid fa-chevron-left"></span>
         </button>
-        
-        <!-- Números de página -->
-        @for (page of [].constructor(totalPages()); track $index) {
+
+        @for (page of pageNumbers(); track page) {
           <button
-            (click)="goToPage($index + 1)"
-            class="px-3 py-2 rounded-lg border text-sm font-medium transition-colors"
-            [class.bg-gray-800]="currentPage() === $index + 1"
-            [class.text-white]="currentPage() === $index + 1"
-            [class.border-gray-800]="currentPage() === $index + 1"
-            [class.bg-white]="currentPage() !== $index + 1"
-            [class.dark:bg-gray-800]="currentPage() !== $index + 1"
-            [class.text-gray-700]="currentPage() !== $index + 1"
-            [class.dark:text-gray-300]="currentPage() !== $index + 1"
-            [class.border-gray-300]="currentPage() !== $index + 1"
-            [class.dark:border-gray-700]="currentPage() !== $index + 1"
-            [class.hover:bg-gray-100]="currentPage() !== $index + 1"
-            [class.dark:hover:bg-gray-700]="currentPage() !== $index + 1"
+            (click)="goToPage(page)"
+            class="btn btn-sm min-w-9 {{ currentPage() === page ? 'bg-brand text-white border-0' : 'btn-ghost text-text-secondary hover:text-text-primary' }}"
           >
-            {{ $index + 1 }}
+            {{ page }}
           </button>
         }
-        
-        <!-- Botón siguiente -->
+
         <button
           (click)="goToPage(currentPage() + 1)"
           [disabled]="currentPage() === totalPages()"
-          class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn btn-sm btn-ghost text-text-secondary hover:text-text-primary disabled:opacity-30"
         >
-          <span class="fa-solid fa-chevron-right text-sm"></span>
+          <span class="fa-solid fa-chevron-right"></span>
         </button>
       </div>
-      
-      <!-- Info de paginación -->
-      <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-        Página {{ currentPage() }} de {{ totalPages() }} ({{ allUnifiedItems().length }} elementos)
+
+      <p class="text-xs text-text-muted">
+        Página {{ currentPage() }} de {{ totalPages() }} · {{ allUnifiedItems().length }} elementos
       </p>
+
     </div>
   }
+
 </main>

@@ -1,8 +1,8 @@
-import { Component, EventEmitter, Input, Output, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
 import { InventoryService } from '../../services/inventory.service';
-import { InventoryItem, UnitOfMeasure, InventoryType } from '../../interfaces/inventory.interface';
+import { InventoryItem, InventoryType, UnitOfMeasure } from '../../interfaces/inventory.interface';
 
 export interface RecipeItem {
   inventoryId: number;
@@ -13,52 +13,46 @@ export interface RecipeItem {
 
 @Component({
   selector: 'app-recipe-modal',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './recipe-modal.component.html',
 })
 export class RecipeModalComponent implements OnInit {
   private inventoryService = inject(InventoryService);
 
-  @Input() initialItems: RecipeItem[] = [];
-  @Output() close = new EventEmitter<void>();
-  @Output() addRecipe = new EventEmitter<RecipeItem[]>();
+  initialItems = input<RecipeItem[]>([]);
+  close      = output<void>();
+  addRecipe  = output<RecipeItem[]>();
 
-  searchTerm = signal('');
+  searchTerm    = signal('');
   searchResults = signal<InventoryItem[]>([]);
   inventoryItems = signal<InventoryItem[]>([]);
-  selectedItems = signal<RecipeItem[]>([]);
-  
-  // Pagination
-  currentPage = signal(1);
-  pageSize = signal(5);
-  totalPages = signal(1);
+  selectedItems  = signal<RecipeItem[]>([]);
 
-  // Temporary state for the item being added
-  currentItem = signal<InventoryItem | null>(null);
-  quantity = signal<number | null>(null);
-  
-  // Error message for validation
+  currentPage = signal(1);
+  pageSize    = signal(5);
+  totalPages  = signal(1);
+
+  currentItem   = signal<InventoryItem | null>(null);
+  quantity      = signal<number | null>(null);
   quantityError = signal<string | null>(null);
 
   ngOnInit() {
-    if (this.initialItems.length > 0) {
-      this.selectedItems.set([...this.initialItems]);
+    if (this.initialItems().length > 0) {
+      this.selectedItems.set([...this.initialItems()]);
     }
     this.loadInventoryItems();
   }
 
   loadInventoryItems() {
-    this.inventoryService.findAll(
-      { page: this.currentPage(), limit: this.pageSize() }, 
-      InventoryType.INGREDIENT
-    ).subscribe({
-      next: (res) => {
-        this.inventoryItems.set(res.content);
-        this.totalPages.set(res.totalPages);
-      },
-      error: (err) => console.error('Error loading inventory items:', err)
-    });
+    this.inventoryService
+      .findAll({ page: this.currentPage(), limit: this.pageSize() }, InventoryType.INGREDIENT)
+      .subscribe({
+        next: (res) => {
+          this.inventoryItems.set(res.content);
+          this.totalPages.set(res.totalPages);
+        },
+        error: (err) => console.error('Error loading inventory items:', err),
+      });
   }
 
   changePage(delta: number) {
@@ -68,8 +62,7 @@ export class RecipeModalComponent implements OnInit {
       this.loadInventoryItems();
     }
   }
-  
-  // Búsqueda dinámica mientras escribe
+
   onSearchChange(value: string): void {
     this.searchTerm.set(value);
     if (value.trim()) {
@@ -81,20 +74,15 @@ export class RecipeModalComponent implements OnInit {
 
   search() {
     const term = this.searchTerm().trim().toLowerCase();
-    if (!term) {
-      this.searchResults.set([]);
-      return;
-    }
-    
-    // Búsqueda local case-insensitive en los items cargados
+    if (!term) { this.searchResults.set([]); return; }
+
     this.inventoryService.findAll({ page: 1, limit: 100 }, InventoryType.INGREDIENT).subscribe({
       next: (res) => {
-        const filtered = res.content.filter(item => 
+        this.searchResults.set(res.content.filter(item =>
           item.name.toLowerCase().includes(term)
-        );
-        this.searchResults.set(filtered);
+        ));
       },
-      error: (err) => console.error(err)
+      error: (err) => console.error(err),
     });
   }
 
@@ -104,61 +92,33 @@ export class RecipeModalComponent implements OnInit {
     this.quantityError.set(null);
   }
 
-  isDecimalAllowed(unit: string): boolean {
-    return unit !== 'UNIDAD';
-  }
-
-  getStep(unit: string): number {
-    return this.isDecimalAllowed(unit) ? 0.1 : 1;
-  }
-
-  getMin(unit: string): number {
-    return this.isDecimalAllowed(unit) ? 0.1 : 1;
-  }
+  isDecimalAllowed(unit: string): boolean { return unit !== 'UNIDAD'; }
+  getStep(unit: string): number  { return this.isDecimalAllowed(unit) ? 0.1 : 1; }
+  getMin(unit: string): number   { return this.isDecimalAllowed(unit) ? 0.1 : 1; }
 
   addItem() {
     const item = this.currentItem();
     const qtyValue = this.quantity();
-    
-    if (item && qtyValue !== null && qtyValue > 0) {
-      let qty = qtyValue;
-      // Enforce integer for UNIDAD, or max 2 decimals for others
-      if (!this.isDecimalAllowed(item.unitOfMeasure)) {
-        qty = Math.floor(qty);
-      } else {
-        qty = this.roundToTwoDecimals(qty);
-      }
+    if (!item || qtyValue === null || qtyValue <= 0) return;
 
-      this.selectedItems.update(items => {
-        const existingIndex = items.findIndex(i => i.inventoryId === item.id);
-        
-        if (existingIndex !== -1) {
-          // Item exists, update quantity
-          const updatedItems = [...items];
-          updatedItems[existingIndex] = {
-            ...updatedItems[existingIndex],
-            quantity: this.roundToTwoDecimals(updatedItems[existingIndex].quantity + qty)
-          };
-          return updatedItems;
-        }
-        
-        // New item
-        return [
-          ...items, 
-          {
-            inventoryId: item.id,
-            name: item.name,
-            quantity: qty,
-            unitOfMeasure: item.unitOfMeasure
-          }
-        ];
-      });
-      
-      this.currentItem.set(null);
-      this.quantity.set(null);
-      this.searchTerm.set('');
-      this.searchResults.set([]);
-    }
+    const qty = this.isDecimalAllowed(item.unitOfMeasure)
+      ? this.round2(qtyValue)
+      : Math.floor(qtyValue);
+
+    this.selectedItems.update(items => {
+      const idx = items.findIndex(i => i.inventoryId === item.id);
+      if (idx !== -1) {
+        const updated = [...items];
+        updated[idx] = { ...updated[idx], quantity: this.round2(updated[idx].quantity + qty) };
+        return updated;
+      }
+      return [...items, { inventoryId: item.id, name: item.name, quantity: qty, unitOfMeasure: item.unitOfMeasure }];
+    });
+
+    this.currentItem.set(null);
+    this.quantity.set(null);
+    this.searchTerm.set('');
+    this.searchResults.set([]);
   }
 
   removeItem(index: number) {
@@ -166,57 +126,35 @@ export class RecipeModalComponent implements OnInit {
   }
 
   updateItemQuantity(index: number, quantity: number) {
-    if (quantity > 0) {
-      this.selectedItems.update(items => {
-        const newItems = [...items];
-        const item = newItems[index];
-        
-        // Enforce integer for UNIDAD, or max 2 decimals for others
-        let newQty = quantity;
-        if (!this.isDecimalAllowed(item.unitOfMeasure)) {
-          newQty = Math.floor(quantity);
-        } else {
-          newQty = this.roundToTwoDecimals(quantity);
-        }
-
-        newItems[index] = { ...item, quantity: newQty };
-        return newItems;
-      });
-    }
+    if (quantity <= 0) return;
+    this.selectedItems.update(items => {
+      const updated = [...items];
+      const item = updated[index];
+      updated[index] = {
+        ...item,
+        quantity: this.isDecimalAllowed(item.unitOfMeasure) ? this.round2(quantity) : Math.floor(quantity),
+      };
+      return updated;
+    });
   }
 
   onQuantityChange(value: number | null): void {
-    if (value === null || value === undefined) {
-      this.quantity.set(null);
-      this.quantityError.set(null);
+    if (value === null) { this.quantity.set(null); this.quantityError.set(null); return; }
+
+    const item = this.currentItem();
+    if (item && !this.isDecimalAllowed(item.unitOfMeasure) && !Number.isInteger(value)) {
+      this.quantityError.set('Las unidades solo aceptan números enteros');
+      this.quantity.set(Math.floor(value));
       return;
     }
-    const item = this.currentItem();
-    if (item) {
-      if (!this.isDecimalAllowed(item.unitOfMeasure)) {
-        // Verificar si tiene decimales
-        if (!Number.isInteger(value)) {
-          this.quantityError.set('Las unidades solo aceptan números enteros, no decimales');
-          this.quantity.set(Math.floor(value));
-          return;
-        }
-        this.quantityError.set(null);
-        this.quantity.set(value);
-      } else {
-        this.quantityError.set(null);
-        this.quantity.set(this.roundToTwoDecimals(value));
-      }
-    } else {
-      this.quantity.set(value);
-    }
-  }
-
-  private roundToTwoDecimals(value: number): number {
-    return Math.round(value * 100) / 100;
+    this.quantityError.set(null);
+    this.quantity.set(this.isDecimalAllowed(item?.unitOfMeasure ?? 'KG') ? this.round2(value) : value);
   }
 
   confirm() {
     this.addRecipe.emit(this.selectedItems());
     this.close.emit();
   }
+
+  private round2(v: number): number { return Math.round(v * 100) / 100; }
 }
