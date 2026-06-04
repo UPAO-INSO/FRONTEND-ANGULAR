@@ -4,6 +4,10 @@ import {
   OrderStatus,
   UUID,
 } from '../../interfaces/order.interface';
+import {
+  ORDER_STATUS_BG_CLASS,
+  ORDER_STATUS_LABELS,
+} from '@src/app/shared/utils/order-status.utils';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Table } from '@src/app/tables/interfaces/table.interface';
 import {
@@ -14,6 +18,7 @@ import { CulqiService } from '@src/app/shared/services/culqi.service';
 import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-modify-modal.component';
 import { ConfirmStatusModalComponent } from '../confirm-status-modal/confirm-status-modal.component';
 import { PaymentCheckoutComponent } from '@src/app/payments/components/payment-checkout/payment-checkout.component';
+import { StatusBadgeComponent } from '@src/app/shared/components/status-badge/status-badge.component';
 
 interface PaymentSuccessData {
   orderId: UUID;
@@ -33,6 +38,7 @@ interface StatusChange {
     ConfirmModifyModalComponent,
     ConfirmStatusModalComponent,
     PaymentCheckoutComponent,
+    StatusBadgeComponent,
   ],
   templateUrl: './order-view.component.html',
 })
@@ -135,25 +141,12 @@ export class OrderViewComponent {
     return hours >= 12 ? 'PM' : 'AM';
   }
 
-  getColorOrderInTableStatus(order: ContentOrder) {
-    const status = order.orderStatus;
-
-    const STATUS: Partial<Record<OrderStatus, string>> = {
-      [OrderStatus.PENDING]: 'bg-status-pending',
-      [OrderStatus.PREPARING]: 'bg-status-preparing',
-      [OrderStatus.READY]: 'bg-status-ready',
-      [OrderStatus.PAID]: 'bg-status-paid',
-      [OrderStatus.COMPLETED]: 'bg-status-completed',
-      [OrderStatus.CANCELLED]: 'bg-status-cancelled',
-    };
-
-    return STATUS[status];
+  getColorOrderInTableStatus(order: ContentOrder): string {
+    return ORDER_STATUS_BG_CLASS[order.orderStatus] ?? '';
   }
 
   openPayment() {
     const order = this.activeOrder();
-
-    console.log({ order });
 
     const existingOrder = this.culqiService.getCulqiOrder(order.id);
 
@@ -219,18 +212,7 @@ export class OrderViewComponent {
     return status === OrderStatus.READY || status === OrderStatus.COMPLETED;
   }
 
-  getOrderStatusText(order: ContentOrder) {
-    const status = order.orderStatus;
-
-    const STATUS: Partial<Record<OrderStatus, string>> = {
-      [OrderStatus.PENDING]: 'Pendiente',
-      [OrderStatus.PREPARING]: 'Preparando',
-      [OrderStatus.READY]: 'Listo',
-      [OrderStatus.PAID]: 'Pagado',
-      [OrderStatus.COMPLETED]: 'Completado',
-      [OrderStatus.CANCELLED]: 'Cancelado',
-    };
-
-    return STATUS[status];
+  getOrderStatusText(order: ContentOrder): string {
+    return ORDER_STATUS_LABELS[order.orderStatus] ?? '';
   }
 }

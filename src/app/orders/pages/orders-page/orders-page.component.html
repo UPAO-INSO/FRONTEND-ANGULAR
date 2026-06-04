@@ -1,17 +1,18 @@
-<app-order-header-status
-  (status)="selectedOrderStatus.set($event)"
-  (value)="tableNumber.set($event)"
-/>
+<div class="pds-page">
 
-<app-order-list
-  [orders]="orderResource.value()?.content ?? []"
-  [isEmpty]="(orderResource.value()?.content?.length ?? 0) === 0"
-  [isLoading]="orderResource.isLoading()"
-  [errorMessage]="orderResource.error()"
-  (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
-/>
+  <app-order-header-status
+    (status)="selectedOrderStatus.set($event)"
+    (value)="tableNumber.set($event)"
+  />
 
-<app-pagination
-  [pages]="orderResource.value()?.totalPages ?? 0"
-  [currentPage]="this.paginationService.currentPage()"
-/>
+  <app-order-list
+    [totalPages]="orderResource.value()?.totalPages ?? 0"
+    [currentPage]="paginationService.currentPage()"
+    [orders]="orderResource.value()?.content ?? []"
+    [isEmpty]="(orderResource.value()?.content?.length ?? 0) === 0"
+    [isLoading]="orderResource.isLoading()"
+    [errorMessage]="orderResource.error()?.message ?? null"
+    (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
+  />
+
+</div>

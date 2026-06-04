@@ -1,64 +1,75 @@
-<div class="flex items-center justify-between py-2 border-b border-gray-600">
-  <div class="flex-1">
-    <h3 class="font-medium text-sm">
+<div class="flex items-center gap-2 py-2.5 border-b border-border hover:bg-surface-nav/30 transition-colors rounded px-1">
+
+  <!-- Info del producto -->
+  <div class="flex-1 min-w-0">
+    <h3 class="font-medium text-sm text-text-primary truncate">
       {{ cartItem().product.name | titlecase }}
     </h3>
-    <p class="text-gray-400 text-xs">
+    <p class="text-text-muted text-xs font-mono mt-0.5">
       S/. {{ cartItem().product.price.toFixed(2) }}
     </p>
-
     @if (cartItem().servedQuantity && cartItem().servedQuantity! > 0) {
-    <p class="text-green-400 text-xs flex items-center gap-1 mt-1">
-      <span class="fa-solid fa-check-circle"></span>
-      <span>{{ cartItem().servedQuantity }} servido(s)</span>
-    </p>
+      <p class="text-green-400 text-xs flex items-center gap-1 mt-0.5">
+        <span class="fa-solid fa-check text-[10px]"></span>
+        {{ cartItem().servedQuantity }} servido(s)
+      </p>
     }
   </div>
 
-  <div class="flex items-center gap-2">
-    <!-- Controles de cantidad -->
+  <!-- Controles -->
+  <div class="flex items-center gap-1.5 shrink-0">
+
     <button
-      class="w-6 h-6 rounded-full text-white text-sm transition-colors cursor-pointer"
-      [class.bg-gray-600]="modificationStatus().canDecrease"
-      [class.hover:bg-gray-500]="modificationStatus().canDecrease"
-      [class.bg-gray-800]="!modificationStatus().canDecrease"
+      class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-colors"
+      [class.bg-surface-nav]="modificationStatus().canDecrease"
+      [class.text-text-primary]="modificationStatus().canDecrease"
+      [class.hover:bg-border]="modificationStatus().canDecrease"
+      [class.bg-background]="!modificationStatus().canDecrease"
+      [class.text-text-muted]="!modificationStatus().canDecrease"
       [class.cursor-not-allowed]="!modificationStatus().canDecrease"
       [disabled]="!modificationStatus().canDecrease"
       (click)="decreaseQuantity()"
+      aria-label="Disminuir"
     >
-      -
+      <span class="fa-solid fa-minus text-[10px]"></span>
     </button>
 
-    <div class="min-w-8 text-center">
-      <span class="font-semibold">{{ cartItem().quantity }}</span>
+    <div class="w-8 text-center">
+      <span class="font-semibold text-sm text-text-primary">{{ cartItem().quantity }}</span>
       @if (availableQuantity() < cartItem().quantity) {
-      <span class="text-xs text-gray-400 block">
-        ({{ availableQuantity() }} mod.)
-      </span>
+        <span class="text-[9px] text-text-muted block leading-none">{{ availableQuantity() }} mod.</span>
       }
     </div>
 
     <button
-      class="w-6 h-6 rounded-full bg-red-600 text-white text-sm hover:bg-red-500 cursor-pointer"
+      class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold bg-brand hover:bg-brand-dark text-white transition-colors"
       (click)="increaseQuantity()"
+      aria-label="Aumentar"
     >
-      +
+      <span class="fa-solid fa-plus text-[10px]"></span>
     </button>
 
-    <!-- Botón eliminar -->
     <button
-      class="text-red-400 ml-2 transition-colors cursor-pointer"
-      [class.hover:text-red-300]="modificationStatus().canRemove"
-      [class.opacity-40]="!modificationStatus().canRemove"
+      class="w-7 h-7 flex items-center justify-center transition-colors rounded-full"
+      [class.text-red-400]="modificationStatus().canRemove"
+      [class.hover:bg-red-500/10]="modificationStatus().canRemove"
+      [class.text-text-muted]="!modificationStatus().canRemove"
+      [class.opacity-30]="!modificationStatus().canRemove"
       [class.cursor-not-allowed]="!modificationStatus().canRemove"
       [disabled]="!modificationStatus().canRemove"
       (click)="onRemove()"
+      aria-label="Eliminar"
     >
       <span class="fa-solid fa-trash text-xs"></span>
     </button>
+
   </div>
 
-  <div class="ml-2 text-right">
-    <span class="font-semibold">S/. {{ cartItem().subtotal.toFixed(2) }}</span>
+  <!-- Subtotal -->
+  <div class="w-16 text-right shrink-0">
+    <span class="font-semibold text-sm font-mono text-text-primary">
+      S/. {{ cartItem().subtotal.toFixed(2) }}
+    </span>
   </div>
+
 </div>

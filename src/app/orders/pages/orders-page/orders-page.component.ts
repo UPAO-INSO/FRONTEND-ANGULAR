@@ -6,7 +6,6 @@ import { OrderListComponent } from '../../components/order-list/order-list.compo
 import { OrderStatusComponent } from '../../components/order-header-status/order-header-status.component';
 import { OrderStatus, UUID } from '../../interfaces/order.interface';
 
-import { PaginationComponent } from '@src/app/shared/components/pagination/pagination.component';
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
 import { CulqiService } from '@src/app/shared/services/culqi.service';
@@ -18,7 +17,7 @@ enum Direction {
 
 @Component({
   selector: 'app-orders-page',
-  imports: [OrderListComponent, OrderStatusComponent, PaginationComponent],
+  imports: [OrderListComponent, OrderStatusComponent],
   templateUrl: './orders-page.component.html',
 })
 export default class OrdersPageComponent {

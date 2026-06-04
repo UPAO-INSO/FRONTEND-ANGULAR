@@ -53,7 +53,7 @@ export class OrderStatusComponent {
     {
       status: null,
       label: 'Todos',
-      colorClass: 'text-white',
+      colorClass: 'text-text-primary',
       icon: 'fa-solid fa-list',
     },
     {
