@@ -1,6 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { ProductService } from '@src/app/products/services/product.service';
@@ -9,7 +8,7 @@ import { RecipeModalComponent, RecipeItem } from '../../components/recipe-modal/
 
 @Component({
   selector: 'app-add-product-page',
-  imports: [CommonModule, FormsModule, RecipeModalComponent],
+  imports: [FormsModule, RecipeModalComponent],
   templateUrl: './add-product-page.component.html',
 })
 export class AddProductPageComponent implements OnInit {

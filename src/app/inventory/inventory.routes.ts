@@ -1,12 +1,10 @@
 import { Routes } from '@angular/router';
+import { InventoryLayoutComponent } from './layouts/inventory-layout/inventory-layout.component';
 
 export const inventoryRoutes: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./layouts/inventory-layout/inventory-layout.component').then(
-        (m) => m.InventoryLayoutComponent
-      ),
+    component: InventoryLayoutComponent,
     children: [
       {
         path: '',
@@ -51,3 +49,5 @@ export const inventoryRoutes: Routes = [
     ],
   },
 ];
+
+export default inventoryRoutes;

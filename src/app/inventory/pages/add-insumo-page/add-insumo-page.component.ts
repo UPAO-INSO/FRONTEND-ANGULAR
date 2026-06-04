@@ -1,6 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { InventoryService } from '../../services/inventory.service';
@@ -15,7 +14,7 @@ import {
 
 @Component({
   selector: 'app-add-insumo-page',
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule],
   templateUrl: './add-insumo-page.component.html',
 })
 export class AddInsumoPageComponent {
