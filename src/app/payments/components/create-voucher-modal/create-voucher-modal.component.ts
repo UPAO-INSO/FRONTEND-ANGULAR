@@ -1,12 +1,21 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ContentPayment } from '@src/app/payments/interfaces/payments.inteface';
+import {
+  ContentPayment,
+  PaymentType,
+} from '@src/app/payments/interfaces/payments.inteface';
 import { VoucherService } from '@src/app/vouchers/services/voucher.service';
 import {
   CreateVoucherRequest,
   NubefactItem,
   VoucherType,
 } from '@src/app/vouchers/interfaces/nubefact.interface';
+import { ClientService } from '@src/app/clients/service/client.service';
+import {
+  Client,
+  DocumentType,
+} from '@src/app/clients/interfaces/client.interface';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-create-voucher-modal',
@@ -15,6 +24,7 @@ import {
 })
 export class CreateVoucherModalComponent {
   private voucherService = inject(VoucherService);
+  private clientService = inject(ClientService);
 
   payment = input.required<ContentPayment>();
   isOpen = input.required<boolean>();
@@ -28,6 +38,12 @@ export class CreateVoucherModalComponent {
   successMessage = signal<string>('');
 
   VoucherType = VoucherType;
+
+  getPaymentTypeLabel() {
+    return this.payment().paymentType === PaymentType.MOBILE_WALLET
+      ? 'Billetera Digital'
+      : 'Efectivo';
+  }
 
   onClose() {
     this.close.emit();
@@ -47,14 +63,34 @@ export class CreateVoucherModalComponent {
       return;
     }
 
+    if (!payment.customerId) {
+      this.errorMessage.set('El pago no tiene un cliente asociado');
+      return;
+    }
+
     this.isProcessing.set(true);
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    const voucherData = this.buildVoucherRequest(payment);
-
-    this.voucherService
-      .createVoucher(voucherData, this.voucherType())
+    // Primero obtenemos los datos del cliente
+    this.clientService
+      .getClientById(payment.customerId)
+      .pipe(
+        switchMap((client) => {
+          const voucherData = this.buildVoucherRequest(payment, client);
+          return this.voucherService.createVoucher(
+            voucherData,
+            this.voucherType()
+          );
+        }),
+        switchMap((voucherResponse) => {
+          // Asociar el voucher con el pago
+          return this.voucherService.associatePayment(
+            voucherResponse.id,
+            payment.id
+          );
+        })
+      )
       .subscribe({
         next: (response) => {
           this.isProcessing.set(false);
@@ -69,13 +105,17 @@ export class CreateVoucherModalComponent {
           console.error('Error al generar comprobante:', error);
           this.isProcessing.set(false);
           this.errorMessage.set(
-            'Error al generar el comprobante. Intente nuevamente.'
+            error.message ||
+              'Error al generar el comprobante. Intente nuevamente.'
           );
         },
       });
   }
 
-  private buildVoucherRequest(payment: ContentPayment): CreateVoucherRequest {
+  private buildVoucherRequest(
+    payment: ContentPayment,
+    client: Client
+  ): CreateVoucherRequest {
     const IGV_RATE = 0.18;
     const total = payment.amount / 100; // Convertir de centavos a soles
 
@@ -117,14 +157,29 @@ export class CreateVoucherModalComponent {
     // Número de comprobante: Boletas desde 5, Facturas desde 25
     const numero = this.voucherType() === VoucherType.RECEIPT ? 5 : 25;
 
-    // Para facturas se requiere RUC (tipo 6), para boletas puede ser DNI (tipo 1)
-    const tipoDocumento = this.voucherType() === VoucherType.RECEIPT ? 1 : 6;
-    const numeroDocumento =
-      this.voucherType() === VoucherType.RECEIPT ? '00000000' : '20000000016';
-    const denominacion =
-      this.voucherType() === VoucherType.RECEIPT
-        ? 'Cliente General'
-        : 'Empresa General SAC';
+    // Determinar tipo de documento según el voucher type y el cliente
+    let tipoDocumento: number;
+    let numeroDocumento: string;
+
+    if (this.voucherType() === VoucherType.RECEIPT) {
+      // Para boletas, usar el documento del cliente (DNI o RUC)
+      tipoDocumento = client.documentType === DocumentType.RUC ? 6 : 1;
+      numeroDocumento = client.documentNumber;
+    } else {
+      // Para facturas, DEBE ser RUC (tipo 6)
+      if (client.documentType !== DocumentType.RUC) {
+        throw new Error('Para emitir facturas se requiere un cliente con RUC');
+      }
+      tipoDocumento = 6;
+      numeroDocumento = client.documentNumber;
+    }
+
+    const denominacion = `${client.name} ${client.lastname}`.trim();
+
+    // Construir dirección completa
+    const direccion =
+      client.completeAddress ||
+      `${client.district}, ${client.province}, ${client.deparment}`.trim();
 
     return {
       serie: this.voucherType() === VoucherType.RECEIPT ? 'BBB1' : 'FFF1',
@@ -133,8 +188,8 @@ export class CreateVoucherModalComponent {
       cliente_tipo_de_documento: tipoDocumento,
       cliente_numero_de_documento: numeroDocumento,
       cliente_denominacion: denominacion,
-      cliente_direccion: 'Lima - Perú',
-      cliente_email: 'cliente@example.com',
+      cliente_direccion: direccion,
+      cliente_email: client.email || 'cliente@example.com',
       fecha_de_emision: fechaEmision,
       moneda: 1, // PEN
       porcentaje_de_igv: 18.0,
