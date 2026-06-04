@@ -1,27 +1,25 @@
-<div
-  class="flex items-center justify-center h-full w-full font-poppins-semibold"
->
-  <div class="flex items-center text-gray-200 space-x-2">
+<div class="flex items-center justify-center h-full w-full font-poppins-semibold">
+  <div class="flex items-center gap-2">
+
     <button
-      class="join-item btn bg-side-background rounded-box h-8"
+      class="pds-btn-icon disabled:opacity-30"
       (click)="previousPage()"
       [disabled]="currentPage() <= 1"
     >
-      <i class="fa-solid fa-arrow-left"></i>
+      <span class="fa-solid fa-arrow-left text-sm"></span>
     </button>
 
-    <span
-      class="flex items-center justify-center h-10 w-10 rounded-full border-0 border-white bg-side-background/40 text-sm"
-    >
+    <span class="flex items-center justify-center h-9 w-9 rounded-full bg-surface border border-border text-text-primary text-sm font-semibold">
       {{ currentPage() }}
     </span>
 
     <button
-      class="join-item btn bg-side-background rounded-box h-8"
+      class="pds-btn-icon disabled:opacity-30"
       (click)="nextPage()"
       [disabled]="currentPage() >= pages()"
     >
-      <i class="fa-solid fa-arrow-right"></i>
+      <span class="fa-solid fa-arrow-right text-sm"></span>
     </button>
+
   </div>
 </div>
