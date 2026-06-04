@@ -43,7 +43,18 @@ export class ProductService {
 
   constructor() {
     this.initializeUserId();
-    // this.setupWebSocketConnection();
+    // Escuchar cambios de disponibilidad de productos desde otros usuarios
+    this.wsService.productEvents$.subscribe(event => {
+      if (event.type === 'PRODUCT_AVAILABILITY') {
+        const cached = this.productByIdCache.get(event.productId);
+        if (cached) {
+          cached.available = event.available;
+          this.productByIdCache.set(event.productId, cached);
+        }
+        this.clearProductsCache();
+        this.triggerRefresh();
+      }
+    });
   }
 
   private isCacheValid(key: string): boolean {
@@ -128,17 +139,7 @@ export class ProductService {
   }
 
   sendProductUpdate(productId: number, available: boolean) {
-    const success = this.wsService.sendProductUpdate(
-      productId,
-      available,
-      this.userId()
-    );
-    if (success) {
-      console.log('Product update sent successfully via WebSocket');
-    } else {
-      console.warn('Failed to send product update via WebSocket');
-    }
-    return success;
+    return this.wsService.sendProductAvailability(productId, available, this.userId());
   }
 
   triggerRefresh() {
