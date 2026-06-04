@@ -1,104 +1,96 @@
 <div
-  class="border border-gray-200 font-poppins-medium rounded-lg overflow-hidden shadow-sm relative group h-full flex flex-col hover:shadow-md transition-shadow duration-200"
+  class="pds-card overflow-hidden group flex flex-col h-full
+         hover:shadow-md hover:border-border transition-all duration-200"
+  [class.opacity-50]="!isProductAvailable() && !isKitchen()"
+  [class.cursor-pointer]="isProductAvailable() || isKitchen()"
+  [class.cursor-not-allowed]="!isProductAvailable() && !isKitchen()"
 >
-  <!-- Image Container -->
-  <div class="relative w-full pt-[75%] sm:pt-[66.67%] overflow-hidden">
+
+  <!-- Área visual: imagen real con gradiente como fondo de carga -->
+  <div
+    class="relative w-full pt-[62%] shrink-0 overflow-hidden"
+    [style.background]="'linear-gradient(135deg, ' + visual().gradient + ')'"
+  >
+    <!-- Imagen del producto desde assets/products/ -->
     <img
-      [alt]="product().name"
-      class="absolute inset-0 w-full h-full object-cover"
-      [class.group-hover:opacity-30]="!isKitchen()"
-      [class.duration-300]="!isKitchen()"
-      [class.transition-opacity]="!isKitchen()"
+      class="absolute inset-0 w-full h-full object-cover
+             transition-all duration-300
+             group-hover:scale-105"
+      [class.group-hover:opacity-20]="!isKitchen() && isProductAvailable() && product().description"
       [src]="getProductImageSrc()"
+      [alt]="product().name"
       (error)="onImgError($event)"
       loading="lazy"
     />
 
-    <!--  Description Overlay -->
-    @if (!isKitchen() && isProductAvailable()) {
-    <div
-      class="absolute inset-0 bg-gray-900/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2 sm:p-3 md:p-4"
-    >
-      <div class="text-center text-white max-w-full overflow-hidden">
-        <h4
-          class="font-bold text-xs sm:text-sm md:text-base lg:text-lg mb-1 sm:mb-2"
-        >
-          Descripción
-        </h4>
-        <p
-          class="text-[10px] sm:text-xs md:text-sm text-gray-200 leading-relaxed line-clamp-3 sm:line-clamp-4"
-        >
-          {{ product().description || "No hay descripción disponible" }}
+    <!-- Ícono de categoría: visible mientras carga o si hay error -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <span
+        class="{{ visual().icon }} text-4xl opacity-25"
+        [style.color]="visual().iconCss"
+      ></span>
+    </div>
+
+    <!-- Badge de precio -->
+    <div class="absolute bottom-2 right-2 z-10">
+      <span class="text-xs font-bold font-mono px-2 py-0.5 rounded-md
+                   bg-background/80 backdrop-blur-sm border border-border/40 text-text-primary">
+        S/. {{ product().price.toFixed(2) }}
+      </span>
+    </div>
+
+    <!-- Overlay de descripción al hover -->
+    @if (!isKitchen() && isProductAvailable() && product().description) {
+      <div
+        class="absolute inset-0 flex items-center justify-center p-3 z-10
+               bg-background/85 backdrop-blur-sm
+               opacity-0 group-hover:opacity-100 transition-opacity duration-250"
+      >
+        <p class="text-center text-text-primary text-[11px] leading-snug line-clamp-4">
+          {{ product().description }}
         </p>
       </div>
-    </div>
     }
 
-    <!-- Not Available Overlay -->
+    <!-- Overlay de no disponible -->
     @if (!isProductAvailable() && !isKitchen()) {
-    <div
-      class="absolute inset-0 bg-red-950/80 flex items-center justify-center z-10"
-    >
-      <div class="text-center text-white p-2 sm:p-3 md:p-4">
-        <div class="mb-1 sm:mb-2">
-          <i
-            class="fa-solid fa-ban text-xl sm:text-2xl md:text-3xl text-red-300"
-          ></i>
-        </div>
-        <h4
-          class="font-bold text-xs sm:text-sm md:text-base lg:text-lg mb-0.5 sm:mb-1"
-        >
-          NO DISPONIBLE
-        </h4>
-        <p class="text-[10px] sm:text-xs md:text-sm text-red-200">
-          Producto temporalmente agotado
-        </p>
+      <div class="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-1 z-20">
+        <span class="fa-solid fa-ban text-xl text-status-cancelled"></span>
+        <span class="text-[10px] font-bold text-text-muted uppercase tracking-wider">No disponible</span>
       </div>
-    </div>
     }
   </div>
 
-  <!-- Product Info -->
-  <div class="p-2 sm:p-3 md:p-4 flex-1 flex flex-col justify-between">
+  <!-- Info del producto -->
+  <div class="px-3 py-2.5 flex-1 flex flex-col justify-between">
     <div>
       <h3
-        class="font-semibold text-white text-xs sm:text-sm md:text-base line-clamp-2"
-        [class.text-xs]="isKitchen()"
-        [class.sm:text-sm]="isKitchen()"
+        class="font-semibold text-text-primary text-xs sm:text-sm line-clamp-2 leading-snug"
+        [title]="product().name"
       >
         {{ product().name | titlecase }}
       </h3>
-      <p
-        class="text-white mt-1 text-xs sm:text-sm md:text-base font-medium"
-        [class.text-xs]="isKitchen()"
-        [class.sm:text-sm]="isKitchen()"
-      >
-        S/. {{ product().price.toFixed(2) }}
+      <p class="text-text-muted text-[10px] mt-0.5 capitalize">
+        {{ product().productTypeName | lowercase }}
       </p>
     </div>
 
-    <!-- Kitchen Status Toggle -->
+    <!-- Toggle cocina -->
     @if (isKitchen()) {
-    <div
-      class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-700"
-    >
-      <span
-        class="text-[10px] sm:text-xs md:text-sm {{
-          getColorProductStatus()
-        }} font-medium"
-      >
-        {{ textStatusProduct() }}
-      </span>
-      <div class="relative cursor-pointer" [class.opacity-50]="isUpdating()" [class.pointer-events-none]="isUpdating()">
+      <div class="flex items-center justify-between mt-2 pt-2 border-t border-border">
+        <span class="text-xs {{ getColorProductStatus() }} font-medium">
+          {{ textStatusProduct() }}
+        </span>
         <input
           type="checkbox"
           [checked]="product().available"
           [disabled]="isUpdating()"
-          class="toggle toggle-xs sm:toggle-sm"
+          class="toggle toggle-xs"
+          [class.opacity-50]="isUpdating()"
           (change)="onSubmitProductStatus()"
         />
       </div>
-    </div>
     }
   </div>
+
 </div>

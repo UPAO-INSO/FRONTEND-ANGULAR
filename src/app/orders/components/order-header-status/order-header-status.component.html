@@ -1,64 +1,53 @@
-<header
-  class="flex flex-col gap-4 sm:gap-6 items-start my-2 sm:my-3 px-2 sm:px-0"
->
-  <!-- Title & Search Row -->
-  <section class="flex flex-col sm:flex-row gap-3 sm:gap-5 pt-1 sm:pt-2 w-full">
-    <!-- Title -->
-    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-100">
+<div class="pds-page-header font-display">
+
+  <!-- Título + búsqueda -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+    <h1 class="pds-page-title flex items-center gap-2 shrink-0">
+      <span class="fa-solid fa-receipt text-brand"></span>
       Pedidos
     </h1>
 
-    <!-- Search Input -->
-    <label
-      class="input w-full sm:w-40 md:w-48 bg-side-background border border-gray-600 focus-within:border-purple-500 transition-colors h-10 sm:h-auto"
-    >
-      <i
-        class="fa-solid fa-magnifying-glass text-gray-500 text-xs sm:text-sm"
-      ></i>
-      <app-search-table-input (value)="tableNumberValue($event)" />
-    </label>
-  </section>
+    <div class="pds-search w-full sm:w-52">
+      <span class="pds-search-icon fa-solid fa-magnifying-glass"></span>
+      <app-search-table-input
+        class="contents"
+        (value)="tableNumberValue($event)"
+      />
+    </div>
+  </div>
 
-  <!-- Status Filters -->
-  <section
-    class="w-full overflow-x-auto pb-2 sm:pb-0 -mx-2 px-2 sm:mx-0 sm:px-0"
-  >
-    <div
-      class="flex flex-nowrap sm:flex-wrap items-center gap-3 sm:gap-4 font-semibold min-w-max sm:min-w-0"
-    >
-      @for (filter of statusFilters; track filter.status ?? 'all') {
+  <!-- Filtros de estado — tabletas/desktop -->
+  <div class="hidden sm:flex items-center gap-1 bg-background-secondary rounded-xl p-1">
+    @for (filter of statusFilters; track filter.status ?? 'all') {
       <button
-        class="relative px-2 sm:px-3 pt-1 pb-0.5 bg-transparent font-bold cursor-pointer transition-all duration-300 hover:text-gray-400 border-b-2 border-transparent whitespace-nowrap text-xs sm:text-sm md:text-base active:scale-95 flex-shrink-0"
-        [class]="
-          isStatusSelected(filter.status!) ? filter.colorClass : 'text-gray-500'
-        "
-        [class.border-b-2]="isStatusSelected(filter.status!)"
-        [style.border-color]="
-          isStatusSelected(filter.status!) ? 'currentColor' : 'transparent'
-        "
+        class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 whitespace-nowrap"
+        [class.bg-surface]="isStatusSelected(filter.status!)"
+        [class.shadow-sm]="isStatusSelected(filter.status!)"
+        [class]="isStatusSelected(filter.status!) ? filter.colorClass : 'text-text-muted hover:text-text-secondary'"
         (click)="selectStatus(filter.status)"
       >
         @if (filter.icon) {
-        <i [class]="filter.icon" class="mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+          <i [class]="filter.icon" class="mr-1 text-[10px]"></i>
         }
-        <span>{{ filter.label }}</span>
-      </button>
-      }
-    </div>
-  </section>
-
-  <!-- Mobile: Dropdown Alternative -->
-  <section class="block sm:hidden w-full">
-    <select
-      class="select select-bordered w-full bg-side-background text-white border-gray-600 focus:border-red-500 text-sm"
-      (change)="onSelectChange($event)"
-      [value]="getSelectedFilterValue()"
-    >
-      @for (filter of statusFilters; track filter.status ?? 'all') {
-      <option [value]="filter.status ?? 'all'">
         {{ filter.label }}
-      </option>
-      }
-    </select>
-  </section>
-</header>
+      </button>
+    }
+  </div>
+
+  <!-- Filtro móvil -->
+  <div class="block sm:hidden w-full">
+    <div class="relative">
+      <select
+        class="pds-filter-select w-full"
+        (change)="onSelectChange($event)"
+        [value]="getSelectedFilterValue()"
+      >
+        @for (filter of statusFilters; track filter.status ?? 'all') {
+          <option [value]="filter.status ?? 'all'">{{ filter.label }}</option>
+        }
+      </select>
+      <span class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-xs pointer-events-none"></span>
+    </div>
+  </div>
+
+</div>

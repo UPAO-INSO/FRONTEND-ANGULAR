@@ -1,16 +1,18 @@
-<div class="text-white text-sm">
-  <div class="space-y-3">
-    <div class="flex justify-between text-gray-200">
-      <p>Subtotal</p>
-      <p>S/. {{ subtotal().toFixed(2) }}</p>
-    </div>
-    <div class="flex justify-between text-gray-200">
-      <p>IGV (18%)</p>
-      <p>S/. {{ tax().toFixed(2) }}</p>
-    </div>
-    <div class="flex justify-between font-bold text-gray-200">
-      <p>Total</p>
-      <p>S/. {{ total().toFixed(2) }}</p>
-    </div>
+<div class="text-sm space-y-2 pt-2">
+
+  <div class="flex justify-between text-text-secondary">
+    <span>Subtotal</span>
+    <span class="font-mono">S/. {{ subtotal().toFixed(2) }}</span>
   </div>
+
+  <div class="flex justify-between text-text-secondary">
+    <span>IGV (18%)</span>
+    <span class="font-mono">S/. {{ tax().toFixed(2) }}</span>
+  </div>
+
+  <div class="flex justify-between font-bold text-base text-text-primary border-t border-border pt-2 mt-1">
+    <span>Total</span>
+    <span class="font-mono text-brand">S/. {{ total().toFixed(2) }}</span>
+  </div>
+
 </div>
