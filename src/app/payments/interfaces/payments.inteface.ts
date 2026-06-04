@@ -28,6 +28,7 @@ export interface ContentPayment {
   rawResponse: string;
   createdAt: Date;
   modifiedAt: Date;
+  customerId: number;
 }
 
 export interface Order {

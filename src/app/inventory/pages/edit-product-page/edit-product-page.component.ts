@@ -1,6 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -12,7 +11,7 @@ import { RecipeModalComponent, RecipeItem } from '../../components/recipe-modal/
 
 @Component({
   selector: 'app-edit-product-page',
-  imports: [CommonModule, RouterLink, FormsModule, RecipeModalComponent],
+  imports: [RouterLink, FormsModule, RecipeModalComponent],
   templateUrl: './edit-product-page.component.html',
 })
 export class EditProductPageComponent implements OnInit {

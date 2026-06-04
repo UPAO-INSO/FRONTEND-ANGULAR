@@ -3,6 +3,11 @@ export interface Voucher {
   pdfUrl: string;
 }
 
+export interface VoucherResponse {
+  id: number;
+  pdfUrl: string;
+}
+
 export interface RESTVoucher {
   content: Voucher[];
   totalPages: number;

@@ -87,4 +87,18 @@ export class ClientService {
       `${this.baseUrl}/customers/document/${document}`
     );
   }
+
+  getClientById(id: number): Observable<Client> {
+    return this.http.get<Client>(`${this.baseUrl}/customers/${id}`).pipe(
+      catchError((error) => {
+        console.error('Error fetching client:', error);
+        return throwError(
+          () =>
+            new Error(
+              'Error al obtener el cliente. Por favor, intente nuevamente.'
+            )
+        );
+      })
+    );
+  }
 }

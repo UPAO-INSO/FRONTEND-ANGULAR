@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 
@@ -14,16 +13,16 @@ import {
   UNIT_OF_MEASURE_SYMBOLS,
   UnifiedInventoryItem,
 } from '../../interfaces/inventory.interface';
-import { Product, ProductType } from '@src/app/products/interfaces/product.type';
+import { ProductType } from '@src/app/products/interfaces/product.type';
+import { ListStateComponent } from '@src/app/shared/components/list-state/list-state.component';
 
 type ViewFilter = 'all' | 'products' | 'insumos';
 
-// Constante para items por página
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 @Component({
   selector: 'app-inventory-page',
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, ListStateComponent],
   templateUrl: './inventory-page.component.html',
 })
 export class InventoryPageComponent {
@@ -34,10 +33,20 @@ export class InventoryPageComponent {
   // Filtros
   searchTerm = signal('');
   viewFilter = signal<ViewFilter>('all');
-  productCategoryFilter = signal<number | null>(null); // null = todas las categorías
-  
-  // Paginación local
+  productCategoryFilter = signal<number | null>(null);
+
+  // Paginación
   currentPage = signal(1);
+
+  readonly viewTabs: { value: ViewFilter; label: string }[] = [
+    { value: 'all',      label: 'Todos'     },
+    { value: 'products', label: 'Productos' },
+    { value: 'insumos',  label: 'Items'     },
+  ];
+
+  pageNumbers = computed(() =>
+    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
+  );
 
   // Tipos de productos (cargar una sola vez)
   productTypesResource = rxResource({
@@ -248,5 +257,19 @@ export class InventoryPageComponent {
     } else {
       this.router.navigate(['/dashboard/inventory/edit-product', item.id]);
     }
+  }
+
+  /** Clase del tab de vista (Todos / Productos / Items) */
+  viewTabClass(filter: ViewFilter): string {
+    return this.viewFilter() === filter
+      ? 'bg-surface-nav text-white shadow-sm'
+      : 'text-gray-400 hover:text-gray-200 hover:bg-surface-nav/50';
+  }
+
+  /** Clase del botón de categoría de producto */
+  categoryBtnClass(id: number | null): string {
+    return this.productCategoryFilter() === id
+      ? 'bg-brand text-white'
+      : 'bg-background-secondary text-gray-400 hover:text-white hover:bg-surface';
   }
 }

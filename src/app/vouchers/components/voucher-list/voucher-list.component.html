@@ -1,94 +1,60 @@
-<div class="h-full bg-background-light dark:bg-background-dark p-4 sm:p-6">
+<main class="pds-page">
+
   <!-- Header -->
-  <div
-    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"
-  >
+  <div class="pds-page-header">
     <div>
-      <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2">
-        <i class="fa-solid fa-file-invoice text-accent mr-3"></i>
+      <h1 class="pds-page-title">
+        <span class="fa-solid fa-file-invoice text-brand text-xl mr-3"></span>
         Comprobantes Electrónicos
       </h1>
-      <p class="text-gray-400">Visualiza todos los comprobantes generados</p>
+      <p class="pds-page-subtitle">Visualiza todos los comprobantes generados</p>
     </div>
 
-    <div class="flex items-center gap-3">
-      <div class="stats shadow bg-side-background">
-        <div class="stat py-3 px-4">
-          <div class="stat-title text-gray-400 text-xs">Total Comprobantes</div>
-          <div class="stat-value text-accent text-2xl">
-            {{ vouchers().length }}
-          </div>
-        </div>
-      </div>
+    <!-- Stat de total -->
+    <div class="pds-card px-5 py-3 flex flex-col items-center shrink-0">
+      <span class="text-xs text-text-muted uppercase tracking-wider">Total</span>
+      <span class="text-2xl font-bold text-brand font-mono">{{ vouchers().length }}</span>
     </div>
   </div>
 
-  <!-- Tabla de Comprobantes -->
-  <div
-    class="bg-side-background rounded-xl shadow-lg overflow-hidden border border-gray-700"
-  >
-    <div class="overflow-x-auto">
-      <table class="table w-full">
-        <!-- Head -->
-        <thead class="bg-gray-800 border-b border-gray-700">
-          <tr class="text-gray-300">
-            <th class="font-semibold text-center">
-              <div class="flex items-center justify-center gap-2">
-                <i class="fa-solid fa-hashtag text-xs"></i>
-                ID
-              </div>
-            </th>
-            <th class="font-semibold text-center">
-              <div class="flex items-center justify-center gap-2">
-                <i class="fa-solid fa-file-pdf text-xs"></i>
-                Enlace PDF
-              </div>
-            </th>
-            <th class="font-semibold text-center">
-              <div class="flex items-center justify-center gap-2">
-                <i class="fa-solid fa-cog text-xs"></i>
-                Acciones
-              </div>
-            </th>
-          </tr>
-        </thead>
+  <!-- Tabla -->
+  <div class="pds-table-container overflow-x-auto">
+    <table class="pds-table">
+      <thead class="pds-table-head">
+        <tr>
+          <th class="pds-table-th-center">ID</th>
+          <th class="pds-table-th-center">Enlace PDF</th>
+          <th class="pds-table-th-center">Acciones</th>
+        </tr>
+      </thead>
 
-        <!-- Body -->
-        <tbody>
-          @for (voucher of vouchers(); track voucher.id) {
+      <tbody>
+        @for (voucher of vouchers(); track voucher.id) {
           <tr
             app-voucher-list-item
             [voucher]="voucher"
-            class="text-center text-gray-300 hover:bg-gray-800/50 transition-all duration-200 border-b border-gray-700/50"
+            class="pds-table-row text-center"
           ></tr>
-          } @empty {
+        } @empty {
           <tr>
-            <td colspan="3" class="text-center py-16">
-              <div class="flex flex-col items-center gap-4 text-gray-400">
-                <div class="bg-gray-800 rounded-full p-6">
-                  <i
-                    class="fa-solid fa-file-invoice text-5xl text-gray-600"
-                  ></i>
+            <td colspan="3" class="pds-table-empty">
+              <div class="pds-empty">
+                <div class="pds-empty-icon">
+                  <span class="fa-solid fa-file-invoice"></span>
                 </div>
-                <div>
-                  <p class="text-xl font-semibold mb-1">
-                    No se encontraron comprobantes
-                  </p>
-                  <p class="text-sm text-gray-500">
-                    Los comprobantes aparecerán aquí cuando se generen
-                  </p>
-                </div>
+                <p class="font-semibold text-text-secondary">No se encontraron comprobantes</p>
+                <p class="text-xs">Los comprobantes aparecerán aquí cuando se generen</p>
               </div>
             </td>
           </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+        }
+      </tbody>
+    </table>
   </div>
 
   <!-- Paginación -->
-  <div class="mt-6">
+  <div class="mt-5">
     <app-pagination [currentPage]="currentPage()" [pages]="totalPages()" />
   </div>
-</div>
+
+</main>
