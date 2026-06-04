@@ -1,0 +1,73 @@
+<footer class="bg-background-secondary text-text-secondary py-8 mt-auto border-t border-border-subtle">
+  <div class="container mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+      <!-- Restaurante -->
+      <div>
+        <h3 class="text-text-primary font-bold text-lg mb-4 flex items-center gap-2">
+          <span class="fa-solid fa-store text-brand"></span>
+          Punto de Sal
+        </h3>
+        <p class="text-sm text-text-secondary mb-3">
+          Restaurante especializado en ofrecer experiencias gastronómicas únicas
+          con ingredientes de calidad.
+        </p>
+      </div>
+
+      <!-- Links -->
+      <div>
+        <h3 class="text-text-primary font-bold text-lg mb-4 flex items-center gap-2">
+          <span class="fa-solid fa-link text-brand"></span>
+          Enlaces Rápidos
+        </h3>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a routerLink="/about" class="text-text-secondary hover:text-brand transition-colors flex items-center gap-2">
+              <span class="fa-solid fa-chevron-right text-xs text-text-muted"></span>
+              Sobre Nosotros
+            </a>
+          </li>
+          <li>
+            <a routerLink="/terms" class="text-text-secondary hover:text-brand transition-colors flex items-center gap-2">
+              <span class="fa-solid fa-chevron-right text-xs text-text-muted"></span>
+              Términos y Condiciones
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Contacto -->
+      <div>
+        <h3 class="text-text-primary font-bold text-lg mb-4 flex items-center gap-2">
+          <span class="fa-solid fa-address-book text-brand"></span>
+          Contacto
+        </h3>
+        <ul class="space-y-2 text-sm">
+          <li class="flex items-start gap-2">
+            <span class="fa-solid fa-location-dot text-brand mt-0.5 shrink-0"></span>
+            <span class="text-text-secondary">Psje Jamaica 145, Trujillo</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="fa-solid fa-phone text-brand mt-0.5 shrink-0"></span>
+            <span class="text-text-secondary">+51 959 696 977</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="fa-solid fa-envelope text-brand mt-0.5 shrink-0"></span>
+            <span class="text-text-secondary">punto.de.sal25&#64;gmail.com</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Copyright -->
+    <div class="border-t border-border-subtle mt-8 pt-6 flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-text-muted">
+      <p>© {{ currentYear }} Punto de Sal. Todos los derechos reservados.</p>
+      <div class="flex items-center gap-2">
+        <span class="fa-solid fa-book text-brand"></span>
+        <span>Libro de Reclamaciones disponible</span>
+      </div>
+    </div>
+
+  </div>
+</footer>

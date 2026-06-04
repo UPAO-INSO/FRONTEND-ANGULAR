@@ -7,7 +7,9 @@ import {
   ContentOrder,
   OrderStatus,
   RESTOrder,
+  UUID,
 } from '@src/app/orders/interfaces/order.interface';
+import { ServedProductOrder } from '../components/order-card/order-card.component';
 
 enum Direction {
   ASC = 'ASC',
@@ -37,7 +39,7 @@ export class KitchenService {
   envs = environment;
 
   private activeOrdersCache = new Map<string, RESTOrder>();
-  private orderByIdCache = new Map<number, ContentOrder>();
+  private orderByIdCache = new Map<UUID, ContentOrder>();
 
   private readonly CACHE_TTL = 1 * 60 * 1000;
   private cacheTimestamps = new Map<string, number>();
@@ -60,7 +62,7 @@ export class KitchenService {
     this.cacheTimestamps.clear();
   }
 
-  clearOrderCache(orderId: number): void {
+  clearOrderCache(orderId: UUID): void {
     this.orderByIdCache.delete(orderId);
   }
 
@@ -131,7 +133,7 @@ export class KitchenService {
   }
 
   updateOrderStatus(
-    orderId: number,
+    orderId: UUID,
     status: OrderStatus
   ): Observable<ContentOrder[]> {
     return this.http
@@ -155,7 +157,28 @@ export class KitchenService {
       );
   }
 
-  getCachedOrder(orderId: number): ContentOrder | undefined {
+  servedProductOrder(served: ServedProductOrder) {
+    return this.http
+      .patch(`${this.envs.API_URL}/orders/product-orders/serve`, served)
+      .pipe(
+        tap(() => {
+          const cachedOrder = this.orderByIdCache.get(served.orderId);
+          if (cachedOrder) {
+            this.orderByIdCache.set(served.orderId, cachedOrder);
+          }
+
+          this.clearCache();
+        }),
+        catchError((error) => {
+          console.error('Error updating served product order:', error);
+          return throwError(
+            () => new Error('Error al actualizar el producto servido')
+          );
+        })
+      );
+  }
+
+  getCachedOrder(orderId: UUID): ContentOrder | undefined {
     return this.orderByIdCache.get(orderId);
   }
 

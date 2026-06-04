@@ -1,0 +1,36 @@
+<td class="pds-table-td font-mono text-brand font-semibold">#{{ voucher().id }}</td>
+
+<td class="pds-table-td-center">
+  <div class="flex items-center justify-center gap-2">
+    <i class="fa-solid fa-file-pdf text-red-400"></i>
+    <a
+      [href]="voucher().pdfUrl"
+      target="_blank"
+      class="text-brand hover:text-brand-dark underline text-sm truncate max-w-xs transition-colors"
+    >
+      Ver comprobante
+    </a>
+  </div>
+</td>
+
+<td class="pds-table-td-center">
+  <div class="flex items-center justify-center gap-2">
+    <button
+      class="pds-btn-primary btn-sm"
+      (click)="openPdf()"
+      title="Abrir PDF"
+    >
+      <i class="fa-solid fa-external-link text-xs"></i>
+      Abrir
+    </button>
+
+    <button
+      class="pds-btn-secondary btn-sm"
+      (click)="copyLink()"
+      title="Copiar enlace"
+    >
+      <i class="fa-solid fa-copy text-xs"></i>
+      Copiar
+    </button>
+  </div>
+</td>

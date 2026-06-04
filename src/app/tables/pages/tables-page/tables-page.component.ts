@@ -9,6 +9,7 @@ import {
   ContentOrder,
   OrderStatus,
   RequestOrder,
+  UUID,
 } from '@src/app/orders/interfaces/order.interface';
 
 import { PaginationService } from '@shared/components/pagination/pagination.service';
@@ -16,7 +17,8 @@ import { PaginationService } from '@shared/components/pagination/pagination.serv
 import { TableService } from '../../services/table.service';
 import { TableStatus } from '../../interfaces/table.interface';
 import { TableListComponent } from '../../components/table-list/table-list.component';
-import { TableHeaderStatusComponent } from '../../components/table-list/table-header-status/table-header-status.component';
+import { TableHeaderStatusComponent } from '../../components/table-header-status/table-header-status.component';
+import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
 
 @Component({
   selector: 'app-orders-page',
@@ -31,12 +33,15 @@ export class TablesPageComponent {
   tableService = inject(TableService);
   productService = inject(ProductService);
   private orderService = inject(OrderService);
+  private orderSyncService = inject(OrderSyncService);
   paginationService = inject(PaginationService);
 
-  tableStatusEnum = TableStatus;
   selectedTableStatus = signal<TableStatus | null>(null);
   productNameQuery = signal<string | null>(null);
   modifyStatusChanged = signal<boolean>(false);
+  
+  // Error message for user feedback
+  errorMessage = signal<string | null>(null);
 
   private currentTableIds = signal<number[]>([]);
 
@@ -106,27 +111,6 @@ export class TablesPageComponent {
     return ordersByTable;
   });
 
-  productResource = rxResource({
-    params: () => ({ name: this.productNameQuery() }),
-
-    stream: ({ params }) => {
-      if (params.name !== null)
-        return this.productService.fetchProductsByNameContainig(params.name);
-
-      return this.productService
-        .fetchProducts()
-        .pipe(tap((products) => products));
-    },
-  });
-
-  productTypeResource = rxResource({
-    stream: () => {
-      return this.productService
-        .fetchProductsType()
-        .pipe(tap((productTypes) => productTypes));
-    },
-  });
-
   onModifyStatusChanged(status: boolean) {
     this.modifyStatusChanged.set(status);
   }
@@ -136,36 +120,60 @@ export class TablesPageComponent {
   }
 
   onRefresh() {
+    this.tableService.clearCache();
+    this.orderService.clearCache();
     this.tablesResource.reload();
     this.activeOrdersResource.reload();
   }
 
-  onOrderUpdated(id: number, order: ContentOrder) {
+  onOrderUpdated(id: UUID, order: RequestOrder) {
+    this.errorMessage.set(null); // Clear previous errors
+    
     this.orderService.updateOrder(id, order).subscribe({
       next: () => {
         this.refreshResources();
       },
       error: (error) => {
-        console.error('Error creating order:', error);
+        console.error('Error updating order:', error);
+        // Extract error message from backend response
+        const message = error.error?.message || error.message || 'Error al actualizar el pedido';
+        this.errorMessage.set(message);
+        
+        // Auto-clear after 10 seconds
+        setTimeout(() => this.errorMessage.set(null), 10000);
       },
     });
   }
 
   onOrderCreated(orderData: RequestOrder) {
+    this.errorMessage.set(null); // Clear previous errors
+    
     this.orderService.createOrder(orderData).subscribe({
-      next: () => {
+      next: (createdOrder) => {
+        this.orderSyncService.notifyOrderCreated(
+          createdOrder.id,
+          createdOrder.tableId
+        );
+
         this.refreshResources();
       },
       error: (error) => {
         console.error('Error creating order:', error);
+        // Show error message to user
+        const message = error.error?.message || error.message || 'Error al crear el pedido';
+        this.errorMessage.set(message);
+        
+        // Auto-clear after 8 seconds
+        setTimeout(() => this.errorMessage.set(null), 8000);
       },
     });
   }
 
-  onStatusChange(orderId: number, newStatus: OrderStatus) {
+  onStatusChange(orderId: UUID, newStatus: OrderStatus) {
     this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (response) => {
         this.refreshResources();
+        this.orderSyncService.notifyStatusChange(orderId);
       },
       error: (error) => {
         console.error('Error change order:', error);
@@ -174,11 +182,9 @@ export class TablesPageComponent {
   }
 
   private refreshResources() {
-    try {
-      this.tablesResource.reload();
-      this.activeOrdersResource.reload();
-    } catch (error) {
-      this.refreshResources();
-    }
+    this.tableService.clearCache();
+    this.orderService.clearCache();
+    this.tablesResource.reload();
+    this.activeOrdersResource.reload();
   }
 }

@@ -1,0 +1,137 @@
+<main class="pds-page max-w-5xl mx-auto">
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-24">
+      <span class="loading loading-bars loading-lg text-brand"></span>
+      <span class="ml-4 text-text-secondary text-base">Cargando insumo...</span>
+    </div>
+  } @else {
+
+    <!-- Breadcrumb -->
+    <nav class="pds-breadcrumb">
+      <a routerLink="/dashboard/inventory" class="pds-breadcrumb-link">Inventario</a>
+      <span class="pds-breadcrumb-sep fa-solid fa-chevron-right"></span>
+      <a routerLink="/dashboard/inventory" class="pds-breadcrumb-link">Editar Ítem</a>
+      <span class="pds-breadcrumb-sep fa-solid fa-chevron-right"></span>
+      <span class="pds-breadcrumb-current">{{ originalItem()?.name ?? 'Insumo' }}</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="pds-page-header">
+      <h1 class="pds-page-title">Editar: {{ originalItem()?.name ?? 'Insumo' }}</h1>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="pds-alert-error mb-6">
+        <span class="fa-solid fa-exclamation-circle shrink-0"></span>
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Form Card -->
+    <div class="pds-card">
+      <div class="pds-card-body">
+        <form class="flex flex-col gap-6" (submit)="onSubmit($event)">
+
+          <!-- Categoría Badge -->
+          <div class="flex items-center gap-3">
+            <span class="pds-label mb-0">Categoría:</span>
+            <span class="px-3 py-1 rounded-lg bg-brand/20 text-text-primary text-sm font-medium">
+              {{ typeLabels[selectedType()] }}
+            </span>
+          </div>
+
+          <!-- Campos del formulario -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Nombre -->
+            <div class="pds-field">
+              <label class="pds-label" for="item-name">Nombre del insumo</label>
+              <input
+                class="pds-input"
+                id="item-name"
+                [ngModel]="name()"
+                (ngModelChange)="name.set($event)"
+                name="name"
+              />
+            </div>
+
+            <!-- Cantidad y Unidad -->
+            <div class="flex items-end gap-4">
+              <div class="pds-field grow">
+                <label class="pds-label" for="item-quantity">Cantidad actual</label>
+                <input
+                  class="pds-input"
+                  id="item-quantity"
+                  type="number"
+                  min="0"
+                  [step]="quantityStep"
+                  [ngModel]="quantity()"
+                  (ngModelChange)="onQuantityChange($event)"
+                  name="quantity"
+                />
+              </div>
+              <div class="pds-field">
+                <label class="pds-label" for="item-unit">Unidad</label>
+                <div class="relative">
+                  <select
+                    class="pds-select"
+                    id="item-unit"
+                    [ngModel]="selectedUnit()"
+                    (change)="onUnitChange($event)"
+                    name="unit"
+                  >
+                    @for (unit of allowedUnits; track unit) {
+                      <option [value]="unit">{{ unitLabels[unit] }}</option>
+                    }
+                  </select>
+                  <span class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-text-muted text-xs"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-between items-center gap-4 pt-4 border-t border-border">
+            <button
+              type="button"
+              (click)="onDelete()"
+              [disabled]="isDeleting()"
+              class="pds-btn-danger disabled:opacity-50"
+            >
+              @if (isDeleting()) {
+                <span class="loading loading-spinner loading-xs"></span>
+                Eliminando...
+              } @else {
+                <span class="fa-solid fa-trash text-sm"></span>
+                Eliminar Insumo
+              }
+            </button>
+
+            <div class="flex gap-3">
+              <button
+                type="button"
+                (click)="goBack()"
+                class="pds-btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                [disabled]="isSubmitting()"
+                class="pds-btn-primary disabled:opacity-50"
+              >
+                @if (isSubmitting()) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                  Guardando...
+                } @else {
+                  Guardar Cambios
+                }
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</main>

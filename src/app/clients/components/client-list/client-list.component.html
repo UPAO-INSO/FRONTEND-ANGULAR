@@ -1,0 +1,38 @@
+<div
+  class="pds-card cursor-pointer transition-all border-2 {{
+    selectedClient()?.id === client().id
+      ? 'border-brand'
+      : 'border-transparent'
+  }}"
+  (click)="onSelectClient(client())"
+>
+  <div class="pds-card-body">
+    <div class="flex items-start justify-between">
+      <div class="flex-1">
+        <h4 class="pds-card-title text-lg">
+          {{ getClientFullName(client()) }}
+        </h4>
+        <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
+          <div class="pds-info-row">
+            <span class="fa-solid fa-id-card text-text-muted"></span>
+            <span class="text-text-secondary">{{ client().documentNumber }}</span>
+          </div>
+          <div class="pds-info-row">
+            <span class="fa-solid fa-envelope text-text-muted"></span>
+            <span class="text-text-secondary">{{ client().email }}</span>
+          </div>
+          <div class="pds-info-row">
+            <span class="fa-solid fa-phone text-text-muted"></span>
+            <span class="text-text-secondary">{{ client().phone }}</span>
+          </div>
+        </div>
+      </div>
+      @if (selectedClient()?.id === client().id) {
+        <div class="badge bg-brand text-white rounded-lg px-3 py-1 font-medium text-xs">
+          <span class="fa-solid fa-check mr-1"></span>
+          Seleccionado
+        </div>
+      }
+    </div>
+  </div>
+</div>

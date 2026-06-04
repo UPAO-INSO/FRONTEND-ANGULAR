@@ -1,0 +1,49 @@
+<div class="pds-page-header font-display">
+
+  <!-- Título -->
+  <div>
+    <h1 class="pds-page-title flex items-center gap-2">
+      <span class="fa-solid fa-table text-brand"></span>
+      Mesas
+    </h1>
+  </div>
+
+  <!-- Filtros de estado -->
+  <div class="flex items-center gap-1 bg-background-secondary rounded-xl p-1">
+
+    <button
+      class="px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 whitespace-nowrap"
+      [class.bg-surface]="selectedStatus() === null"
+      [class.text-text-primary]="selectedStatus() === null"
+      [class.shadow-sm]="selectedStatus() === null"
+      [class.text-text-muted]="selectedStatus() !== null"
+      (click)="selectStatus(null)"
+    >
+      Todas
+    </button>
+
+    <button
+      class="px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 whitespace-nowrap"
+      [class.bg-surface]="selectedStatus() === tableStatus.AVAILABLE"
+      [class.text-table-available]="selectedStatus() === tableStatus.AVAILABLE"
+      [class.shadow-sm]="selectedStatus() === tableStatus.AVAILABLE"
+      [class.text-text-muted]="selectedStatus() !== tableStatus.AVAILABLE"
+      (click)="selectStatus(tableStatus.AVAILABLE)"
+    >
+      Disponibles
+    </button>
+
+    <button
+      class="px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 whitespace-nowrap"
+      [class.bg-surface]="selectedStatus() === tableStatus.OCCUPIED"
+      [class.text-table-occupied]="selectedStatus() === tableStatus.OCCUPIED"
+      [class.shadow-sm]="selectedStatus() === tableStatus.OCCUPIED"
+      [class.text-text-muted]="selectedStatus() !== tableStatus.OCCUPIED"
+      (click)="selectStatus(tableStatus.OCCUPIED)"
+    >
+      Ocupadas
+    </button>
+
+  </div>
+
+</div>

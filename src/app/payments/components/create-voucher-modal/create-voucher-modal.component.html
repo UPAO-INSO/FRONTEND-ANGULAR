@@ -1,0 +1,160 @@
+@if (isOpen()) {
+  <div class="pds-modal-overlay">
+    <div class="pds-modal max-w-2xl">
+
+      <!-- Header -->
+      <div class="pds-modal-header">
+        <div class="flex items-center gap-3 flex-1">
+          <i class="fa-solid fa-file-invoice text-brand text-xl"></i>
+          <div>
+            <h3 class="pds-modal-title text-lg">Generar Comprobante Electrónico</h3>
+            <p class="text-text-secondary text-sm">Pago #{{ payment().id }}</p>
+          </div>
+        </div>
+        <button
+          (click)="onClose()"
+          class="pds-modal-close"
+        >
+          <span class="fa-solid fa-xmark text-xl"></span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="pds-modal-body space-y-5">
+
+        <!-- Tipo de comprobante -->
+        <div>
+          <p class="pds-label mb-3">Tipo de Comprobante</p>
+          <div class="grid grid-cols-2 gap-4">
+            <button
+              class="btn btn-lg gap-3"
+              [class.pds-btn-primary]="voucherType() === VoucherType.RECEIPT"
+              [class.pds-btn-secondary]="voucherType() !== VoucherType.RECEIPT"
+              (click)="selectVoucherType(VoucherType.RECEIPT)"
+            >
+              <i class="fa-solid fa-receipt text-xl"></i>
+              <div class="text-left">
+                <div class="font-bold">Boleta</div>
+                <div class="text-xs opacity-70">Serie BBB1</div>
+              </div>
+            </button>
+
+            <button
+              class="btn btn-lg gap-3"
+              [class.pds-btn-primary]="voucherType() === VoucherType.INVOICE"
+              [class.pds-btn-secondary]="voucherType() !== VoucherType.INVOICE"
+              (click)="selectVoucherType(VoucherType.INVOICE)"
+            >
+              <i class="fa-solid fa-file-invoice text-xl"></i>
+              <div class="text-left">
+                <div class="font-bold">Factura</div>
+                <div class="text-xs opacity-70">Serie FFF1</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Información del pago -->
+        <div class="pds-info-panel">
+          <p class="pds-section-title">Información del Pago</p>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p class="pds-label">Monto Total</p>
+              <p class="text-text-primary font-semibold text-lg">
+                S/ {{ (payment().amount / 100).toFixed(2) }}
+              </p>
+            </div>
+            <div>
+              <p class="pds-label">Estado</p>
+              <p class="mt-1">
+                <span
+                  class="badge"
+                  [class.badge-success]="payment().state === 'paid'"
+                  [class.badge-warning]="payment().state === 'pending'"
+                >
+                  {{ payment().state }}
+                </span>
+              </p>
+            </div>
+            <div>
+              <p class="pds-label">Fecha de Pago</p>
+              <p class="text-text-primary">{{ payment().paidAt | date : "dd/MM/yyyy HH:mm" }}</p>
+            </div>
+            <div>
+              <p class="pds-label">Método</p>
+              <p class="text-text-primary">{{ getPaymentTypeLabel() }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Productos -->
+        <div class="pds-info-panel">
+          <p class="pds-section-title">Productos ({{ payment().order.productOrders.length }})</p>
+          <div class="max-h-48 overflow-y-auto custom-secondary-scrollbar">
+            <table class="pds-table">
+              <thead class="pds-table-head">
+                <tr>
+                  <th class="pds-table-th">Producto</th>
+                  <th class="pds-table-th-center">Cant.</th>
+                  <th class="pds-table-th text-right">Precio</th>
+                  <th class="pds-table-th text-right">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of payment().order.productOrders; track product.id) {
+                  <tr class="pds-table-row">
+                    <td class="pds-table-td text-sm">{{ product.productName }}</td>
+                    <td class="pds-table-td-center">{{ product.quantity }}</td>
+                    <td class="pds-table-td text-right">S/ {{ product.unitPrice.toFixed(2) }}</td>
+                    <td class="pds-table-td text-right font-semibold">S/ {{ product.subtotal.toFixed(2) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Mensajes -->
+        @if (errorMessage()) {
+          <div class="pds-alert-error">
+            <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        @if (successMessage()) {
+          <div class="pds-alert-info">
+            <i class="fa-solid fa-circle-check shrink-0"></i>
+            <span>{{ successMessage() }}</span>
+          </div>
+        }
+
+      </div>
+
+      <!-- Footer -->
+      <div class="pds-modal-footer">
+        <button
+          class="pds-btn-secondary"
+          (click)="onClose()"
+          [disabled]="isProcessing()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="pds-btn-primary"
+          (click)="generateVoucher()"
+          [disabled]="isProcessing() || payment().state !== 'paid'"
+        >
+          @if (isProcessing()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            Generando...
+          } @else {
+            <i class="fa-solid fa-file-invoice"></i>
+            Generar Comprobante
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

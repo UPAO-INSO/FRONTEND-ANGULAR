@@ -1,0 +1,55 @@
+@if (isOpen()) {
+  <div
+    class="pds-modal-overlay z-60"
+    (click)="onCancel()"
+  >
+    <div
+      class="pds-modal max-w-sm"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div class="pds-modal-header">
+        <span class="fa-solid fa-exclamation-triangle text-amber-400 text-lg shrink-0"></span>
+        <h3 class="pds-modal-title">
+          Confirmar {{ confirmText() }}
+        </h3>
+        <button
+          class="btn btn-ghost btn-xs btn-circle text-text-muted hover:text-text-primary"
+          (click)="onCancel()"
+          aria-label="Cerrar"
+        >
+          <span class="fa-solid fa-xmark text-sm"></span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="pds-modal-body">
+        <p class="text-sm text-text-secondary">
+          ¿Estás seguro de que deseas cambiar el estado de la orden
+          <span class="font-semibold text-text-primary">#{{ orderId() }}</span>?
+        </p>
+        <p class="mt-2 text-xs text-amber-400 font-medium">
+          <span class="fa-solid fa-circle-info mr-1"></span>
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="pds-modal-footer">
+        <button
+          class="btn btn-sm flex-1 sm:flex-none bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-nav transition-all"
+          (click)="onCancel()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn btn-sm flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white border-0 transition-all"
+          (click)="onConfirm()"
+        >
+          <span class="fa-solid fa-check text-xs"></span>
+          Sí, {{ confirmText() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

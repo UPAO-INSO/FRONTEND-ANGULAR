@@ -1,6 +1,9 @@
 import { TitleCasePipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
-import { CartItem } from '@src/app/orders/services/order-cart.service';
+import { Component, computed, inject, input, output } from '@angular/core';
+import {
+  CartItem,
+  OrderCartService,
+} from '@src/app/orders/services/order-cart.service';
 
 @Component({
   selector: 'app-order-summary-item',
@@ -8,15 +11,35 @@ import { CartItem } from '@src/app/orders/services/order-cart.service';
   templateUrl: './order-summary-item.component.html',
 })
 export class OrderSummaryItemComponent {
+  private orderCartService = inject(OrderCartService);
   cartItem = input.required<CartItem>();
 
   updateQuantity = output<number>();
   removeItem = output<void>();
 
+  modificationStatus = computed(() => {
+    const item = this.cartItem();
+    return this.orderCartService.canModifyProduct(item.product.id);
+  });
+
+  isFullyServed = computed(() => {
+    const item = this.cartItem();
+    const servedQty = item.servedQuantity || 0;
+    return servedQty === item.quantity;
+  });
+
+  availableQuantity = computed(() => {
+    const item = this.cartItem();
+    const servedQty = item.servedQuantity || 0;
+    return item.quantity - servedQty;
+  });
+
   onQuantityChange(event: Event) {
     const target = event.target as HTMLInputElement;
     const quantity = parseInt(target.value, 10);
-    if (quantity > 0) {
+    const servedQty = this.cartItem().servedQuantity || 0;
+
+    if (quantity >= servedQty) {
       this.updateQuantity.emit(quantity);
     }
   }
@@ -26,15 +49,21 @@ export class OrderSummaryItemComponent {
   }
 
   decreaseQuantity() {
-    const newQuantity = this.cartItem().quantity - 1;
-    if (newQuantity > 0) {
+    const item = this.cartItem();
+    const servedQty = item.servedQuantity || 0;
+    const newQuantity = item.quantity - 1;
+
+    if (newQuantity > servedQty) {
       this.updateQuantity.emit(newQuantity);
-    } else {
+    } else if (newQuantity === servedQty && servedQty === 0) {
       this.removeItem.emit();
     }
   }
 
   onRemove() {
-    this.removeItem.emit();
+    const servedQty = this.cartItem().servedQuantity || 0;
+    if (servedQty === 0) {
+      this.removeItem.emit();
+    }
   }
 }

@@ -1,0 +1,123 @@
+<main class="pds-page">
+
+  <!-- Header -->
+  <div class="pds-page-header">
+    <div>
+      <h1 class="pds-page-title">
+        <span class="fa-solid fa-credit-card text-brand text-xl mr-3"></span>
+        Pagos
+      </h1>
+      <p class="pds-page-subtitle">Gestiona y visualiza todos los pagos del sistema</p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="pds-card pds-card-body mb-5">
+    <div class="pds-filters mb-0">
+
+      <!-- Búsqueda -->
+      <div class="pds-search">
+        <span class="pds-search-icon fa-solid fa-magnifying-glass"></span>
+        <input
+          type="text"
+          placeholder="Buscar por ID de pago..."
+          class="pds-search-input"
+          [value]="searchQuery()"
+        />
+      </div>
+
+      <!-- Filtro estado -->
+      <div class="relative">
+        <select
+          (change)="onStatusFilterChange($event)"
+          class="pds-filter-select w-full sm:min-w-40"
+        >
+          <option value="" disabled selected>Estado</option>
+          <option value="all">Todos</option>
+          <option value="paid">Pagado</option>
+          <option value="pending">Pendiente</option>
+        </select>
+        <span class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-xs pointer-events-none"></span>
+      </div>
+
+      <!-- Filtro método -->
+      <div class="relative">
+        <select
+          (change)="onPaymentTypeFilterChange($event)"
+          class="pds-filter-select w-full sm:min-w-[180px]"
+        >
+          <option value="" disabled selected>Método de Pago</option>
+          <option value="all">Todos</option>
+          <option value="mobile_wallet">Billetera Digital</option>
+          <option value="cash">Efectivo</option>
+        </select>
+        <span class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-xs pointer-events-none"></span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="pds-table-container overflow-x-auto">
+    <table class="pds-table">
+      <thead class="pds-table-head">
+        <tr>
+          <th class="pds-table-th-center">ID Pago</th>
+          <th class="pds-table-th-center">Fecha</th>
+          <th class="pds-table-th-center">Hora</th>
+          <th class="pds-table-th-center">Monto</th>
+          <th class="pds-table-th-center">Método</th>
+          <th class="pds-table-th-center">Estado</th>
+          <th class="pds-table-th-center">Comprobante</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (payment of payments(); track payment.id) {
+          <tr
+            app-payment-list-item
+            [payment]="payment"
+            (viewDetails)="onViewPaymentDetails($event)"
+            (createVoucher)="onCreateVoucher($event)"
+            class="pds-table-row text-center cursor-pointer group"
+          ></tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="pds-table-empty">
+              <div class="pds-empty">
+                <div class="pds-empty-icon">
+                  <span class="fa-solid fa-receipt"></span>
+                </div>
+                <p class="font-semibold text-text-secondary">No se encontraron pagos</p>
+                <p class="text-xs">Los pagos aparecerán aquí cuando se realicen</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="mt-5">
+    <app-pagination [currentPage]="currentPage()" [pages]="totalPages()" />
+  </div>
+
+</main>
+
+@if (selectedPayment()) {
+  <app-payment-view
+    [payment]="selectedPayment()!"
+    [isOpen]="isModalOpen()"
+    (close)="onCloseModal()"
+  />
+}
+
+@if (selectedPaymentForVoucher()) {
+  <app-create-voucher-modal
+    [payment]="selectedPaymentForVoucher()!"
+    [isOpen]="isVoucherModalOpen()"
+    (close)="onCloseVoucherModal()"
+    (voucherCreated)="onVoucherCreated()"
+  />
+}

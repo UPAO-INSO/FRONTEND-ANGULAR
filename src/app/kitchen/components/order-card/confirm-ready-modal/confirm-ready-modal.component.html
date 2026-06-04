@@ -1,0 +1,52 @@
+@if (isOpen()) {
+  <div
+    class="pds-modal-overlay z-60"
+    (click)="onCancel()"
+  >
+    <div
+      class="pds-modal max-w-sm"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div class="pds-modal-header">
+        <span class="fa-solid fa-circle-check text-status-to-ready text-lg shrink-0"></span>
+        <h3 class="pds-modal-title">Confirmar pedido listo</h3>
+        <button
+          class="btn btn-ghost btn-xs btn-circle text-text-muted hover:text-text-primary"
+          (click)="onCancel()"
+          aria-label="Cerrar"
+        >
+          <span class="fa-solid fa-xmark text-sm"></span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="pds-modal-body">
+        <p class="text-sm text-text-secondary">
+          ¿Está seguro que desea marcar este pedido como listo?
+        </p>
+        <p class="text-xs text-amber-400 font-medium">
+          <span class="fa-solid fa-info-circle mr-1"></span>
+          Todos los platos se marcarán automáticamente como servidos.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="pds-modal-footer">
+        <button
+          class="btn btn-sm bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-nav"
+          (click)="onCancel()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn btn-sm bg-status-to-ready hover:opacity-90 text-white border-0"
+          (click)="onConfirm()"
+        >
+          <span class="fa-solid fa-check text-xs"></span>
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+}

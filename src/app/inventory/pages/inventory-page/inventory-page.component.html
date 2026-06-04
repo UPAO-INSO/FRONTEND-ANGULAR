@@ -1,0 +1,163 @@
+<main class="pds-page">
+
+  <!-- Header -->
+  <div class="pds-page-header">
+    <h1 class="pds-page-title flex items-center gap-2">
+      <span class="fa-solid fa-warehouse text-brand"></span>
+      Inventario
+    </h1>
+
+    <div class="flex gap-2">
+      <a
+        routerLink="/dashboard/inventory/add-insumo"
+        class="pds-btn-secondary btn-sm"
+      >
+        <span class="fa-solid fa-flask text-xs"></span>
+        Añadir Ingrediente
+      </a>
+      <a
+        routerLink="/dashboard/inventory/add-product"
+        class="pds-btn-primary btn-sm"
+      >
+        <span class="fa-solid fa-plus text-xs"></span>
+        Añadir Producto
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="pds-filters">
+
+    <!-- Búsqueda -->
+    <div class="pds-search">
+      <span class="pds-search-icon fa-solid fa-search"></span>
+      <input
+        class="pds-search-input"
+        placeholder="Buscar por nombre..."
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+      />
+    </div>
+
+    <!-- Tabs de vista -->
+    <div class="flex h-10 bg-background rounded-lg border border-border p-1 gap-1">
+      @for (tab of viewTabs; track tab.value) {
+        <button
+          class="flex-1 px-3 rounded-md text-sm font-medium transition-all {{ viewTabClass(tab.value) }}"
+          (click)="setFilter(tab.value)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+  </div>
+
+  <!-- Chips de categoría (solo en vista Productos) -->
+  @if (viewFilter() === 'products') {
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button
+        class="px-3 py-1 rounded-full text-xs font-medium transition-all {{ categoryBtnClass(null) }}"
+        (click)="setCategoryFilter(null)"
+      >
+        Todas las categorías
+      </button>
+      @for (type of productTypes(); track type.id) {
+        <button
+          class="px-3 py-1 rounded-full text-xs font-medium transition-all {{ categoryBtnClass(type.id) }}"
+          (click)="setCategoryFilter(type.id)"
+        >
+          {{ type.name }}
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Tabla -->
+  <div class="pds-table-container">
+
+    <app-list-state
+      [loading]="isLoading()"
+      [empty]="unifiedItems().length === 0"
+      emptyIcon="box-open"
+      emptyTitle="Sin elementos"
+      emptyMessage="No se encontraron resultados para los filtros aplicados"
+      loadingMessage="Cargando inventario..."
+    >
+      <table class="pds-table">
+        <thead class="pds-table-head">
+          <tr>
+            <th scope="col" class="pds-table-th">Nombre</th>
+            <th scope="col" class="pds-table-th">Categoría</th>
+            <th scope="col" class="pds-table-th">Cantidad</th>
+            <th scope="col" class="pds-table-th">Unidad / Precio</th>
+            <th scope="col" class="relative px-4 py-3"><span class="sr-only">Acciones</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of unifiedItems(); track item.id + '-' + item.itemType) {
+            <tr class="pds-table-row">
+              <td class="pds-table-td-primary">{{ item.name }}</td>
+              <td class="pds-table-td">
+                <span class="px-2 py-0.5 rounded-md bg-background text-text-secondary text-xs font-medium">
+                  {{ getCategoryLabel(item) }}
+                </span>
+              </td>
+              <td class="pds-table-td">{{ getQuantityDisplay(item) }}</td>
+              <td class="pds-table-td">{{ getUnitOrPrice(item) }}</td>
+              <td class="px-4 py-3 text-right">
+                <button
+                  (click)="editItem(item)"
+                  class="pds-btn-icon"
+                  title="Editar"
+                >
+                  <span class="fa-solid fa-pen-to-square text-sm"></span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </app-list-state>
+
+  </div>
+
+  <!-- Paginación -->
+  @if (totalPages() > 1) {
+    <div class="flex flex-col items-center gap-2 mt-4">
+
+      <div class="flex items-center gap-1">
+        <button
+          (click)="goToPage(currentPage() - 1)"
+          [disabled]="currentPage() === 1"
+          class="btn btn-sm btn-ghost text-text-secondary hover:text-text-primary disabled:opacity-30"
+        >
+          <span class="fa-solid fa-chevron-left"></span>
+        </button>
+
+        @for (page of pageNumbers(); track page) {
+          <button
+            (click)="goToPage(page)"
+            class="btn btn-sm min-w-9 {{ currentPage() === page ? 'bg-brand text-white border-0' : 'btn-ghost text-text-secondary hover:text-text-primary' }}"
+          >
+            {{ page }}
+          </button>
+        }
+
+        <button
+          (click)="goToPage(currentPage() + 1)"
+          [disabled]="currentPage() === totalPages()"
+          class="btn btn-sm btn-ghost text-text-secondary hover:text-text-primary disabled:opacity-30"
+        >
+          <span class="fa-solid fa-chevron-right"></span>
+        </button>
+      </div>
+
+      <p class="text-xs text-text-muted">
+        Página {{ currentPage() }} de {{ totalPages() }} · {{ allUnifiedItems().length }} elementos
+      </p>
+
+    </div>
+  }
+
+</main>
