@@ -1,168 +1,212 @@
-import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import { User } from '../interfaces/user.interfaces';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '@environments/environment';
+import { Router } from '@angular/router';
+import { catchError, map, Observable, of, tap } from 'rxjs';
+
+import { User } from '../interfaces/user.interfaces';
 import { AuthResponse, Tokens } from '../interfaces/auth-response.interface';
-import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { environment } from '@environments/environment';
 
-type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
-const baseUrl = environment.API_URL;
+export type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
 
-@Injectable({
-  providedIn: 'root',
-})
+const BASE = environment.API_URL;
+
+const ACCESS_TOKEN_KEY  = 'access-token';
+const REFRESH_TOKEN_KEY = 'refresh-token';
+const USER_KEY          = 'user-data';
+
+/** Extrae el campo `exp` (Unix seconds) del payload del JWT sin librerías. */
+function parseTokenExpiry(token: string): number | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private _authStatus = signal('checking');
-  private _user = signal<User | null>(null);
-  private _token = signal<Tokens | null>(null);
-  private _initialized = signal(false);
+  private http   = inject(HttpClient);
+  private router = inject(Router);
 
-  private http = inject(HttpClient);
+  private _status = signal<AuthStatus>('checking');
+  private _user   = signal<User | null>(null);
+  private _tokens = signal<Tokens | null>(null);
 
-  private readonly ACCESS_TOKEN_KEY = 'access-token';
-  private readonly REFRESH_TOKEN_KEY = 'refresh-token';
-  private readonly USER_KEY = 'user-data';
+  readonly authStatus = computed(() => this._status());
+  readonly user       = computed(() => this._user());
+  readonly token      = computed(() => this._tokens());
 
-  private initializationEffect = effect(() => {
-    if (!this._initialized()) {
-      this.initializeFromStorage();
-      this._initialized.set(true);
+  constructor() {
+    this._initFromStorage();
+  }
+
+  // ─── Inicialización ─────────────────────────────────────────────
+
+  private _initFromStorage(): void {
+    const accessToken  = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    const rawUser      = localStorage.getItem(USER_KEY);
+
+    if (!accessToken || !rawUser) {
+      this._status.set('not-authenticated');
+      return;
     }
-  });
 
-  checkStatusResource = rxResource({
-    stream: () => {
-      if (!this._initialized()) {
-        return of(false);
-      }
-      return this.checkStatus();
-    },
-  });
-
-  authStatus = computed<AuthStatus>(() => {
-    if (!this._initialized()) return 'checking';
-
-    if (this._authStatus() === 'checking') return 'checking';
-
-    if (this._user()) return 'authenticated';
-
-    return 'not-authenticated';
-  });
-
-  user = computed(() => this._user());
-  token = computed(() => this._token());
-
-  private initializeFromStorage(): void {
     try {
-      const accessToken = localStorage.getItem(this.ACCESS_TOKEN_KEY);
-      const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-      const userData = localStorage.getItem(this.USER_KEY);
-
-      if (accessToken && userData) {
-        const user = JSON.parse(userData);
-        const tokens: Tokens = {
-          accessToken,
-          refreshToken: refreshToken || '',
-        };
-
-        this._user.set(user);
-        this._token.set(tokens);
-        this._authStatus.set('authenticated');
-      } else {
-        this._authStatus.set('not-authenticated');
-      }
-    } catch (error) {
-      console.error('Error initializing from storage:', error);
-      this.handleAuthError(error);
+      const user = JSON.parse(rawUser) as User;
+      this._user.set(user);
+      this._tokens.set({ accessToken, refreshToken: refreshToken ?? '' });
+      this._status.set('authenticated');
+    } catch {
+      this._clearAuthState();
+      this._status.set('not-authenticated');
     }
   }
+
+  // ─── Tokens — acceso público ─────────────────────────────────────
 
   getAccessToken(): string | null {
-    const tokenFromSignal = this._token()?.accessToken;
-    if (tokenFromSignal) {
-      return tokenFromSignal;
-    }
-
-    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+    return this._tokens()?.accessToken ?? localStorage.getItem(ACCESS_TOKEN_KEY);
   }
 
-  etRefreshToken(): string | null {
-    const tokenFromSignal = this._token()?.refreshToken;
-    if (tokenFromSignal) {
-      return tokenFromSignal;
-    }
-
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+  getRefreshToken(): string | null {
+    return this._tokens()?.refreshToken ?? localStorage.getItem(REFRESH_TOKEN_KEY);
   }
+
+  isAccessTokenExpiringSoon(thresholdMs = 120_000): boolean {
+    const token = this.getAccessToken();
+    if (!token) return true;
+    const expiry = parseTokenExpiry(token);
+    if (!expiry) return true;
+    return expiry - Date.now() < thresholdMs;
+  }
+
+  isAccessTokenExpired(): boolean {
+    const token = this.getAccessToken();
+    if (!token) return true;
+    const expiry = parseTokenExpiry(token);
+    if (!expiry) return true;
+    return Date.now() > expiry;
+  }
+
+  // ─── Auth operations ─────────────────────────────────────────────
 
   login(username: string, password: string): Observable<boolean> {
     return this.http
-      .post<AuthResponse>(`${baseUrl}/auth/login`, {
-        username,
-        password,
-      })
+      .post<AuthResponse>(`${BASE}/auth/login`, { username, password })
       .pipe(
-        map((resp) => this.handleAuthSuccess(resp)),
-        catchError((error: any) => this.handleAuthError(error))
+        map(resp => this._handleSuccess(resp)),
+        catchError(() => {
+          this._clearAuthState();
+          return of(false);
+        })
       );
   }
 
+  /**
+   * Valida el token con el backend.
+   * Solo limpia el estado si falla — NO navega (puede llamarse desde guards).
+   */
   checkStatus(): Observable<boolean> {
     const token = this.getAccessToken();
-
     if (!token) {
-      this.logout();
+      this._clearAuthState();
       return of(false);
     }
 
-    return this.http.get<AuthResponse>(`${baseUrl}/auth/check-status`).pipe(
-      map((resp) => this.handleAuthSuccess(resp)),
-      catchError((error: any) => this.handleAuthError(error))
-    );
+    return this.http
+      .get<AuthResponse>(`${BASE}/auth/check-status`)
+      .pipe(
+        map(resp => this._handleSuccess(resp)),
+        catchError(() => {
+          this._clearAuthState();
+          return of(false);
+        })
+      );
   }
 
-  logout() {
-    this._authStatus.set('not-authenticated');
-    this._user.set(null);
-    this._token.set(null);
+  /**
+   * Intenta renovar el access token con el refresh token.
+   * Solo limpia el estado si falla — NO navega (es llamado desde el interceptor).
+   */
+  refreshAccessToken(): Observable<boolean> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      this._clearAuthState();
+      return of(false);
+    }
 
-    this.clearStorage();
-
-    this.http.post(`${baseUrl}/auth/logout`, {}).pipe(
-      tap((resp) => {
-        console.log({ resp });
-      }),
-      catchError((error) => {
-        console.log({ error });
-
-        return throwError(() => 'No se puedo usar logout');
-      })
-    );
+    return this.http
+      .post<{ accessToken: string; refreshToken: string }>(
+        `${BASE}/auth/refresh-token`,
+        { refreshToken }
+      )
+      .pipe(
+        tap(tokens => {
+          this._tokens.set(tokens);
+          localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
+          if (tokens.refreshToken) {
+            localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+          }
+        }),
+        map(() => true),
+        catchError(() => {
+          this._clearAuthState();  // Solo limpia — el interceptor maneja la navegación
+          return of(false);
+        })
+      );
   }
 
-  private handleAuthSuccess({ tokens, user }: AuthResponse): boolean {
+  /**
+   * Cierra la sesión del usuario.
+   * Limpia el estado Y navega a login. Solo llamar desde acciones explícitas del usuario
+   * o desde el InactivityService — NUNCA desde guards ni interceptores.
+   */
+  logout(): void {
+    const token = this.getAccessToken();
+    this._clearAuthState();
+
+    if (token) {
+      this.http
+        .post(`${BASE}/auth/logout`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .subscribe({ error: () => {} });
+    }
+
+    this.router.navigateByUrl('/auth/login');
+  }
+
+  // ─── Helpers privados ────────────────────────────────────────────
+
+  private _handleSuccess({ tokens, user }: AuthResponse): boolean {
     this._user.set(user);
-    this._authStatus.set('authenticated');
-    this._token.set(tokens);
+    this._tokens.set(tokens);
+    this._status.set('authenticated');
 
-    localStorage.setItem(this.ACCESS_TOKEN_KEY, tokens.accessToken);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, tokens.refreshToken);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    localStorage.setItem(ACCESS_TOKEN_KEY,  tokens.accessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
 
     return true;
   }
 
-  private handleAuthError(error: any): Observable<boolean> {
-    console.log({ error });
-
-    this.logout();
-    return of(false);
+  /**
+   * Solo limpia el estado en memoria y localStorage.
+   * No navega — úsalo en guards e interceptores.
+   */
+  private _clearAuthState(): void {
+    this._status.set('not-authenticated');
+    this._user.set(null);
+    this._tokens.set(null);
+    this._clearStorage();
   }
 
-  private clearStorage(): void {
-    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+  private _clearStorage(): void {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
   }
 }

@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
+import { InactivityService } from '@shared/services/inactivity.service';
 import { environment } from '@src/environments/environment';
 
 @Component({
@@ -18,7 +19,8 @@ export class LoginPageComponent {
 
   envs = environment;
 
-  private authService = inject(AuthService);
+  private authService   = inject(AuthService);
+  private inactivity    = inject(InactivityService);
   router = inject(Router);
 
   loginForm = this.fb.group({
@@ -53,6 +55,7 @@ export class LoginPageComponent {
       .login(username!, password!)
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
+          this.inactivity.start();
           this.router.navigateByUrl('/dashboard');
           return;
         }
