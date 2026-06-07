@@ -8,6 +8,7 @@ import { AuthResponse, Tokens } from '../interfaces/auth-response.interface';
 import { environment } from '@environments/environment';
 
 export type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
+export type SessionAlertType = 'none' | 'inactivity' | 'invalidated';
 
 const BASE = environment.API_URL;
 
@@ -30,13 +31,16 @@ export class AuthService {
   private http   = inject(HttpClient);
   private router = inject(Router);
 
-  private _status = signal<AuthStatus>('checking');
-  private _user   = signal<User | null>(null);
-  private _tokens = signal<Tokens | null>(null);
+  private _status      = signal<AuthStatus>('checking');
+  private _user        = signal<User | null>(null);
+  private _tokens      = signal<Tokens | null>(null);
+  private _sessionAlert = signal<SessionAlertType>('none');
 
-  readonly authStatus = computed(() => this._status());
-  readonly user       = computed(() => this._user());
-  readonly token      = computed(() => this._tokens());
+  readonly authStatus   = computed(() => this._status());
+  readonly user         = computed(() => this._user());
+  readonly token        = computed(() => this._tokens());
+  /** Tipo de alerta de sesión activa ('none' = sin alerta) */
+  readonly sessionAlert = computed(() => this._sessionAlert());
 
   constructor() {
     this._initFromStorage();
@@ -162,11 +166,12 @@ export class AuthService {
   /**
    * Cierra la sesión del usuario.
    * Limpia el estado Y navega a login. Solo llamar desde acciones explícitas del usuario
-   * o desde el InactivityService — NUNCA desde guards ni interceptores.
+   * (botón logout, confirmación de modal).
    */
   logout(): void {
     const token = this.getAccessToken();
     this._clearAuthState();
+    this._sessionAlert.set('none');
 
     if (token) {
       this.http
@@ -176,6 +181,31 @@ export class AuthService {
         .subscribe({ error: () => {} });
     }
 
+    this.router.navigateByUrl('/auth/login');
+  }
+
+  /**
+   * Llamado por InactivityService cuando expira por inactividad.
+   * Limpia el estado pero NO navega — muestra modal para que el usuario confirme.
+   */
+  expireByInactivity(): void {
+    this._clearAuthState();
+    this._sessionAlert.set('inactivity');
+  }
+
+  /**
+   * Llamado por el interceptor cuando el refresh token falla (sesión revocada
+   * desde otro dispositivo o pestaña).
+   * Limpia el estado pero NO navega — muestra modal informativo.
+   */
+  invalidateFromExternal(): void {
+    this._clearAuthState();
+    this._sessionAlert.set('invalidated');
+  }
+
+  /** El usuario reconoció la alerta → navegar a login y limpiar alerta. */
+  acknowledgeExpiry(): void {
+    this._sessionAlert.set('none');
     this.router.navigateByUrl('/auth/login');
   }
 
