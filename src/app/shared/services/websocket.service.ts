@@ -1,6 +1,6 @@
-import { Injectable, NgZone, signal } from '@angular/core';
+import { inject, Injectable, NgZone, signal } from '@angular/core';
 import { Subject } from 'rxjs';
-import { CompatClient, Stomp } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { environment } from '@environments/environment';
 import { RESTChangeStatusCulqiOrder } from '../interfaces/culqi.interface';
@@ -20,7 +20,7 @@ export interface WsOrderEvent {
 export interface WsTableEvent {
   type: 'TABLE_STATUS_CHANGED';
   tableId: number;
-  tableStatus: string;   // AVAILABLE | OCCUPIED | RESERVED
+  tableStatus: string;
   timestamp: string;
 }
 
@@ -37,15 +37,17 @@ export interface WsProductEvent {
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
-  private client!: CompatClient;
+  private ngZone = inject(NgZone);
+
+  private client!: Client;
+  private subscriptions: StompSubscription[] = [];
   private reconnectAttempts = 0;
-  private readonly MAX_RECONNECT = 5;
+  private readonly MAX_RECONNECT = 8;
   private readonly RECONNECT_BASE_MS = 3000;
-  private reconnectTimer?: ReturnType<typeof setTimeout>;
 
   readonly connectionStatus = signal<WsConnectionStatus>('disconnected');
 
-  // ── Streams públicos ────────────────────────────────────────────
+  // ── Streams públicos (Subject emite dentro de NgZone) ──────────
   readonly orderEvents$   = new Subject<WsOrderEvent>();
   readonly tableEvents$   = new Subject<WsTableEvent>();
   readonly productEvents$ = new Subject<WsProductEvent>();
@@ -58,35 +60,70 @@ export class WebSocketService {
   // ── Conexión ────────────────────────────────────────────────────
 
   connect(): void {
-    if (this.client?.connected) return;
+    if (this.client?.active) return;
 
     this.connectionStatus.set('connecting');
 
-    const socket = new SockJS(`${environment.WS_URL}/api/ws`);
-    this.client = Stomp.over(socket);
-    this.client.debug = () => {};  // deshabilitar logs verbosos
+    /**
+     * Usar @stomp/stompjs Client moderno (no el CompatClient deprecado).
+     * webSocketFactory retorna un SockJS que maneja fallbacks automáticamente.
+     * Todas las callbacks se envuelven en NgZone.run() para que Angular
+     * detecte los cambios en modo Zoneless.
+     */
+    this.client = new Client({
+      webSocketFactory: () => new SockJS(`${environment.WS_URL}/api/ws`),
 
-    this.client.connect(
-      {},
-      () => this._onConnected(),
-      (err: any) => this._onError(err),
-    );
+      onConnect: () => {
+        this.ngZone.run(() => {
+          this.connectionStatus.set('connected');
+          this.reconnectAttempts = 0;
+          this._subscribe();
+        });
+      },
+
+      onStompError: (frame) => {
+        this.ngZone.run(() => {
+          console.error('STOMP error:', frame.headers['message']);
+          this.connectionStatus.set('error');
+        });
+      },
+
+      onDisconnect: () => {
+        this.ngZone.run(() => {
+          this.connectionStatus.set('disconnected');
+        });
+      },
+
+      onWebSocketError: (evt) => {
+        this.ngZone.run(() => {
+          console.warn('WebSocket error:', evt);
+          this.connectionStatus.set('error');
+        });
+      },
+
+      // Reconexión automática con backoff
+      reconnectDelay: 5000,
+
+      // Silenciar logs en producción
+      debug: environment.production ? () => {} : (msg) => console.debug('[WS]', msg),
+    });
+
+    // Activar fuera de la zona para no impactar change detection con heartbeats
+    this.ngZone.runOutsideAngular(() => this.client.activate());
   }
 
   disconnect(): void {
-    clearTimeout(this.reconnectTimer);
-    if (this.client?.connected) {
-      this.client.disconnect(() => this.connectionStatus.set('disconnected'));
-    }
+    this.client?.deactivate();
+    this.subscriptions = [];
+    this.connectionStatus.set('disconnected');
   }
 
   isConnected(): boolean {
-    return !!this.client?.connected;
+    return this.client?.connected ?? false;
   }
 
   // ── Publicar desde frontend → backend ──────────────────────────
 
-  /** Envía un cambio de disponibilidad de producto al backend. */
   sendProductAvailability(productId: number, available: boolean, updatedBy: string): boolean {
     if (!this.isConnected()) return false;
     const event: WsProductEvent = {
@@ -97,35 +134,29 @@ export class WebSocketService {
       updatedBy,
       timestamp: new Date().toISOString(),
     };
-    this.client.send('/app/product-update', {}, JSON.stringify(event));
+    this.client.publish({ destination: '/app/product-update', body: JSON.stringify(event) });
     return true;
   }
 
   // ── Privados ─────────────────────────────────────────────────────
 
-  private _onConnected(): void {
-    this.connectionStatus.set('connected');
-    this.reconnectAttempts = 0;
+  private _subscribe(): void {
+    // Limpiar suscripciones previas
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions = [];
 
-    this.client.subscribe('/topic/orders',   msg => this._emit(msg.body, this.orderEvents$));
-    this.client.subscribe('/topic/tables',   msg => this._emit(msg.body, this.tableEvents$));
-    this.client.subscribe('/topic/products', msg => this._emit(msg.body, this.productEvents$));
-    this.client.subscribe('/topic/culqi-order', msg => this._emit(msg.body, this.culqiEvents$));
-  }
+    const sub = (dest: string, handler: (msg: IMessage) => void) => {
+      // Callbacks de mensajes deben correr DENTRO de NgZone para Zoneless
+      const s = this.client.subscribe(dest, (msg) => {
+        this.ngZone.run(() => handler(msg));
+      });
+      this.subscriptions.push(s);
+    };
 
-  private _onError(err: any): void {
-    this.connectionStatus.set('error');
-    this._scheduleReconnect();
-  }
-
-  private _scheduleReconnect(): void {
-    if (this.reconnectAttempts >= this.MAX_RECONNECT) {
-      this.connectionStatus.set('error');
-      return;
-    }
-    this.reconnectAttempts++;
-    const delay = this.RECONNECT_BASE_MS * this.reconnectAttempts;
-    this.reconnectTimer = setTimeout(() => this.connect(), delay);
+    sub('/topic/orders',      msg => this._emit(msg.body, this.orderEvents$));
+    sub('/topic/tables',      msg => this._emit(msg.body, this.tableEvents$));
+    sub('/topic/products',    msg => this._emit(msg.body, this.productEvents$));
+    sub('/topic/culqi-order', msg => this._emit(msg.body, this.culqiEvents$));
   }
 
   private _emit<T>(body: string, subject: Subject<T>): void {

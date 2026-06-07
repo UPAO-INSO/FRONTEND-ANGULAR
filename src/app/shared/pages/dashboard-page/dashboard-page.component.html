@@ -16,15 +16,30 @@
   >
     <!-- Logo / Brand -->
     <div class="flex items-center gap-3 px-4 py-4 border-b border-border shrink-0">
-      <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0">
-        <span class="fa-solid fa-utensils text-white text-xs"></span>
+      <div class="relative w-8 h-8 shrink-0">
+        <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
+          <span class="fa-solid fa-utensils text-white text-xs"></span>
+        </div>
+        <!-- Indicador de conexión WebSocket -->
+        <span
+          class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-surface"
+          [class.bg-status-ready]="wsService.connectionStatus() === 'connected'"
+          [class.bg-status-pending]="wsService.connectionStatus() === 'connecting'"
+          [class.bg-status-cancelled]="wsService.connectionStatus() === 'error' || wsService.connectionStatus() === 'disconnected'"
+          [class.animate-pulse]="wsService.connectionStatus() === 'connecting'"
+          [title]="'WebSocket: ' + wsService.connectionStatus()"
+        ></span>
       </div>
       <div class="min-w-0">
         <p class="text-sm font-bold text-text-primary truncate leading-tight">
           {{ envs.companyName }}
         </p>
-        <p class="text-[10px] text-brand font-medium truncate">
-          {{ envs.companyName2 }}
+        <p class="text-[10px] font-medium truncate"
+           [class.text-status-ready]="wsService.connectionStatus() === 'connected'"
+           [class.text-status-pending]="wsService.connectionStatus() === 'connecting'"
+           [class.text-status-cancelled]="wsService.connectionStatus() === 'error' || wsService.connectionStatus() === 'disconnected'"
+        >
+          {{ wsService.connectionStatus() === 'connected' ? 'Tiempo real activo' : wsService.connectionStatus() }}
         </p>
       </div>
     </div>
@@ -121,5 +136,11 @@
     </main>
 
   </div>
+
+  <!-- Notificaciones en tiempo real (WebSocket) -->
+  <app-notifications />
+
+  <!-- Advertencia de inactividad + modal de sesión expirada -->
+  <app-session-warning />
 
 </div>
