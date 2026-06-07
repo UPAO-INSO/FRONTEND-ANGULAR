@@ -1,0 +1,139 @@
+<div class="h-full flex flex-col font-display">
+
+  <!-- Header -->
+  <div class="pds-modal-header">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-brand/15 flex items-center justify-center shrink-0">
+        <i class="fa-solid fa-utensils text-brand text-sm"></i>
+      </div>
+      <div>
+        <h1 class="pds-modal-title">Menú del Día</h1>
+        <p class="text-xs text-text-muted">Porciones estimadas para hoy</p>
+      </div>
+    </div>
+    <button class="pds-modal-close" (click)="close()" aria-label="Cerrar">
+      <span class="fa-solid fa-xmark"></span>
+    </button>
+  </div>
+
+  <!-- Feedback -->
+  @if (saveOk()) {
+    <div class="mx-5 mt-3 flex items-center gap-2 bg-teal-500/10 border border-teal-500/30
+                text-teal-400 px-4 py-2.5 rounded-lg text-sm">
+      <i class="fa-solid fa-check shrink-0"></i> Menú guardado correctamente.
+    </div>
+  }
+  @if (saveError()) {
+    <div class="mx-5 mt-3 pds-alert-error">
+      <i class="fa-solid fa-triangle-exclamation shrink-0"></i>
+      {{ saveError() }}
+    </div>
+  }
+
+  <!-- Tip -->
+  <div class="mx-5 mt-3 pds-alert-info text-xs">
+    <i class="fa-solid fa-circle-info shrink-0"></i>
+    <span>
+      Muestra los platos con <strong>disponible activo</strong> en cocina.
+      Ingresa las porciones estimadas para controlar separaciones.
+      Deja en <strong>0</strong> para sin límite.
+    </span>
+  </div>
+
+  <!-- Lista de productos -->
+  <div class="flex-1 overflow-y-auto custom-dropdown-scrollbar px-5 py-4">
+
+    @if (isLoading()) {
+      <div class="flex flex-col items-center justify-center py-16">
+        <span class="loading loading-bars loading-md text-brand mb-2"></span>
+        <span class="text-text-secondary text-sm">Cargando productos...</span>
+      </div>
+    } @else if (products().length === 0) {
+      <div class="flex flex-col items-center gap-3 py-16 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-background-secondary flex items-center justify-center">
+          <i class="fa-solid fa-utensils text-2xl text-text-muted"></i>
+        </div>
+        <div>
+          <p class="font-medium text-text-primary">Sin platos disponibles</p>
+          <p class="text-xs text-text-muted mt-1">
+            Activa productos desde el panel <strong>Productos</strong> en cocina
+          </p>
+        </div>
+      </div>
+    } @else {
+
+      <!-- Header de columnas -->
+      <div class="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-3 mb-2 text-xs font-ui text-text-muted">
+        <span>Producto</span>
+        <span class="text-center w-14">Usadas</span>
+        <span class="text-center w-14">Restantes</span>
+        <span class="text-center w-20">Estimadas</span>
+      </div>
+
+      <div class="space-y-2">
+        @for (p of products(); track p.id) {
+          <div class="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center
+                      px-3 py-3 rounded-xl bg-background-secondary border border-border
+                      hover:border-border/80 transition-colors">
+
+            <!-- Nombre + tipo -->
+            <div class="min-w-0">
+              <p class="text-sm font-ui text-text-primary truncate">{{ p.name }}</p>
+              <p class="text-xs text-text-muted">{{ p.productTypeName }}</p>
+            </div>
+
+            <!-- Usadas hoy -->
+            <div class="w-14 text-center">
+              <span class="font-mono text-sm" [class]="getUsed(p.id) > 0 ? 'text-brand' : 'text-text-muted'">
+                {{ getUsed(p.id) }}
+              </span>
+            </div>
+
+            <!-- Restantes (null = sin límite) -->
+            <div class="w-14 text-center">
+              @if (getRemaining(p.id) === null) {
+                <span class="text-xs text-text-muted">—</span>
+              } @else if (getRemaining(p.id) === 0) {
+                <span class="text-xs text-red-400 font-semibold">Agot.</span>
+              } @else {
+                <span class="font-mono text-sm text-teal-400">{{ getRemaining(p.id) }}</span>
+              }
+            </div>
+
+            <!-- Input porciones estimadas -->
+            <div class="w-20">
+              <input type="number" min="0" step="1"
+                     class="input input-sm w-full bg-background border border-border
+                            text-text-primary text-center font-mono focus:border-brand
+                            focus:outline-none transition-colors"
+                     placeholder="0"
+                     [(ngModel)]="portionInputs[p.id]" />
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Footer -->
+  <div class="px-5 py-4 border-t border-border flex items-center justify-between gap-3">
+    <p class="text-xs text-text-muted">
+      {{ products().length }} plato(s) disponible(s) hoy
+    </p>
+    <div class="flex gap-2">
+      <button class="btn btn-sm btn-ghost text-text-secondary" (click)="close()">
+        Cancelar
+      </button>
+      <button class="btn btn-sm bg-brand text-white border-none hover:bg-brand/80"
+              [disabled]="saving() || isLoading()"
+              (click)="save()">
+        @if (saving()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        } @else {
+          <i class="fa-solid fa-floppy-disk"></i>
+        }
+        Guardar porciones
+      </button>
+    </div>
+  </div>
+</div>

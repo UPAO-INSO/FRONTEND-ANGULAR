@@ -1,58 +1,109 @@
-<section class="flex justify-between items-center p-6 pb-4 shrink-0 font-display">
+<header class="shrink-0 bg-surface border-b border-border font-display">
 
-  <div class="flex flex-row gap-4">
-    <div class="pds-search w-40">
+  <!-- ── Fila 1: título + KPI chips ──────────────────────────────── -->
+  <div class="flex items-center justify-between gap-3 px-4 pt-3 pb-2">
+
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="fa-solid fa-fire-burner text-brand text-lg shrink-0"></span>
+      <h1 class="text-base font-bold text-text-primary truncate">Cocina KDS</h1>
+    </div>
+
+    <!-- KPI chips — compactos para no robar espacio en el KDS -->
+    <div class="flex items-center gap-1.5 flex-wrap justify-end">
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
+                   bg-status-pending/10 text-status-pending">
+        <span class="fa-solid fa-hourglass-half text-[10px]"></span>
+        {{ pendingCount() }} Pend.
+      </span>
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
+                   bg-status-preparing/10 text-status-preparing">
+        <span class="fa-solid fa-fire text-[10px]"></span>
+        {{ preparingCount() }} En prep.
+      </span>
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
+                   bg-status-ready/10 text-status-ready">
+        <span class="fa-solid fa-bell text-[10px]"></span>
+        {{ readyCount() }} Listos
+      </span>
+    </div>
+
+  </div>
+
+  <!-- ── Fila 2: controles ────────────────────────────────────────── -->
+  <div class="flex flex-wrap items-center gap-2 px-4 pb-3">
+
+    <!-- Búsqueda por mesa -->
+    <div class="pds-search w-36 shrink-0">
       <span class="pds-search-icon fa-solid fa-magnifying-glass"></span>
-      <app-search-table-input (value)="tableNumberValue($event)" />
+      <app-search-table-input class="contents" (value)="tableNumberValue($event)" />
     </div>
 
-    <button
-      class="pds-btn-secondary btn-sm py-5 shadow-lg"
-      (click)="onSelectedButton()"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 2048 2048" class="shrink-0">
-        <path fill="currentColor" d="M1024 1000v959l-64 32l-832-415V536l832-416l832 416v744h-128V680zm-64-736L719 384l621 314l245-122zm-64 1552v-816L256 680v816zM335 576l625 312l238-118l-622-314zm1073 1216v-128h640v128zm0-384h640v128h-640zm-256 640v-128h128v128zm0-512v-128h128v128zm0 256v-128h128v128zm-128 24h1zm384 232v-128h640v128z"/>
-      </svg>
-      <span class="pt-0.5">Productos</span>
-    </button>
-  </div>
-
-  <div class="flex flex-row justify-center">
-    <app-pagination [pages]="totalPages()!" [currentPage]="currentPage()!" />
-  </div>
-
-  <div class="flex items-center gap-4">
-    <button
-      class="pds-btn-secondary btn-sm py-5 shadow-lg"
-      (click)="onRefresh()"
-      [disabled]="isLoading()"
-    >
-      <span
-        class="fa-solid fa-refresh text-status-to-preparation"
-        [class.animate-spin]="isLoading()"
-      ></span>
-      Recargar
-    </button>
-
-    <div class="badge bg-active-orders text-text-primary rounded-lg font-bold py-4">
-      {{ activeOrdersCount() }} órdenes activas
+    <!-- Paginación -->
+    <div class="flex-1 flex justify-center min-w-32">
+      <app-pagination [pages]="totalPages()" [currentPage]="currentPage()" />
     </div>
+
+    <!-- Botones -->
+    <div class="flex items-center gap-2 shrink-0">
+
+      <button
+        class="pds-btn-secondary btn-sm gap-1.5"
+        (click)="onOpenMenuDiario()"
+        title="Gestionar porciones del menú de hoy"
+      >
+        <span class="fa-solid fa-utensils text-xs text-brand"></span>
+        <span class="hidden sm:inline">Menú del Día</span>
+      </button>
+
+      <button
+        class="pds-btn-secondary btn-sm gap-1.5"
+        (click)="onSelectedButton()"
+      >
+        <span class="fa-solid fa-box-open text-xs"></span>
+        <span class="hidden sm:inline">Productos</span>
+      </button>
+
+      <button
+        class="pds-btn-secondary btn-sm gap-1.5"
+        (click)="onRefresh()"
+        [disabled]="isLoading()"
+      >
+        <span
+          class="fa-solid fa-rotate-right text-status-to-preparation text-xs"
+          [class.animate-spin]="isLoading()"
+        ></span>
+        <span class="hidden sm:inline">Recargar</span>
+      </button>
+    </div>
+
   </div>
 
-  <!-- Modal de productos -->
-  @if (modalStatus()) {
-    <div class="pds-modal-overlay z-60">
-      <div class="pds-modal max-w-5xl h-[calc(100vh-8rem)] min-h-[600px] p-2 sm:p-4">
-        <div class="w-full h-full">
-          <app-change-status-product
-            [productTypes]="productTypes()"
-            [refreshTrigger]="refreshTrigger()"
-            (updateProductStaus)="onProductStatusUpdated($event)"
-            (closeModal)="onCloseModal()"
-          />
-        </div>
+</header>
+
+<!-- Modal: Productos -->
+@if (modalStatus()) {
+  <div class="pds-modal-overlay z-60">
+    <div class="pds-modal max-w-5xl h-[calc(100vh-8rem)] min-h-[600px] p-2 sm:p-4">
+      <div class="w-full h-full">
+        <app-change-status-product
+          [productTypes]="productTypes()"
+          [refreshTrigger]="refreshTrigger()"
+          (updateProductStaus)="onProductStatusUpdated($event)"
+          (closeModal)="onCloseModal()"
+        />
       </div>
     </div>
-  }
+  </div>
+}
 
-</section>
+<!-- Modal: Menú del Día -->
+@if (showMenuDiario()) {
+  <div class="pds-modal-overlay z-60" (click)="onCloseMenuDiario()">
+    <div class="pds-modal max-w-2xl h-[calc(100vh-8rem)] min-h-[500px] p-2 sm:p-4"
+         (click)="$event.stopPropagation()">
+      <div class="w-full h-full">
+        <app-menu-diario-modal (closeModal)="onCloseMenuDiario()" />
+      </div>
+    </div>
+  </div>
+}
