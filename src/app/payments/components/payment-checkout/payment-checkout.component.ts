@@ -240,9 +240,14 @@ export class PaymentCheckoutComponent {
     const request = this.paymentRequest();
     const customerInfo = this.getCustomerInfo();
 
-    if (!customerInfo) {
+    if (
+      !customerInfo?.first_name ||
+      !customerInfo?.last_name ||
+      !customerInfo?.email ||
+      !customerInfo?.phone_number
+    ) {
       this.errorMessage.set(
-        'Selecciona un cliente o proporciona información del cliente',
+        'Selecciona un cliente para continuar con el pago',
       );
       return;
     }
