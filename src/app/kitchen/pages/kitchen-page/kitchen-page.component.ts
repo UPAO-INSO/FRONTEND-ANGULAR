@@ -32,8 +32,12 @@ export default class KitchenPageComponent {
   currentPage = computed(() => this.paginationService.currentPage());
 
   constructor() {
-    this.orderSyncService.orderUpdates$.subscribe((update) => {
-      this.onRefresh();
+    this.orderSyncService.orderUpdates$.subscribe(update => {
+      // Siempre refrescar al crear una orden (local o remota)
+      // Para otros tipos, solo refrescar si viene de otro usuario
+      if (update.type === 'created' || update.remote) {
+        this.onRefresh();
+      }
     });
   }
 
@@ -67,7 +71,6 @@ export default class KitchenPageComponent {
     this.productService.updateProduct(product).subscribe({
       next: () => {
         this.refreshProductsTrigger.set(this.refreshProductsTrigger() + 1);
-        this.productService.sendMessage();
       },
       error: (error) => {
         console.error('Error updating product status:', error);

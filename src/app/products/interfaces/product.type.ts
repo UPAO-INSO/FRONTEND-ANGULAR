@@ -40,6 +40,8 @@ export interface Product {
   productTypeId: number;
   productTypeName: string;
   imageUrl?: string;
+  /** Stock actual para bebidas/descartables (null para platos). */
+  stock?: number | null;
 }
 
 export interface RESTProduct {
@@ -61,6 +63,7 @@ export interface RestProductContent {
   active: boolean;
   available: boolean;
   imageUrl?: string;
+  stock?: number | null;
 }
 
 /**

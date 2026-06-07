@@ -19,6 +19,7 @@ import { TableStatus } from '../../interfaces/table.interface';
 import { TableListComponent } from '../../components/table-list/table-list.component';
 import { TableHeaderStatusComponent } from '../../components/table-header-status/table-header-status.component';
 import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
+import { TableSyncService } from '@src/app/shared/services/table-sync.service';
 
 @Component({
   selector: 'app-orders-page',
@@ -34,14 +35,28 @@ export class TablesPageComponent {
   productService = inject(ProductService);
   private orderService = inject(OrderService);
   private orderSyncService = inject(OrderSyncService);
+  private tableSyncService = inject(TableSyncService);
   paginationService = inject(PaginationService);
 
   selectedTableStatus = signal<TableStatus | null>(null);
   productNameQuery = signal<string | null>(null);
   modifyStatusChanged = signal<boolean>(false);
-  
-  // Error message for user feedback
   errorMessage = signal<string | null>(null);
+
+  constructor() {
+    // Refrescar cuando otro usuario crea/modifica/cambia estado de un pedido
+    this.orderSyncService.orderUpdates$.subscribe(update => {
+      if (update.remote) {
+        this.refreshResources();
+      }
+    });
+    // Refrescar cuando cambia el estado de una mesa (otro usuario)
+    this.tableSyncService.tableUpdates$.subscribe(update => {
+      if (update.remote) {
+        this.refreshResources();
+      }
+    });
+  }
 
   private currentTableIds = signal<number[]>([]);
 
@@ -99,6 +114,10 @@ export class TablesPageComponent {
       return this.orderService.fetchOrderByTablesIds(params.tableIds, {});
     },
   });
+
+  tablesLoadError = computed(() =>
+    (this.tablesResource.error() as Error | undefined)?.message ?? null
+  );
 
   activeOrdersByTable = computed(() => {
     const orders = this.activeOrdersResource.value() || [];

@@ -1,100 +1,9 @@
 <div class="flex h-screen bg-background overflow-hidden font-display">
 
-  <!-- ── Overlay móvil ──────────────────────────────────────────── -->
-  @if (sidebarOpen()) {
-    <div
-      class="fixed inset-0 bg-overlay z-40 lg:hidden"
-      (click)="closeSidebar()"
-    ></div>
-  }
+  <!-- Sidebar -->
+  <app-sidebar [isOpen]="sidebarOpen()" (closed)="closeSidebar()" />
 
-  <!-- ── Sidebar ────────────────────────────────────────────────── -->
-  <aside
-    class="fixed lg:static inset-y-0 left-0 z-50 w-60 bg-surface border-r border-border flex flex-col
-           transition-transform duration-300 ease-in-out
-           {{ sidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0' }}"
-  >
-    <!-- Logo / Brand -->
-    <div class="flex items-center gap-3 px-4 py-4 border-b border-border shrink-0">
-      <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0">
-        <span class="fa-solid fa-utensils text-white text-xs"></span>
-      </div>
-      <div class="min-w-0">
-        <p class="text-sm font-bold text-text-primary truncate leading-tight">
-          {{ envs.companyName }}
-        </p>
-        <p class="text-[10px] text-brand font-medium truncate">
-          {{ envs.companyName2 }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Navegación -->
-    <nav class="flex-1 px-2 py-3 overflow-y-auto custom-scrollbar space-y-0.5">
-      @for (link of visibleLinks(); track link.route) {
-        <a
-          [routerLink]="link.route"
-          routerLinkActive="bg-background text-text-primary font-semibold"
-          [routerLinkActiveOptions]="{ exact: link.exact }"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-text-secondary
-                 hover:bg-background hover:text-text-primary transition-all duration-150 group"
-          (click)="closeSidebar()"
-        >
-          <span class="{{ link.icon }} {{ link.color }} text-sm w-4 text-center shrink-0"></span>
-          <span class="truncate">{{ link.label }}</span>
-        </a>
-      }
-    </nav>
-
-    <!-- Footer del sidebar: tema + usuario + logout -->
-    <div class="px-2 py-3 border-t border-border space-y-0.5 shrink-0">
-
-      <!-- Toggle de tema -->
-      <button
-        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-text-secondary
-               hover:bg-background hover:text-text-primary transition-all duration-150"
-        (click)="themeService.toggle()"
-      >
-        @if (themeService.theme() === 'dark') {
-          <span class="fa-solid fa-sun text-amber-400 text-sm w-4 text-center shrink-0"></span>
-          <span>Modo Claro</span>
-        } @else {
-          <span class="fa-solid fa-moon text-brand text-sm w-4 text-center shrink-0"></span>
-          <span>Modo Oscuro</span>
-        }
-      </button>
-
-      <!-- Info del usuario -->
-      @if (currentUser) {
-        <div class="flex items-center gap-3 px-3 py-2 rounded-lg">
-          <div class="w-7 h-7 bg-brand/15 rounded-full flex items-center justify-center shrink-0">
-            <span class="fa-solid fa-user text-brand text-xs"></span>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-xs font-semibold text-text-primary truncate">
-              {{ currentUser.username }}
-            </p>
-            <p class="text-[10px] text-text-muted truncate capitalize">
-              {{ currentUser.jobTitle }}
-            </p>
-          </div>
-        </div>
-      }
-
-      <!-- Logout -->
-      <button
-        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-text-secondary
-               hover:bg-red-500/8 hover:text-red-400 transition-all duration-150"
-        (click)="onLogout()"
-      >
-        <span class="fa-solid fa-right-from-bracket text-sm w-4 text-center shrink-0"></span>
-        <span>Cerrar Sesión</span>
-      </button>
-
-    </div>
-  </aside>
-
-  <!-- ── Área principal ─────────────────────────────────────────── -->
+  <!-- Área principal -->
   <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
     <!-- Top bar móvil -->
@@ -121,5 +30,11 @@
     </main>
 
   </div>
+
+  <!-- Notificaciones en tiempo real (WebSocket) -->
+  <app-notifications />
+
+  <!-- Advertencia de inactividad + modal de sesión expirada -->
+  <app-session-warning />
 
 </div>

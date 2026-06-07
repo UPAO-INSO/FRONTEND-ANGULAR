@@ -7,7 +7,7 @@ import {
   PaymentType,
   RESTPayment,
 } from '../interfaces/payments.inteface';
-import { catchError, map, tap, throwError } from 'rxjs';
+import { catchError, map, of, tap, throwError } from 'rxjs';
 
 interface Options {
   limit?: number;
@@ -56,6 +56,13 @@ export class PaymentsService {
     payments.forEach((payment) => {
       this.paymentByIdCache.set(payment.id, payment);
     });
+  }
+
+  /** Busca el pago asociado a una orden. Retorna null si no existe (404). */
+  getPaymentByOrderId(orderId: string) {
+    return this.http
+      .get<ContentPayment>(`${environment.API_URL}/payments/by-order/${orderId}`)
+      .pipe(catchError(() => of(null)));
   }
 
   createPayment(payment: CreatePaymentRequest) {

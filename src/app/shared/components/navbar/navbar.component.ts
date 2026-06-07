@@ -32,77 +32,76 @@ export class NavbarComponent {
   themeService = inject(ThemeService);
   envs = environment;
 
-  userJobTitle = signal<string>('');
+  userRole = signal<string>('');
 
   allMenuOptions: MenuOption[] = [
     {
       icon: 'fa-solid fa-list-check',
       label: 'Mesas',
       sublabel: 'Seleccionar mesa',
-      route: '/dashboard/tables',
-      allowedRoles: ['mesero', 'gerente'],
+      route: '/tables',
+      allowedRoles: ['MESERO', 'CAJERO', 'GERENTE'],
     },
     {
       icon: 'fa-solid fa-table-list',
       label: 'Pedidos',
       sublabel: 'Revisa tus pedidos',
-      route: '/dashboard/orders',
-      allowedRoles: ['gerente', 'cocina'],
+      route: '/orders',
+      allowedRoles: ['MESERO', 'CAJERO', 'COCINERO', 'GERENTE'],
     },
     {
       icon: 'fa-solid fa-file-invoice',
       label: 'Facturación',
       sublabel: 'Comprueba tus facturas',
-      route: '/dashboard/vouchers',
-      allowedRoles: ['administrador', 'gerente', 'cajero'],
+      route: '/vouchers',
+      allowedRoles: ['CAJERO', 'GERENTE'],
     },
     {
       icon: 'fa-solid fa-briefcase',
       label: 'Inventario',
       sublabel: 'Gestiona tu inventario',
-      route: '/dashboard/inventory',
-      allowedRoles: ['gerente', 'cocinero'],
+      route: '/inventory',
+      allowedRoles: ['GERENTE', 'COCINERO'],
     },
     {
       icon: 'fa-solid fa-cash-register',
       label: 'Pagos',
       sublabel: 'Valida tus pagos',
-      route: '/dashboard/payments',
-      allowedRoles: ['gerente', 'cajero'],
+      route: '/payments',
+      allowedRoles: ['CAJERO', 'GERENTE'],
     },
     {
       icon: 'fa-solid fa-utensils',
       label: 'Cocina',
       sublabel: 'Gestiona los pedidos en cocina',
-      route: '/dashboard/kitchen',
-      allowedRoles: ['cocinero', 'gerente'],
+      route: '/kitchen',
+      allowedRoles: ['COCINERO', 'GERENTE'],
     },
   ];
 
   menuOptions = computed(() => {
-    const jobTitle = this.userJobTitle().toLowerCase();
-    if (!jobTitle) return [];
+    const role = this.userRole().toUpperCase();
+    if (!role) return [];
+    // ADMINISTRADOR ve todas las opciones del menú
+    if (role === 'ADMINISTRADOR') return this.allMenuOptions;
     return this.allMenuOptions.filter(opt =>
-      !opt.allowedRoles?.length ||
-      opt.allowedRoles.some(r =>
-        r.toLowerCase() === jobTitle || jobTitle.includes(r.toLowerCase())
-      )
+      !opt.allowedRoles?.length || opt.allowedRoles.includes(role)
     );
   });
 
   constructor() {
-    this.loadUserJobTitle();
+    this.loadUserRole();
   }
 
-  private loadUserJobTitle() {
+  private loadUserRole() {
     try {
       const raw = localStorage.getItem('user-data');
       if (raw) {
         const data: UserData = JSON.parse(raw);
-        this.userJobTitle.set(data.jobTitle || data.role || '');
+        this.userRole.set(data.role || '');
       }
     } catch {
-      this.userJobTitle.set('');
+      this.userRole.set('');
     }
   }
 

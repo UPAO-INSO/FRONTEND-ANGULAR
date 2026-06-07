@@ -1,174 +1,169 @@
-import { Injectable, signal } from '@angular/core';
-import { CompatClient, Stomp } from '@stomp/stompjs';
+import { inject, Injectable, NgZone, signal } from '@angular/core';
+import { Subject } from 'rxjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { Subject, BehaviorSubject } from 'rxjs';
 import { environment } from '@environments/environment';
-import { WebSocketMessage } from '@shared/interfaces/websocket-message.interface';
 import { RESTChangeStatusCulqiOrder } from '../interfaces/culqi.interface';
 
-export interface ProductUpdateMessage {
-  type: 'PRODUCT_UPDATE';
-  productId: number;
-  available: boolean;
+// ── Event types ───────────────────────────────────────────────────
+
+export type WsConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+
+export interface WsOrderEvent {
+  type: 'ORDER_CREATED' | 'ORDER_UPDATED' | 'ORDER_STATUS_CHANGED' | 'PRODUCT_SERVED';
+  orderId: string;
+  tableId: number;
+  orderStatus: string;
   timestamp: string;
-  updatedBy: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+export interface WsTableEvent {
+  type: 'TABLE_STATUS_CHANGED';
+  tableId: number;
+  tableStatus: string;
+  timestamp: string;
+}
+
+export interface WsProductEvent {
+  type: 'PRODUCT_AVAILABILITY';
+  productId: number;
+  productName: string;
+  available: boolean;
+  timestamp: string;
+  updatedBy?: string;
+}
+
+// ── Service ───────────────────────────────────────────────────────
+
+@Injectable({ providedIn: 'root' })
 export class WebSocketService {
-  private stompClient!: CompatClient;
+  private ngZone = inject(NgZone);
+
+  private client!: Client;
+  private subscriptions: StompSubscription[] = [];
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private envs = environment;
+  private readonly MAX_RECONNECT = 8;
+  private readonly RECONNECT_BASE_MS = 3000;
 
-  connectionStatus = signal<
-    'connected' | 'disconnected' | 'connecting' | 'error'
-  >('disconnected');
+  readonly connectionStatus = signal<WsConnectionStatus>('disconnected');
 
-  private productUpdateSubject =
-    new BehaviorSubject<ProductUpdateMessage | null>(null);
-  productUpdates$ = this.productUpdateSubject.asObservable();
-
-  private culqiOrderUpdateSubject = new Subject<RESTChangeStatusCulqiOrder>();
-  culqiOrderUpdates$ = this.culqiOrderUpdateSubject.asObservable();
-
-  private messageSubject = new Subject<any>();
-  messages$ = this.messageSubject.asObservable();
+  // ── Streams públicos (Subject emite dentro de NgZone) ──────────
+  readonly orderEvents$   = new Subject<WsOrderEvent>();
+  readonly tableEvents$   = new Subject<WsTableEvent>();
+  readonly productEvents$ = new Subject<WsProductEvent>();
+  readonly culqiEvents$   = new Subject<RESTChangeStatusCulqiOrder>();
 
   constructor() {
-    this.initConnectionSocket();
+    this.connect();
   }
 
-  initConnectionSocket() {
-    const url = `${this.envs.WS_URL}/api/ws`;
-    const socket = new SockJS(url);
-    this.stompClient = Stomp.over(socket);
+  // ── Conexión ────────────────────────────────────────────────────
 
-    this.stompClient.debug = (str) => {
-      console.log('STOMP:', str);
-    };
+  connect(): void {
+    if (this.client?.active) return;
 
-    this.stompClient.connect(
-      {},
-      (frame: any) => {
-        console.log('WebSocket connected successfully:', frame);
-        this.connectionStatus.set('connected');
-        this.reconnectAttempts = 0;
-        this.subscribeToProductUpdates();
-        this.subscribeToCulqiOrderUpdates();
+    this.connectionStatus.set('connecting');
+
+    /**
+     * Usar @stomp/stompjs Client moderno (no el CompatClient deprecado).
+     * webSocketFactory retorna un SockJS que maneja fallbacks automáticamente.
+     * Todas las callbacks se envuelven en NgZone.run() para que Angular
+     * detecte los cambios en modo Zoneless.
+     */
+    this.client = new Client({
+      webSocketFactory: () => new SockJS(`${environment.WS_URL}/api/ws`),
+
+      onConnect: () => {
+        this.ngZone.run(() => {
+          this.connectionStatus.set('connected');
+          this.reconnectAttempts = 0;
+          this._subscribe();
+        });
       },
-      (error: any) => this.onError(error),
-    );
-  }
 
-  private onError(error: any) {
-    console.error('WebSocket connection error:', error);
-    this.connectionStatus.set('error');
-    this.attemptReconnect();
-  }
+      onStompError: (frame) => {
+        this.ngZone.run(() => {
+          console.error('STOMP error:', frame.headers['message']);
+          this.connectionStatus.set('error');
+        });
+      },
 
-  private subscribeToProductUpdates() {
-    this.stompClient.subscribe('/topic/product-updates', (message) => {
-      try {
-        const productUpdate: ProductUpdateMessage = JSON.parse(message.body);
-        console.log('Product update received via WebSocket:', productUpdate);
-        this.productUpdateSubject.next(productUpdate);
-      } catch (error) {
-        console.error('Error parsing product update:', error);
-      }
+      onDisconnect: () => {
+        this.ngZone.run(() => {
+          this.connectionStatus.set('disconnected');
+        });
+      },
+
+      onWebSocketError: (evt) => {
+        this.ngZone.run(() => {
+          console.warn('WebSocket error:', evt);
+          this.connectionStatus.set('error');
+        });
+      },
+
+      // Reconexión automática con backoff
+      reconnectDelay: 5000,
+
+      // Silenciar logs en producción
+      debug: environment.production ? () => {} : (msg) => console.debug('[WS]', msg),
     });
+
+    // Activar fuera de la zona para no impactar change detection con heartbeats
+    this.ngZone.runOutsideAngular(() => this.client.activate());
   }
 
-  private subscribeToCulqiOrderUpdates() {
-    this.stompClient.subscribe('/topic/culqi-order', (message) => {
-      try {
-        const orderUpdate: RESTChangeStatusCulqiOrder = JSON.parse(
-          message.body,
-        );
-        console.log('Culqi order update received:', orderUpdate);
-        this.culqiOrderUpdateSubject.next(orderUpdate);
-      } catch (error) {
-        console.error('Error parsing Culqi order update:', error);
-      }
-    });
-  }
-
-  private attemptReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      console.log(
-        `Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`,
-      );
-
-      setTimeout(() => {
-        this.initConnectionSocket();
-      }, 3000 * this.reconnectAttempts);
-    } else {
-      console.log('Max reconnection attempts reached');
-      this.connectionStatus.set('error');
-    }
+  disconnect(): void {
+    this.client?.deactivate();
+    this.subscriptions = [];
+    this.connectionStatus.set('disconnected');
   }
 
   isConnected(): boolean {
-    return this.stompClient && this.stompClient.connected;
+    return this.client?.connected ?? false;
   }
 
-  sendProductUpdate(productId: number, available: boolean, userId: string) {
-    if (this.isConnected()) {
-      const message: ProductUpdateMessage = {
-        type: 'PRODUCT_UPDATE',
-        productId,
-        available,
-        timestamp: new Date().toISOString(),
-        updatedBy: userId,
-      };
+  // ── Publicar desde frontend → backend ──────────────────────────
 
-      // Enviar a /app/product-update que será procesado por el backend
-      this.stompClient.send('/app/product-update', {}, JSON.stringify(message));
-      console.log('Product update sent via WebSocket:', message);
-
-      return true;
-    } else {
-      console.log('Cannot send product update - WebSocket not connected');
-      console.log('Current status:', this.connectionStatus());
-
-      this.attemptReconnect();
-      return false;
-    }
+  sendProductAvailability(productId: number, available: boolean, updatedBy: string): boolean {
+    if (!this.isConnected()) return false;
+    const event: WsProductEvent = {
+      type: 'PRODUCT_AVAILABILITY',
+      productId,
+      productName: '',
+      available,
+      updatedBy,
+      timestamp: new Date().toISOString(),
+    };
+    this.client.publish({ destination: '/app/product-update', body: JSON.stringify(event) });
+    return true;
   }
 
-  joinRoom(roomId: string) {
-    this.stompClient.connect({}, () => {
-      this.stompClient.subscribe(`/topic/${roomId}`, (messages: any) => {
-        const messageContent = JSON.parse(messages.body);
-        console.log(messageContent);
+  // ── Privados ─────────────────────────────────────────────────────
+
+  private _subscribe(): void {
+    // Limpiar suscripciones previas
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions = [];
+
+    const sub = (dest: string, handler: (msg: IMessage) => void) => {
+      // Callbacks de mensajes deben correr DENTRO de NgZone para Zoneless
+      const s = this.client.subscribe(dest, (msg) => {
+        this.ngZone.run(() => handler(msg));
       });
-    });
+      this.subscriptions.push(s);
+    };
+
+    sub('/topic/orders',      msg => this._emit(msg.body, this.orderEvents$));
+    sub('/topic/tables',      msg => this._emit(msg.body, this.tableEvents$));
+    sub('/topic/products',    msg => this._emit(msg.body, this.productEvents$));
+    sub('/topic/culqi-order', msg => this._emit(msg.body, this.culqiEvents$));
   }
 
-  sendMessage(roomId: string, message: WebSocketMessage) {
-    if (this.isConnected()) {
-      this.stompClient.send(
-        `/app/sendMessage/${roomId}`,
-        {},
-        JSON.stringify(message),
-      );
-
-      return true;
-    } else {
-      console.log('Cannot send message - WebSocket not connected');
-      return false;
-    }
-  }
-
-  disconnect() {
-    if (this.stompClient && this.stompClient.connected) {
-      this.stompClient.disconnect(() => {
-        console.log('🔌 WebSocket disconnected');
-        this.connectionStatus.set('disconnected');
-      });
+  private _emit<T>(body: string, subject: Subject<T>): void {
+    try {
+      subject.next(JSON.parse(body) as T);
+    } catch {
+      // ignorar mensajes malformados
     }
   }
 }

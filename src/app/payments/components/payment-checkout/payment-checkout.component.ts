@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { CulqiService } from '@shared/services/culqi.service';
 import { ClientSelectorComponent } from '@src/app/clients/components/client-selector/client-selector.component';
 import { Client } from '@src/app/clients/interfaces/client.interface';
-import { filter, Subscription, timeInterval } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 import {
   CreateCulqiOrder,
   RESTCulqiOrder,
@@ -105,12 +105,12 @@ export class PaymentCheckoutComponent {
     this.isListeningForPayment.set(true);
     console.log('Listening for payment updates for order:', culqiOrderId);
 
-    this.wsSubscription = this.websocketService.culqiOrderUpdates$
+    this.wsSubscription = this.websocketService.culqiEvents$
       .pipe(
         filter(
           (update): update is RESTChangeStatusCulqiOrder =>
-            !!update && update.id === culqiOrderId
-        )
+            !!update && update.id === culqiOrderId,
+        ),
       )
       .subscribe({
         next: (update) => {
@@ -226,7 +226,7 @@ export class PaymentCheckoutComponent {
 
     if (!customerInfo) {
       this.errorMessage.set(
-        'Selecciona un cliente o proporciona información del cliente'
+        'Selecciona un cliente o proporciona información del cliente',
       );
       return;
     }
@@ -242,7 +242,7 @@ export class PaymentCheckoutComponent {
 
     if (!customerInfo) {
       this.errorMessage.set(
-        'Selecciona un cliente o proporciona información del cliente'
+        'Selecciona un cliente o proporciona información del cliente',
       );
       return;
     }
@@ -251,14 +251,14 @@ export class PaymentCheckoutComponent {
 
     if (amountInCents < 600) {
       this.errorMessage.set(
-        'El monto mínimo para billeteras móviles es S/ 6.00'
+        'El monto mínimo para billeteras móviles es S/ 6.00',
       );
       return;
     }
 
     if (amountInCents > 50000) {
       this.errorMessage.set(
-        'El monto máximo para billeteras móviles es S/ 500.00'
+        'El monto máximo para billeteras móviles es S/ 500.00',
       );
       return;
     }
@@ -287,7 +287,7 @@ export class PaymentCheckoutComponent {
   onProcessPaymentWallet(
     request: CreateCulqiOrder,
     customerInfo: ClientDetailsRequest,
-    amountInCents: number
+    amountInCents: number,
   ) {
     const orderRequest = {
       ...request,

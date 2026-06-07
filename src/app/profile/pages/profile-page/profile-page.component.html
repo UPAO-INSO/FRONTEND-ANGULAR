@@ -1,0 +1,221 @@
+<div class="min-h-screen bg-background p-4 sm:p-8">
+  <div class="max-w-2xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center gap-3">
+      <a routerLink="/dashboard" class="pds-btn-icon" title="Volver">
+        <i class="fa-solid fa-arrow-left text-sm"></i>
+      </a>
+      <h1 class="text-2xl font-display font-bold text-text-primary">Mi perfil</h1>
+    </div>
+
+    @if (loading()) {
+      <div class="flex justify-center py-16">
+        <span class="loading loading-spinner loading-lg text-brand"></span>
+      </div>
+    } @else if (loadError()) {
+      <div class="bg-surface border border-border rounded-2xl p-8 text-center space-y-3">
+        <span class="fa-solid fa-triangle-exclamation text-status-cancelled text-3xl"></span>
+        <p class="text-sm text-text-secondary">{{ loadError() }}</p>
+        <button (click)="reload()" class="pds-btn-secondary btn-sm">
+          <span class="fa-solid fa-rotate-right mr-1.5"></span>Reintentar
+        </button>
+      </div>
+    } @else {
+      @if (profile(); as p) {
+
+        <!-- Avatar card -->
+        <div class="bg-surface border border-border rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-5">
+          <div class="flex-shrink-0 w-20 h-20 rounded-full bg-brand flex items-center justify-center text-3xl font-display font-bold text-white select-none">
+            {{ initials }}
+          </div>
+          <div class="text-center sm:text-left">
+            <p class="text-xl font-display font-bold text-text-primary">
+              {{ p.name }} {{ p.lastname }}
+            </p>
+            <p class="text-sm text-text-secondary mt-0.5">
+              {{ roleLabel(p.role) }}
+              @if (p.jobTitle) { · {{ jobLabel(p.jobTitle) }} }
+            </p>
+            <p class="text-xs text-text-muted mt-1">
+              <i class="fa-regular fa-clock mr-1"></i>Último acceso: {{ formatDate(p.lastLogin) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Información personal -->
+        <div class="bg-surface border border-border rounded-2xl p-6 space-y-4">
+          <h2 class="text-base font-display font-semibold text-text-primary">Información personal</h2>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-ui text-text-secondary">Nombre</label>
+              <input
+                [(ngModel)]="personal.name"
+                type="text"
+                placeholder="Nombre"
+                class="pds-input"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-ui text-text-secondary">Apellido</label>
+              <input
+                [(ngModel)]="personal.lastname"
+                type="text"
+                placeholder="Apellido"
+                class="pds-input"
+              />
+            </div>
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="text-xs font-ui text-text-secondary">Teléfono</label>
+              <input
+                [(ngModel)]="personal.phone"
+                type="tel"
+                placeholder="Ej: 987654321"
+                class="pds-input"
+              />
+            </div>
+          </div>
+
+          @if (personalState().success) {
+            <p class="text-xs text-status-ready font-ui">{{ personalState().success }}</p>
+          }
+          @if (personalState().error) {
+            <p class="text-xs text-status-cancelled font-ui">{{ personalState().error }}</p>
+          }
+
+          <button
+            (click)="savePersonal()"
+            [disabled]="personalState().loading"
+            class="pds-btn-primary btn-sm"
+          >
+            @if (personalState().loading) {
+              <span class="loading loading-spinner loading-xs"></span>
+            }
+            Guardar cambios
+          </button>
+        </div>
+
+        <!-- Cuenta -->
+        <div class="bg-surface border border-border rounded-2xl p-6 space-y-5">
+          <h2 class="text-base font-display font-semibold text-text-primary">Cuenta</h2>
+
+          <!-- Username -->
+          <div class="space-y-2">
+            <label class="text-xs font-ui text-text-secondary">Nombre de usuario</label>
+            <div class="flex gap-2">
+              <input
+                [(ngModel)]="newUsername"
+                type="text"
+                placeholder="username"
+                class="pds-input flex-1"
+              />
+              <button
+                (click)="saveUsername()"
+                [disabled]="usernameState().loading"
+                class="pds-btn-secondary btn-sm shrink-0"
+              >
+                @if (usernameState().loading) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                } @else {
+                  Guardar
+                }
+              </button>
+            </div>
+            @if (usernameState().success) {
+              <p class="text-xs text-status-ready font-ui">{{ usernameState().success }}</p>
+            }
+            @if (usernameState().error) {
+              <p class="text-xs text-status-cancelled font-ui">{{ usernameState().error }}</p>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="space-y-2">
+            <label class="text-xs font-ui text-text-secondary">Correo electrónico</label>
+            <div class="flex gap-2">
+              <input
+                [(ngModel)]="newEmail"
+                type="email"
+                placeholder="correo@ejemplo.com"
+                class="pds-input flex-1"
+              />
+              <button
+                (click)="saveEmail()"
+                [disabled]="emailState().loading"
+                class="pds-btn-secondary btn-sm shrink-0"
+              >
+                @if (emailState().loading) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                } @else {
+                  Guardar
+                }
+              </button>
+            </div>
+            @if (emailState().success) {
+              <p class="text-xs text-status-ready font-ui">{{ emailState().success }}</p>
+            }
+            @if (emailState().error) {
+              <p class="text-xs text-status-cancelled font-ui">{{ emailState().error }}</p>
+            }
+          </div>
+        </div>
+
+        <!-- Cambiar contraseña -->
+        <div class="bg-surface border border-border rounded-2xl p-6 space-y-4">
+          <h2 class="text-base font-display font-semibold text-text-primary">Cambiar contraseña</h2>
+
+          <div class="space-y-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-ui text-text-secondary">Contraseña actual</label>
+              <input
+                [(ngModel)]="password.currentPassword"
+                type="password"
+                placeholder="••••••••"
+                class="pds-input"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-ui text-text-secondary">Nueva contraseña</label>
+              <input
+                [(ngModel)]="password.newPassword"
+                type="password"
+                placeholder="••••••••"
+                class="pds-input"
+              />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-ui text-text-secondary">Confirmar nueva contraseña</label>
+              <input
+                [(ngModel)]="password.confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                class="pds-input"
+              />
+            </div>
+          </div>
+
+          @if (passwordState().success) {
+            <p class="text-xs text-status-ready font-ui">{{ passwordState().success }}</p>
+          }
+          @if (passwordState().error) {
+            <p class="text-xs text-status-cancelled font-ui">{{ passwordState().error }}</p>
+          }
+
+          <button
+            (click)="savePassword()"
+            [disabled]="passwordState().loading"
+            class="pds-btn-primary btn-sm"
+          >
+            @if (passwordState().loading) {
+              <span class="loading loading-spinner loading-xs"></span>
+            }
+            Cambiar contraseña
+          </button>
+        </div>
+
+      }
+    }
+
+  </div>
+</div>

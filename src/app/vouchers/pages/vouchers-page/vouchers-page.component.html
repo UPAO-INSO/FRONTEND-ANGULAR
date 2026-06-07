@@ -1,1 +1,339 @@
-<app-voucher-list [vouchers]="vouchersResource.value() ?? []" />
+<main class="pds-page">
+
+  <!-- ── Header ───────────────────────────────────────────────────── -->
+  <app-page-header
+    icon="fa-solid fa-file-invoice"
+    title="Comprobantes Electrónicos"
+    subtitle="Boletas y facturas generadas vía Nubefact"
+  />
+
+  <!-- ── KPI cards ────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <app-kpi-card
+      icon="fa-solid fa-file-invoice"
+      label="Total"
+      [value]="totalItems()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-receipt"
+      iconColor="text-blue-400"
+      iconBg="bg-blue-500/10"
+      label="Boletas"
+      [value]="totalBoletas()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-building"
+      iconColor="text-purple-400"
+      iconBg="bg-purple-500/10"
+      label="Facturas"
+      [value]="totalFacturas()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-sack-dollar"
+      label="Monto total"
+      [value]="'S/ ' + (totalMonto() | number:'1.2-2')"
+      valueColor="text-brand"
+    />
+  </div>
+
+  <!-- ── Error (prioridad sobre loading) ─────────────────────────── -->
+  @if (vouchersResource.error()) {
+    <div class="pds-alert-error">
+      <span class="fa-solid fa-triangle-exclamation shrink-0"></span>
+      No se pudieron cargar los comprobantes. Verifica la conexión con el servidor.
+    </div>
+  }
+
+  <!-- ── Loading ──────────────────────────────────────────────────── -->
+  @else if (vouchersResource.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-bars loading-lg text-brand"></span>
+    </div>
+  }
+
+  <!-- ── Lista de comprobantes ────────────────────────────────────── -->
+  @else if (vouchers().length > 0) {
+    <div class="space-y-3">
+      @for (v of vouchers(); track v.id) {
+        <div class="pds-card px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-brand/30 transition-all">
+
+          <!-- Tipo badge + Serie-Número -->
+          <div class="flex items-center gap-3 sm:w-44 shrink-0">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0
+                        {{ v.voucherType === 'RECEIPT' ? 'bg-blue-500/10' : 'bg-purple-500/10' }}">
+              <span class="fa-solid text-sm
+                           {{ v.voucherType === 'RECEIPT' ? 'fa-receipt text-blue-400' : 'fa-building text-purple-400' }}">
+              </span>
+            </div>
+            <div>
+              <span class="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-0.5
+                           {{ v.voucherType === 'RECEIPT'
+                              ? 'bg-blue-500/10 text-blue-400'
+                              : 'bg-purple-500/10 text-purple-400' }}">
+                {{ getVoucherLabel(v) }}
+              </span>
+              <p class="text-sm font-mono font-bold text-text-primary">
+                {{ getSerieNumero(v) }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Fecha -->
+          <div class="sm:w-36 shrink-0">
+            <p class="text-xs text-text-muted mb-0.5">Emisión</p>
+            <p class="text-sm text-text-primary">
+              {{ v.issuedAt | date:'dd/MM/yyyy' }}
+            </p>
+            <p class="text-xs text-text-muted font-mono">
+              {{ v.issuedAt | date:'HH:mm' }}
+            </p>
+          </div>
+
+          <!-- Totales -->
+          <div class="sm:w-44 shrink-0">
+            <div class="flex justify-between text-xs text-text-muted mb-0.5">
+              <span>Gravada</span>
+              <span class="font-mono">S/ {{ v.totalGravada | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between text-xs text-text-muted mb-0.5">
+              <span>IGV ({{ v.igvPercentage }}%)</span>
+              <span class="font-mono">S/ {{ v.totalIgv | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold text-text-primary border-t border-border/50 pt-1">
+              <span>Total</span>
+              <span class="font-mono text-brand">S/ {{ v.total | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Observaciones -->
+          <div class="flex-1 min-w-0 hidden md:block">
+            @if (v.observations) {
+              <p class="text-xs text-text-muted mb-0.5">Observaciones</p>
+              <p class="text-sm text-text-secondary truncate">{{ v.observations }}</p>
+            } @else {
+              <p class="text-xs text-text-muted italic">Sin observaciones</p>
+            }
+            @if (v.paymentId) {
+              <p class="text-xs text-text-muted mt-1">
+                <span class="fa-solid fa-link text-[10px] mr-1"></span>
+                Pago #{{ v.paymentId }}
+              </p>
+            }
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex items-center gap-2 shrink-0 flex-wrap">
+            <!-- Preview -->
+            <button
+              class="btn btn-sm bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-nav gap-1.5 transition-all"
+              (click)="openPreview(v)"
+              title="Vista previa"
+            >
+              <span class="fa-solid fa-eye text-xs"></span>
+              <span class="hidden sm:inline">Preview</span>
+            </button>
+
+            <!-- Ver PDF -->
+            <button
+              class="pds-btn-primary btn-sm gap-1.5"
+              (click)="openPdf(v)"
+              title="Abrir PDF"
+            >
+              <span class="fa-solid fa-file-pdf text-xs"></span>
+              PDF
+            </button>
+
+            <!-- Copiar link -->
+            <button
+              class="btn btn-sm bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-nav gap-1.5 transition-all"
+              (click)="copyLink(v)"
+              title="Copiar enlace"
+            >
+              <span class="fa-solid fa-copy text-xs"></span>
+            </button>
+          </div>
+
+        </div>
+      }
+    </div>
+
+    <!-- Paginación -->
+    <div class="mt-5">
+      <app-pagination [currentPage]="paginationService.currentPage()" [pages]="totalPages()" />
+    </div>
+  }
+
+  <!-- ── Empty ─────────────────────────────────────────────────────── -->
+  @else {
+    <div class="pds-empty py-16">
+      <div class="pds-empty-icon">
+        <span class="fa-solid fa-file-invoice"></span>
+      </div>
+      <p class="font-semibold text-text-secondary">No hay comprobantes generados</p>
+      <p class="text-xs">Los comprobantes aparecerán aquí cuando se generen desde el módulo de pagos.</p>
+    </div>
+  }
+
+</main>
+
+<!-- ── Modal de vista previa ─────────────────────────────────────── -->
+@if (previewVoucher()) {
+  <div class="pds-modal-overlay z-60" (click)="closePreview()">
+    <div class="pds-modal max-w-3xl w-full" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="pds-modal-header">
+        <span class="fa-solid fa-file-invoice text-brand text-lg shrink-0"></span>
+        <div class="flex-1 min-w-0">
+          <h3 class="pds-modal-title">
+            {{ getVoucherLabel(previewVoucher()!) }}
+            {{ getSerieNumero(previewVoucher()!) }}
+          </h3>
+          <p class="text-xs text-text-muted mt-0.5">
+            {{ previewVoucher()!.issuedAt | date:'dd/MM/yyyy HH:mm' }}
+          </p>
+        </div>
+        <button class="pds-modal-close" (click)="closePreview()">
+          <span class="fa-solid fa-xmark"></span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="pds-modal-body space-y-4">
+
+        <!-- Tarjeta principal del comprobante -->
+        <div class="bg-background rounded-xl border border-border overflow-hidden">
+
+          <!-- Banda de color por tipo -->
+          <div class="h-1.5 w-full
+                      {{ previewVoucher()!.voucherType === 'RECEIPT'
+                         ? 'bg-linear-to-r from-blue-500 to-blue-400'
+                         : 'bg-linear-to-r from-purple-500 to-purple-400' }}">
+          </div>
+
+          <div class="p-4 flex flex-col sm:flex-row gap-4">
+
+            <!-- Columna izquierda: datos -->
+            <div class="flex-1 space-y-3">
+
+              <!-- Tipo + serie-número -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full
+                             {{ previewVoucher()!.voucherType === 'RECEIPT'
+                                ? 'bg-blue-500/10 text-blue-400'
+                                : 'bg-purple-500/10 text-purple-400' }}">
+                  <span class="fa-solid {{ previewVoucher()!.voucherType === 'RECEIPT' ? 'fa-receipt' : 'fa-building' }}"></span>
+                  {{ getVoucherLabel(previewVoucher()!) }}
+                </span>
+                <span class="font-mono text-lg font-bold text-text-primary">
+                  {{ getSerieNumero(previewVoucher()!) }}
+                </span>
+              </div>
+
+              <!-- Datos básicos -->
+              <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div>
+                  <p class="text-xs text-text-muted">Fecha emisión</p>
+                  <p class="text-text-primary font-medium">{{ previewVoucher()!.issuedAt | date:'dd/MM/yyyy' }}</p>
+                  <p class="text-xs text-text-muted font-mono">{{ previewVoucher()!.issuedAt | date:'HH:mm:ss' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-text-muted">Moneda</p>
+                  <p class="text-text-primary font-mono font-bold">{{ previewVoucher()!.currency }}</p>
+                </div>
+                @if (previewVoucher()!.paymentId) {
+                  <div>
+                    <p class="text-xs text-text-muted">Pago asociado</p>
+                    <p class="text-text-primary font-mono">#{{ previewVoucher()!.paymentId }}</p>
+                  </div>
+                }
+                @if (previewVoucher()!.observations) {
+                  <div class="col-span-2">
+                    <p class="text-xs text-text-muted">Observaciones</p>
+                    <p class="text-text-secondary text-xs">{{ previewVoucher()!.observations }}</p>
+                  </div>
+                }
+              </div>
+
+              <!-- Totales -->
+              <div class="bg-background-secondary rounded-lg p-3 space-y-1.5">
+                <div class="flex justify-between text-xs text-text-muted">
+                  <span>Base gravada</span>
+                  <span class="font-mono">S/ {{ previewVoucher()!.totalGravada | number:'1.2-2' }}</span>
+                </div>
+                <div class="flex justify-between text-xs text-text-muted">
+                  <span>IGV ({{ previewVoucher()!.igvPercentage }}%)</span>
+                  <span class="font-mono">S/ {{ previewVoucher()!.totalIgv | number:'1.2-2' }}</span>
+                </div>
+                <div class="border-t border-border pt-1.5 flex justify-between items-center">
+                  <span class="text-sm font-bold text-text-primary">Total</span>
+                  <span class="text-xl font-bold text-brand font-mono">
+                    S/ {{ previewVoucher()!.total | number:'1.2-2' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna derecha: QR -->
+            @if (previewVoucher()!.qrCodeString) {
+              <div class="flex flex-col items-center gap-2 sm:w-44 shrink-0">
+                <p class="text-xs text-text-muted uppercase tracking-wide">Código QR SUNAT</p>
+                <div class="bg-white p-2 rounded-xl border border-border/50">
+                  <img
+                    [src]="getQrUrl(previewVoucher()!)"
+                    alt="QR SUNAT"
+                    class="w-36 h-36 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <p class="text-[10px] text-text-muted text-center leading-relaxed max-w-36 break-all">
+                  {{ previewVoucher()!.qrCodeString.slice(0, 40) }}...
+                </p>
+              </div>
+            }
+
+          </div>
+        </div>
+
+        <!-- Acceso al PDF -->
+        <a
+          [href]="previewVoucher()!.pdfUrl"
+          target="_blank"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl
+                 border border-red-500/30 bg-red-500/5
+                 hover:bg-red-500/10 transition-colors group"
+        >
+          <span class="fa-solid fa-file-pdf text-red-400 text-xl shrink-0"></span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-text-primary group-hover:text-red-400 transition-colors">
+              Ver comprobante en PDF
+            </p>
+            <p class="text-xs text-text-muted truncate">{{ previewVoucher()!.pdfUrl }}</p>
+          </div>
+          <span class="fa-solid fa-external-link text-text-muted text-sm shrink-0"></span>
+        </a>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="pds-modal-footer">
+        <button class="pds-btn-secondary btn-sm" (click)="closePreview()">Cerrar</button>
+        <button class="pds-btn-secondary btn-sm gap-1.5 ml-auto" (click)="copyLink(previewVoucher()!)">
+          <span class="fa-solid fa-copy text-xs"></span>
+          Copiar enlace
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ── Toast "Enlace copiado" ─────────────────────────────────────── -->
+@if (copied()) {
+  <div class="fixed bottom-6 right-6 z-90 animate-fade-in
+              flex items-center gap-2 px-4 py-3 rounded-xl
+              bg-surface border border-brand/30 shadow-xl text-sm">
+    <span class="fa-solid fa-circle-check text-brand"></span>
+    Enlace copiado
+  </div>
+}

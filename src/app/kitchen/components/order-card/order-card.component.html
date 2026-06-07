@@ -1,14 +1,18 @@
 <div
-  class="bg-surface rounded-xl font-poppins-medium shadow-md p-4 w-full min-w-[280px] flex flex-col gap-3 hover:shadow-lg transition-shadow"
+  class="bg-surface rounded-xl font-poppins-medium shadow-md p-4 w-full flex flex-col gap-3 hover:shadow-lg transition-shadow h-72"
 >
   <!-- Header: Mesa + estado + hora -->
   <div class="flex flex-row justify-between items-start shrink-0">
-    <span class="font-fira-bold text-2xl text-text-primary">Mesa {{ order().tableId }}</span>
+    <span class="font-fira-bold text-2xl text-text-primary"
+      >Mesa {{ order().tableId }}</span
+    >
 
     <div class="flex flex-col items-end gap-1">
-      <span class="badge text-xs font-bold {{ statusColor() }}">{{ statusLabel() }}</span>
+      <span class="badge text-xs font-bold {{ statusColor() }}">{{
+        statusLabel()
+      }}</span>
       <span class="text-xs text-text-muted">
-        {{ order().createdAt | date : 'HH:mm' }}
+        {{ order().createdAt | date: "HH:mm" }}
       </span>
     </div>
   </div>
@@ -16,13 +20,15 @@
   <!-- Lista de productos -->
   <div class="flex-1 overflow-hidden flex flex-col min-h-0">
     <p class="text-xs text-text-muted mb-2 shrink-0">
-      {{ order().totalItems }} {{ order().totalItems === 1 ? 'producto' : 'productos' }}
+      {{ order().totalItems }}
+      {{ order().totalItems === 1 ? "producto" : "productos" }}
     </p>
 
-    <ul class="text-sm space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-1 pb-1">
+    <ul
+      class="text-sm space-y-3 flex-1 overflow-y-auto custom-dropdown-scrollbar pr-1 pb-1"
+    >
       @for (prod of order().productOrders; track prod.id) {
         <li class="flex flex-row items-center gap-2">
-
           <!-- Nombre con estado tachado si completado -->
           <span
             class="flex-1 text-sm transition-all duration-200 line-clamp-2"
@@ -34,7 +40,6 @@
           </span>
 
           @if (order().orderStatus === orderStatus.PREPARING) {
-
             <!-- Checkbox para cantidad 1 -->
             @if (prod.quantity === 1) {
               <input
@@ -50,9 +55,17 @@
               <div class="flex items-center gap-1.5 shrink-0">
                 <button
                   class="btn btn-circle btn-xs bg-surface-nav border-0 text-text-secondary hover:text-white hover:bg-border disabled:opacity-30"
-                  [disabled]="(getProductProgress(prod.id).completed || 0) === 0"
+                  [disabled]="
+                    (getProductProgress(prod.id).completed || 0) === 0
+                  "
                   (click)="decrementProgress(prod.id)"
-                  (click)="onServedProductOrder({ orderId: order().id, productOrderId: prod.id, quantity: -1 })"
+                  (click)="
+                    onServedProductOrder({
+                      orderId: order().id,
+                      productOrderId: prod.id,
+                      quantity: -1,
+                    })
+                  "
                 >
                   <span class="fa-solid fa-minus text-[10px]"></span>
                 </button>
@@ -63,8 +76,12 @@
                     [value]="getProgressPercentage(prod.id)"
                     max="100"
                   ></progress>
-                  <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow">
-                    {{ getProductProgress(prod.id).completed }}/{{ prod.quantity }}
+                  <span
+                    class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white drop-shadow"
+                  >
+                    {{ getProductProgress(prod.id).completed }}/{{
+                      prod.quantity
+                    }}
                   </span>
                 </div>
 
@@ -72,13 +89,18 @@
                   class="btn btn-circle btn-xs bg-surface-nav border-0 text-text-secondary hover:text-white hover:bg-border disabled:opacity-30"
                   [disabled]="isProductCompleted(prod.id)"
                   (click)="incrementProgress(prod.id)"
-                  (click)="onServedProductOrder({ orderId: order().id, productOrderId: prod.id, quantity: 1 })"
+                  (click)="
+                    onServedProductOrder({
+                      orderId: order().id,
+                      productOrderId: prod.id,
+                      quantity: 1,
+                    })
+                  "
                 >
                   <span class="fa-solid fa-plus text-[10px]"></span>
                 </button>
               </div>
             }
-
           }
         </li>
       }
@@ -87,7 +109,6 @@
 
   <!-- Footer: comentario + empleado + botones -->
   <div class="shrink-0 space-y-2 pt-2 border-t border-border">
-
     @if (order().comment) {
       <div class="flex items-start gap-1.5 text-sm text-amber-400 italic">
         <span class="fa-solid fa-comment text-xs mt-0.5 shrink-0"></span>
@@ -107,7 +128,6 @@
 
     <!-- Botones de acción -->
     <div class="flex items-center gap-2 pt-1">
-
       @if (order().orderStatus === orderStatus.PENDING) {
         <button
           class="btn btn-sm flex-1 bg-status-to-preparation hover:opacity-90 text-white border-0 font-semibold gap-2 whitespace-nowrap"
@@ -116,7 +136,6 @@
           <span class="fa-solid fa-play text-xs"></span>
           Iniciar
         </button>
-
       } @else if (order().orderStatus === orderStatus.PREPARING) {
         <button
           class="btn btn-sm flex-1 bg-status-to-ready hover:opacity-90 text-white border-0 font-semibold gap-2 whitespace-nowrap"
@@ -125,7 +144,6 @@
           <span class="fa-solid fa-check text-xs"></span>
           Marcar Listo
         </button>
-
       } @else if (order().orderStatus === orderStatus.READY) {
         <button
           class="btn btn-sm flex-1 btn-disabled font-semibold gap-2 whitespace-nowrap"
@@ -151,7 +169,9 @@
           class="dropdown-content menu bg-surface rounded-xl z-50 w-48 p-1.5 shadow-xl border border-border mb-1"
         >
           <li>
-            <span class="menu-title text-xs text-text-muted px-2 py-1 cursor-default">
+            <span
+              class="menu-title text-xs text-text-muted px-2 py-1 cursor-default"
+            >
               Cambiar estado
             </span>
           </li>
@@ -166,14 +186,15 @@
                 <span class="badge {{ status.color }} badge-xs"></span>
                 {{ status.label }}
                 @if (status.value === order().orderStatus) {
-                  <span class="fa-solid fa-check text-xs text-brand ml-auto"></span>
+                  <span
+                    class="fa-solid fa-check text-xs text-brand ml-auto"
+                  ></span>
                 }
               </a>
             </li>
           }
         </ul>
       </div>
-
     </div>
   </div>
 </div>

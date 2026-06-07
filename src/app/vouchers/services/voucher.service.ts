@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { catchError, map, throwError } from 'rxjs';
+import { catchError, throwError } from 'rxjs';
 import { environment } from '@environments/environment';
 import { RESTVoucher, VoucherResponse } from '../interfaces/voucher.interface';
 import {
@@ -30,7 +30,6 @@ export class VoucherService {
     return this.http
       .get<RESTVoucher>(`${environment.API_URL}/vouchers`, { params })
       .pipe(
-        map((resp) => resp.content),
         catchError((error) => {
           console.log({ error });
           return throwError(

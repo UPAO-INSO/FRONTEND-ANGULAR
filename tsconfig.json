@@ -28,6 +28,15 @@
       "@orders/*": [
         "./src/app/orders/*"
       ],
+      "@separaciones/*": [
+        "./src/app/separaciones/*"
+      ],
+      "@pensionistas/*": [
+        "./src/app/pensionistas/*"
+      ],
+      "@menu/*": [
+        "./src/app/menu/*"
+      ],
     },
     "strict": true,
     "noImplicitOverride": true,

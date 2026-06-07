@@ -18,6 +18,7 @@ import { Table } from '@src/app/tables/interfaces/table.interface';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { tap } from 'rxjs';
 import { ProductService } from '@src/app/products/services/product.service';
+import { OrderCartService } from '@src/app/orders/services/order-cart.service';
 import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-modify-modal.component';
 
 interface OrderUpdated {
@@ -31,19 +32,25 @@ interface OrderUpdated {
   templateUrl: './register-order.component.html',
 })
 export class RegisterOrderComponent {
-  private productService = inject(ProductService);
+  private productService  = inject(ProductService);
+  private cartService     = inject(OrderCartService);
 
   selectedTable = input.required<Table>();
-  modifyStatus = input<boolean>();
-  activeOrder = input<ContentOrder | null>();
+  modifyStatus  = input<boolean>();
+  activeOrder   = input<ContentOrder | null>();
 
-  orderCreated = output<RequestOrder>();
-  orderUpdated = output<OrderUpdated>();
-  closeModal = output<void>();
+  orderCreated          = output<RequestOrder>();
+  orderUpdated          = output<OrderUpdated>();
+  closeModal            = output<void>();
   statusModifyModalChange = output<boolean>();
 
   showCreateConfirmModal = signal<boolean>(false);
-  pendingOrderData = signal<RequestOrder | ContentOrder | null>(null);
+  pendingOrderData       = signal<RequestOrder | ContentOrder | null>(null);
+
+  /** Tab activo en móvil */
+  activeTab    = signal<'products' | 'summary'>('products');
+  /** Expone el conteo del carrito para el badge del tab */
+  cartCount    = this.cartService.totalItems;
 
   orderSummary = viewChild(OrderSummaryComponent);
 

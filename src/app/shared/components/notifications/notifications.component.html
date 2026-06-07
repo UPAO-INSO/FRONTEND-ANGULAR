@@ -1,0 +1,46 @@
+<!-- Stack de notificaciones — esquina inferior derecha, encima de todo -->
+<div
+  class="fixed bottom-4 right-4 z-[9999] flex flex-col-reverse gap-2 w-80 pointer-events-none"
+  aria-live="polite"
+  aria-label="Notificaciones del sistema"
+>
+  @for (notif of notificationService.notifications(); track trackById($index, notif)) {
+    <div
+      class="pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-xl
+             bg-surface border border-border/60 border-l-4 shadow-xl
+             animate-fade-in {{ borderClass(notif.type) }}"
+      role="alert"
+    >
+      <!-- Ícono -->
+      <span
+        class="{{ notif.icon }} text-base mt-0.5 shrink-0 {{ iconClass(notif.type) }}"
+        aria-hidden="true"
+      ></span>
+
+      <!-- Contenido -->
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-text-primary leading-tight">
+          {{ notif.title }}
+        </p>
+        @if (notif.message) {
+          <p class="text-xs text-text-secondary mt-0.5 truncate">
+            {{ notif.message }}
+          </p>
+        }
+        <p class="text-[10px] text-text-muted mt-1">
+          {{ notif.timestamp | date : 'HH:mm:ss' }}
+        </p>
+      </div>
+
+      <!-- Botón cerrar -->
+      <button
+        class="shrink-0 text-text-muted hover:text-text-primary transition-colors
+               w-5 h-5 flex items-center justify-center rounded"
+        (click)="dismiss(notif.id)"
+        aria-label="Cerrar notificación"
+      >
+        <span class="fa-solid fa-xmark text-xs"></span>
+      </button>
+    </div>
+  }
+</div>
