@@ -5,16 +5,13 @@
       <!-- Header -->
       <div class="pds-modal-header">
         <div class="flex items-center gap-3 flex-1">
-          <i class="fa-solid fa-file-invoice text-brand text-xl"></i>
+          <span class="fa-solid fa-file-invoice text-brand text-xl"></span>
           <div>
-            <h3 class="pds-modal-title text-lg">Generar Comprobante Electrónico</h3>
-            <p class="text-text-secondary text-sm">Pago #{{ payment().id }}</p>
+            <h3 class="pds-modal-title">Generar Comprobante Electrónico</h3>
+            <p class="text-text-secondary text-xs">Pago #{{ payment().id }}</p>
           </div>
         </div>
-        <button
-          (click)="onClose()"
-          class="pds-modal-close"
-        >
+        <button class="pds-modal-close" (click)="onClose()">
           <span class="fa-solid fa-xmark text-xl"></span>
         </button>
       </div>
@@ -22,91 +19,131 @@
       <!-- Body -->
       <div class="pds-modal-body space-y-5">
 
-        <!-- Tipo de comprobante -->
+        <!-- ── Tipo de comprobante ─────────────────────────────── -->
         <div>
           <p class="pds-label mb-3">Tipo de Comprobante</p>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-3">
+
+            <!-- Boleta -->
             <button
-              class="btn btn-lg gap-3"
-              [class.pds-btn-primary]="voucherType() === VoucherType.RECEIPT"
-              [class.pds-btn-secondary]="voucherType() !== VoucherType.RECEIPT"
+              class="flex items-center gap-3 px-4 py-4 rounded-xl border-2 transition-all duration-150 text-left
+                     {{ voucherType() === VoucherType.RECEIPT
+                          ? 'border-brand bg-brand/10 text-text-primary'
+                          : 'border-border bg-surface text-text-secondary hover:border-brand/40 hover:bg-surface-nav' }}"
               (click)="selectVoucherType(VoucherType.RECEIPT)"
             >
-              <i class="fa-solid fa-receipt text-xl"></i>
-              <div class="text-left">
-                <div class="font-bold">Boleta</div>
-                <div class="text-xs opacity-70">Serie BBB1</div>
+              <span
+                class="fa-solid fa-receipt text-2xl shrink-0
+                       {{ voucherType() === VoucherType.RECEIPT ? 'text-brand' : 'text-text-muted' }}"
+              ></span>
+              <div>
+                <p class="font-bold text-sm">Boleta de Venta</p>
+                <p class="text-xs opacity-60">Serie BBB1 · Personas naturales</p>
               </div>
+              @if (voucherType() === VoucherType.RECEIPT) {
+                <span class="fa-solid fa-circle-check text-brand text-sm ml-auto shrink-0"></span>
+              }
             </button>
 
+            <!-- Factura -->
             <button
-              class="btn btn-lg gap-3"
-              [class.pds-btn-primary]="voucherType() === VoucherType.INVOICE"
-              [class.pds-btn-secondary]="voucherType() !== VoucherType.INVOICE"
+              class="flex items-center gap-3 px-4 py-4 rounded-xl border-2 transition-all duration-150 text-left
+                     {{ voucherType() === VoucherType.INVOICE
+                          ? 'border-brand bg-brand/10 text-text-primary'
+                          : 'border-border bg-surface text-text-secondary hover:border-brand/40 hover:bg-surface-nav' }}"
               (click)="selectVoucherType(VoucherType.INVOICE)"
             >
-              <i class="fa-solid fa-file-invoice text-xl"></i>
-              <div class="text-left">
-                <div class="font-bold">Factura</div>
-                <div class="text-xs opacity-70">Serie FFF1</div>
+              <span
+                class="fa-solid fa-file-invoice text-2xl shrink-0
+                       {{ voucherType() === VoucherType.INVOICE ? 'text-brand' : 'text-text-muted' }}"
+              ></span>
+              <div>
+                <p class="font-bold text-sm">Factura</p>
+                <p class="text-xs opacity-60">Serie FFF1 · Requiere RUC</p>
               </div>
+              @if (voucherType() === VoucherType.INVOICE) {
+                <span class="fa-solid fa-circle-check text-brand text-sm ml-auto shrink-0"></span>
+              }
             </button>
+
           </div>
         </div>
 
-        <!-- Información del pago -->
+        <!-- ── Información del pago ───────────────────────────── -->
         <div class="pds-info-panel">
           <p class="pds-section-title">Información del Pago</p>
           <div class="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p class="pds-label">Monto Total</p>
-              <p class="text-text-primary font-semibold text-lg">
+              <p class="pds-info-label">Monto Total</p>
+              <p class="text-text-primary font-bold text-lg font-mono">
                 S/ {{ (payment().amount / 100).toFixed(2) }}
               </p>
             </div>
             <div>
-              <p class="pds-label">Estado</p>
-              <p class="mt-1">
-                <span
-                  class="badge"
-                  [class.badge-success]="payment().state === 'paid'"
-                  [class.badge-warning]="payment().state === 'pending'"
-                >
-                  {{ payment().state }}
-                </span>
+              <p class="pds-info-label">Estado</p>
+              <span
+                class="inline-block mt-1 badge text-xs font-semibold"
+                [class.bg-status-ready]="payment().state === 'paid'"
+                [class.text-white]="payment().state === 'paid'"
+                [class.bg-status-pending]="payment().state !== 'paid'"
+              >
+                {{ payment().state === 'paid' ? 'Pagado' : payment().state }}
+              </span>
+            </div>
+            <div>
+              <p class="pds-info-label">Fecha de Pago</p>
+              <p class="text-text-primary text-xs">
+                {{ payment().paidAt | date : 'dd/MM/yyyy HH:mm' }}
               </p>
             </div>
             <div>
-              <p class="pds-label">Fecha de Pago</p>
-              <p class="text-text-primary">{{ payment().paidAt | date : "dd/MM/yyyy HH:mm" }}</p>
-            </div>
-            <div>
-              <p class="pds-label">Método</p>
+              <p class="pds-info-label">Método</p>
               <p class="text-text-primary">{{ getPaymentTypeLabel() }}</p>
             </div>
           </div>
+
+          <!-- Cliente (si está disponible) -->
+          @if (payment().customer) {
+            <div class="mt-3 pt-3 border-t border-border">
+              <p class="pds-info-label mb-1.5">Cliente</p>
+              <div class="flex items-center gap-2 text-sm text-text-secondary">
+                <span class="fa-solid fa-user text-xs text-text-muted"></span>
+                <span class="text-text-primary font-medium">
+                  {{ payment().customer!.name }} {{ payment().customer!.lastname }}
+                </span>
+                <span class="text-text-muted text-xs">·</span>
+                <span class="font-mono text-xs">{{ payment().customer!.documentNumber }}</span>
+              </div>
+            </div>
+          }
         </div>
 
-        <!-- Productos -->
+        <!-- ── Productos ──────────────────────────────────────── -->
         <div class="pds-info-panel">
-          <p class="pds-section-title">Productos ({{ payment().order.productOrders.length }})</p>
-          <div class="max-h-48 overflow-y-auto custom-secondary-scrollbar">
+          <p class="pds-section-title">
+            Productos ({{ payment().order.productOrders.length }})
+          </p>
+          <div class="max-h-44 overflow-y-auto custom-secondary-scrollbar rounded-lg border border-border/50">
             <table class="pds-table">
               <thead class="pds-table-head">
                 <tr>
                   <th class="pds-table-th">Producto</th>
                   <th class="pds-table-th-center">Cant.</th>
-                  <th class="pds-table-th text-right">Precio</th>
-                  <th class="pds-table-th text-right">Subtotal</th>
+                  <th class="pds-table-th" style="text-align:right">Precio</th>
+                  <th class="pds-table-th" style="text-align:right">Total</th>
                 </tr>
               </thead>
               <tbody>
                 @for (product of payment().order.productOrders; track product.id) {
                   <tr class="pds-table-row">
-                    <td class="pds-table-td text-sm">{{ product.productName }}</td>
+                    <td class="pds-table-td text-xs">{{ product.productName }}</td>
                     <td class="pds-table-td-center">{{ product.quantity }}</td>
-                    <td class="pds-table-td text-right">S/ {{ product.unitPrice.toFixed(2) }}</td>
-                    <td class="pds-table-td text-right font-semibold">S/ {{ product.subtotal.toFixed(2) }}</td>
+                    <td class="pds-table-td text-xs text-right font-mono">
+                      S/ {{ product.unitPrice.toFixed(2) }}
+                    </td>
+                    <td class="pds-table-td text-xs text-right font-mono font-semibold text-text-primary">
+                      S/ {{ product.subtotal.toFixed(2) }}
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -114,17 +151,17 @@
           </div>
         </div>
 
-        <!-- Mensajes -->
+        <!-- ── Mensajes ───────────────────────────────────────── -->
         @if (errorMessage()) {
           <div class="pds-alert-error">
-            <i class="fa-solid fa-circle-exclamation shrink-0"></i>
+            <span class="fa-solid fa-circle-exclamation shrink-0"></span>
             <span>{{ errorMessage() }}</span>
           </div>
         }
 
         @if (successMessage()) {
-          <div class="pds-alert-info">
-            <i class="fa-solid fa-circle-check shrink-0"></i>
+          <div class="flex items-center gap-3 bg-status-ready/10 border border-status-ready/30 text-status-ready px-4 py-3 rounded-lg text-sm">
+            <span class="fa-solid fa-circle-check shrink-0"></span>
             <span>{{ successMessage() }}</span>
           </div>
         }
@@ -134,23 +171,23 @@
       <!-- Footer -->
       <div class="pds-modal-footer">
         <button
-          class="pds-btn-secondary"
+          class="pds-btn-secondary btn-sm"
           (click)="onClose()"
           [disabled]="isProcessing()"
         >
           Cancelar
         </button>
         <button
-          class="pds-btn-primary"
+          class="pds-btn-primary btn-sm"
           (click)="generateVoucher()"
           [disabled]="isProcessing() || payment().state !== 'paid'"
         >
           @if (isProcessing()) {
-            <span class="loading loading-spinner loading-sm"></span>
+            <span class="loading loading-spinner loading-xs"></span>
             Generando...
           } @else {
-            <i class="fa-solid fa-file-invoice"></i>
-            Generar Comprobante
+            <span class="fa-solid fa-file-invoice text-xs"></span>
+            Generar {{ voucherType() === VoucherType.RECEIPT ? 'Boleta' : 'Factura' }}
           }
         </button>
       </div>

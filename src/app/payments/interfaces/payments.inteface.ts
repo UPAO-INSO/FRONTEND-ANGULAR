@@ -7,6 +7,21 @@ export interface RESTPayment {
   empty: boolean;
 }
 
+/** Cliente embebido en la respuesta de pago (viene completo desde el backend) */
+export interface PaymentCustomer {
+  id: number;
+  name: string;
+  lastname: string;
+  phone: string;
+  documentNumber: string;
+  documentType: string;
+  email: string;
+  departament: string;
+  province: string;
+  district: string;
+  completeAddress: string;
+}
+
 export interface ContentPayment {
   id: number;
   provider: string;
@@ -29,6 +44,8 @@ export interface ContentPayment {
   createdAt: Date;
   modifiedAt: Date;
   customerId: number;
+  /** Cliente con datos completos (incluido en la respuesta del backend) */
+  customer?: PaymentCustomer;
 }
 
 export interface Order {

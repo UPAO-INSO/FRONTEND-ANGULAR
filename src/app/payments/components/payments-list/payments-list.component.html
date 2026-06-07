@@ -1,21 +1,46 @@
 <main class="pds-page">
 
-  <!-- Header -->
-  <div class="pds-page-header">
-    <div>
-      <h1 class="pds-page-title">
-        <span class="fa-solid fa-credit-card text-brand text-xl mr-3"></span>
-        Pagos
-      </h1>
-      <p class="pds-page-subtitle">Gestiona y visualiza todos los pagos del sistema</p>
-    </div>
+  <!-- ── Header ───────────────────────────────────────────────────── -->
+  <app-page-header
+    icon="fa-solid fa-credit-card"
+    title="Pagos"
+    subtitle="Gestiona y visualiza todos los pagos del sistema"
+  />
+
+  <!-- ── KPI cards ────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <app-kpi-card
+      icon="fa-solid fa-receipt"
+      label="Total pagos"
+      [value]="payments().length"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-circle-check"
+      iconColor="text-status-ready"
+      iconBg="bg-status-ready/10"
+      label="Pagados"
+      [value]="paidCount()"
+      valueColor="text-status-ready"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-clock"
+      iconColor="text-status-pending"
+      iconBg="bg-status-pending/10"
+      label="Pendientes"
+      [value]="pendingCount()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-sack-dollar"
+      label="Monto cobrado"
+      [value]="'S/ ' + (totalMonto() | number:'1.2-2')"
+      valueColor="text-brand"
+    />
   </div>
 
-  <!-- Filtros -->
+  <!-- ── Filtros ───────────────────────────────────────────────────── -->
   <div class="pds-card pds-card-body mb-5">
     <div class="pds-filters mb-0">
 
-      <!-- Búsqueda -->
       <div class="pds-search">
         <span class="pds-search-icon fa-solid fa-magnifying-glass"></span>
         <input
@@ -26,12 +51,8 @@
         />
       </div>
 
-      <!-- Filtro estado -->
       <div class="relative">
-        <select
-          (change)="onStatusFilterChange($event)"
-          class="pds-filter-select w-full sm:min-w-40"
-        >
+        <select (change)="onStatusFilterChange($event)" class="pds-filter-select w-full sm:min-w-40">
           <option value="" disabled selected>Estado</option>
           <option value="all">Todos</option>
           <option value="paid">Pagado</option>
@@ -40,12 +61,8 @@
         <span class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-xs pointer-events-none"></span>
       </div>
 
-      <!-- Filtro método -->
       <div class="relative">
-        <select
-          (change)="onPaymentTypeFilterChange($event)"
-          class="pds-filter-select w-full sm:min-w-[180px]"
-        >
+        <select (change)="onPaymentTypeFilterChange($event)" class="pds-filter-select w-full sm:min-w-44">
           <option value="" disabled selected>Método de Pago</option>
           <option value="all">Todos</option>
           <option value="mobile_wallet">Billetera Digital</option>
@@ -57,7 +74,7 @@
     </div>
   </div>
 
-  <!-- Tabla -->
+  <!-- ── Tabla ─────────────────────────────────────────────────────── -->
   <div class="pds-table-container overflow-x-auto">
     <table class="pds-table">
       <thead class="pds-table-head">
@@ -71,7 +88,6 @@
           <th class="pds-table-th-center">Comprobante</th>
         </tr>
       </thead>
-
       <tbody>
         @for (payment of payments(); track payment.id) {
           <tr
@@ -98,7 +114,7 @@
     </table>
   </div>
 
-  <!-- Paginación -->
+  <!-- ── Paginación ────────────────────────────────────────────────── -->
   <div class="mt-5">
     <app-pagination [currentPage]="currentPage()" [pages]="totalPages()" />
   </div>
