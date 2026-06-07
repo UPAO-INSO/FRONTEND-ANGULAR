@@ -5,13 +5,22 @@ import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { ProductService } from '@src/app/products/services/product.service';
-import { Product, ProductType } from '@src/app/products/interfaces/product.type';
+import {
+  Product,
+  ProductType,
+} from '@src/app/products/interfaces/product.type';
 import { InventoryService } from '../../services/inventory.service';
-import { RecipeModalComponent, RecipeItem } from '../../components/recipe-modal/recipe-modal.component';
+import { ProductFieldsComponent } from '../../components/product-fields/product-fields.component';
+import { RecipeSectionComponent } from '../../components/recipe-section/recipe-section.component';
+import { StockSectionComponent } from '../../components/stock-section/stock-section.component';
+import {
+  RecipeModalComponent,
+  RecipeItem,
+} from '../../components/recipe-modal/recipe-modal.component';
 
 @Component({
   selector: 'app-edit-product-page',
-  imports: [RouterLink, FormsModule, RecipeModalComponent],
+  imports: [FormsModule, RecipeModalComponent, ProductFieldsComponent, RecipeSectionComponent, StockSectionComponent],
   templateUrl: './edit-product-page.component.html',
 })
 export class EditProductPageComponent implements OnInit {
@@ -30,7 +39,7 @@ export class EditProductPageComponent implements OnInit {
   description = signal('');
   selectedTypeId = signal<number>(0);
   originalTypeId = signal<number>(0); // Tipo original para detectar cambios
-  
+
   // Para bebidas y descartables - cantidad en inventario
   inventoryQuantity = signal<number>(0);
   inventoryId = signal<number | null>(null); // ID del registro en inventory
@@ -52,7 +61,7 @@ export class EditProductPageComponent implements OnInit {
   isBeverageOrDisposable = computed(() => {
     const typeId = this.selectedTypeId();
     if (!typeId) return false;
-    const type = this.productTypes().find(t => t.id === typeId);
+    const type = this.productTypes().find((t) => t.id === typeId);
     if (!type) return false;
     const typeName = type.name.toUpperCase();
     return typeName === 'BEBIDAS' || typeName === 'DESCARTABLES';
@@ -62,7 +71,7 @@ export class EditProductPageComponent implements OnInit {
   selectedTypeName = computed(() => {
     const typeId = this.selectedTypeId();
     if (!typeId) return '';
-    const type = this.productTypes().find(t => t.id === typeId);
+    const type = this.productTypes().find((t) => t.id === typeId);
     return type?.name || '';
   });
 
@@ -70,7 +79,7 @@ export class EditProductPageComponent implements OnInit {
   wasOriginallyBeverageOrDisposable = computed(() => {
     const typeId = this.originalTypeId();
     if (!typeId) return false;
-    const type = this.productTypes().find(t => t.id === typeId);
+    const type = this.productTypes().find((t) => t.id === typeId);
     if (!type) return false;
     const typeName = type.name.toUpperCase();
     return typeName === 'BEBIDAS' || typeName === 'DESCARTABLES';
@@ -80,22 +89,22 @@ export class EditProductPageComponent implements OnInit {
   categoryChangeWarning = computed(() => {
     const currentTypeId = this.selectedTypeId();
     const originalTypeId = this.originalTypeId();
-    
+
     if (currentTypeId === originalTypeId) return null;
-    
+
     const wasBevorDisp = this.wasOriginallyBeverageOrDisposable();
     const isNowBevOrDisp = this.isBeverageOrDisposable();
-    
+
     if (wasBevorDisp && !isNowBevOrDisp) {
       // De bebida/descartable a plato
       return 'Al cambiar a esta categoría, se eliminará el registro de inventario asociado y deberás configurar una receta.';
     }
-    
+
     if (!wasBevorDisp && isNowBevOrDisp) {
       // De plato a bebida/descartable
       return 'Al cambiar a esta categoría, se eliminará la receta actual y se creará un registro de inventario.';
     }
-    
+
     return null; // Cambio sin pérdida de datos (ej: de entrada a segundo, o de bebida a descartable)
   });
 
@@ -113,7 +122,7 @@ export class EditProductPageComponent implements OnInit {
     forkJoin({
       product: this.productService.fetchProductById(id),
       types: this.productService.fetchProductsType(),
-      recipe: this.inventoryService.getRecipe(id)
+      recipe: this.inventoryService.getRecipe(id),
     }).subscribe({
       next: ({ product, types, recipe }) => {
         this.originalProduct.set(product);
@@ -123,22 +132,22 @@ export class EditProductPageComponent implements OnInit {
         this.selectedTypeId.set(product.productTypeId);
         this.originalTypeId.set(product.productTypeId); // Guardar tipo original
         this.productTypes.set(types);
-        
+
         // Map recipe response to RecipeItem
-        const mappedRecipe: RecipeItem[] = recipe.map(item => ({
+        const mappedRecipe: RecipeItem[] = recipe.map((item) => ({
           inventoryId: item.inventoryId,
           name: item.inventoryName || 'Ingrediente',
           quantity: item.quantity,
-          unitOfMeasure: item.unitOfMeasure
+          unitOfMeasure: item.unitOfMeasure,
         }));
         this.recipeItems.set(mappedRecipe);
-        
+
         // Para bebidas/descartables, obtener la cantidad del inventario y el inventoryId
         if (recipe.length > 0) {
           this.inventoryQuantity.set(recipe[0].inventoryQuantityAvailable || 0);
           this.inventoryId.set(recipe[0].inventoryId);
         }
-        
+
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -168,7 +177,7 @@ export class EditProductPageComponent implements OnInit {
   }
 
   removeRecipeItem(index: number) {
-    this.recipeItems.update(items => items.filter((_, i) => i !== index));
+    this.recipeItems.update((items) => items.filter((_, i) => i !== index));
   }
 
   onSubmit(event: Event): void {
@@ -185,11 +194,17 @@ export class EditProductPageComponent implements OnInit {
     }
 
     // Validar según el tipo de producto actual/nuevo
-    const changingToBevOrDisp = !this.wasOriginallyBeverageOrDisposable() && this.isBeverageOrDisposable();
+    const changingToBevOrDisp =
+      !this.wasOriginallyBeverageOrDisposable() &&
+      this.isBeverageOrDisposable();
     const stayingAsPlato = !this.isBeverageOrDisposable();
-    
+
     // Solo validar receta para platos que NO están cambiando a bebida/descartable
-    if (stayingAsPlato && !changingToBevOrDisp && this.recipeItems().length === 0) {
+    if (
+      stayingAsPlato &&
+      !changingToBevOrDisp &&
+      this.recipeItems().length === 0
+    ) {
       this.errorMessage.set('Debe agregar al menos un ingrediente a la receta');
       return;
     }
@@ -212,10 +227,10 @@ export class EditProductPageComponent implements OnInit {
 
     // Solo enviar receta si NO es bebida/descartable
     if (!this.isBeverageOrDisposable()) {
-      request.recipe = this.recipeItems().map(item => ({
+      request.recipe = this.recipeItems().map((item) => ({
         inventoryId: item.inventoryId,
         quantity: item.quantity,
-        unitOfMeasure: item.unitOfMeasure
+        unitOfMeasure: item.unitOfMeasure,
       }));
     }
 
@@ -227,20 +242,20 @@ export class EditProductPageComponent implements OnInit {
           // Si es bebida/descartable y tenemos inventoryId, actualizar la cantidad en inventory
           if (this.isBeverageOrDisposable() && this.inventoryId()) {
             return this.inventoryService.update(this.inventoryId()!, {
-              quantity: this.inventoryQuantity()
+              quantity: this.inventoryQuantity(),
             });
           }
           return of(null);
-        })
+        }),
       )
       .subscribe({
         next: () => {
-          this.router.navigate(['/dashboard/inventory']);
+          this.router.navigate(['/inventory']);
         },
         error: (err) => {
           console.error('Error updating product:', err);
           this.errorMessage.set(
-            err.error?.message || 'Error al actualizar el producto'
+            err.error?.message || 'Error al actualizar el producto',
           );
           this.isSubmitting.set(false);
         },
@@ -255,7 +270,9 @@ export class EditProductPageComponent implements OnInit {
   onInventoryQuantityChange(value: number): void {
     // Para bebidas/descartables, solo enteros
     if (!Number.isInteger(value)) {
-      this.errorMessage.set('La cantidad solo acepta números enteros, no decimales');
+      this.errorMessage.set(
+        'La cantidad solo acepta números enteros, no decimales',
+      );
       this.inventoryQuantity.set(Math.floor(value));
       return;
     }
@@ -275,7 +292,7 @@ export class EditProductPageComponent implements OnInit {
     this.isDeleting.set(true);
     this.productService.deleteProduct(this.productId()).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard/inventory']);
+        this.router.navigate(['/inventory']);
       },
       error: (err) => {
         console.error('Error deleting product:', err);
@@ -286,6 +303,6 @@ export class EditProductPageComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard/inventory']);
+    this.router.navigate(['/inventory']);
   }
 }

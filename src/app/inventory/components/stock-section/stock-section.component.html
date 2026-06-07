@@ -1,0 +1,36 @@
+<div class="pds-info-panel">
+
+  <p class="pds-section-title text-xs mb-3">
+    <span class="fa-solid fa-boxes-stacked text-blue-400 mr-1.5"></span>
+    Stock en inventario
+  </p>
+
+  @if (hasInventory()) {
+    <div class="pds-field">
+      <label class="pds-label">
+        {{ isNew() ? 'Cantidad inicial' : 'Cantidad actual' }}
+        <span class="text-text-muted font-normal ml-1">(unidades)</span>
+      </label>
+      <input
+        class="pds-input"
+        type="number"
+        min="0"
+        step="1"
+        [ngModel]="quantity()"
+        (ngModelChange)="quantity.set($event)"
+        name="stockQuantity"
+      />
+      @if (!isNew() && typeName()) {
+        <p class="text-xs text-text-muted mt-1.5">
+          Stock de {{ typeName() }} disponible para venta
+        </p>
+      }
+    </div>
+  } @else {
+    <div class="pds-alert-warning">
+      <span class="fa-solid fa-triangle-exclamation shrink-0"></span>
+      <p class="text-xs">Sin inventario asociado. Contacta al administrador.</p>
+    </div>
+  }
+
+</div>

@@ -1,97 +1,46 @@
-<main class="pds-page max-w-2xl mx-auto">
-
-  <!-- Breadcrumb -->
-  <nav class="pds-breadcrumb">
-    <a routerLink="/dashboard/inventory" class="pds-breadcrumb-link">Inventario</a>
-    <span class="pds-breadcrumb-sep fa-solid fa-chevron-right"></span>
-    <span class="pds-breadcrumb-current">Añadir Ingrediente</span>
-  </nav>
-
-  <!-- Header -->
-  <div class="pds-page-header">
-    <div>
-      <h1 class="pds-page-title">Añadir Nuevo Ingrediente</h1>
-      <p class="pds-page-subtitle">Registra un nuevo ingrediente para usar en las recetas de los platos.</p>
-    </div>
-  </div>
-
-  <!-- Error -->
-  @if (errorMessage()) {
-    <div class="pds-alert-error mb-6">
-      <span class="fa-solid fa-exclamation-circle shrink-0"></span>
-      {{ errorMessage() }}
-    </div>
-  }
-
-  <!-- Form Card -->
-  <div class="pds-card">
-    <div class="pds-card-header">
-      <h2 class="pds-card-title">Detalles del Ingrediente</h2>
-    </div>
-    <div class="pds-card-body">
-      <form class="space-y-6" (submit)="onSubmit($event)">
-
-        <!-- Nombre -->
-        <div class="pds-field">
-          <label class="pds-label">Nombre del Ingrediente</label>
-          <input
-            class="pds-input"
-            placeholder="Ej: Harina de Trigo"
-            [ngModel]="name()"
-            (ngModelChange)="name.set($event)"
-            name="name"
-            required
-          />
-        </div>
-
-        <!-- Cantidad + Unidad -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="pds-field sm:col-span-1">
-            <label class="pds-label">Cantidad</label>
-            <input
-              class="pds-input"
-              placeholder="0"
-              type="number"
-              min="0"
-              [step]="quantityStep"
-              [ngModel]="quantity()"
-              (ngModelChange)="onQuantityChange($event)"
-              name="quantity"
-              required
-            />
-          </div>
-
-          <div class="pds-field sm:col-span-2">
-            <label class="pds-label">Unidad de Medida</label>
-            <div class="relative">
-              <select
-                class="pds-select"
-                [ngModel]="selectedUnit()"
-                (change)="onUnitChange($event)"
-                name="unit"
-              >
-                @for (unit of allowedUnits; track unit) {
-                  <option [value]="unit">{{ unitLabels[unit] }}</option>
-                }
-              </select>
-              <span class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-text-muted text-xs"></span>
-            </div>
-          </div>
-        </div>
-
-      </form>
-    </div>
-    <div class="pds-card-footer">
-      <button
-        class="pds-btn-secondary"
-        type="button"
-        (click)="goBack()"
+<div class="pds-modal-overlay" (click)="goBack()">
+  <div class="pds-modal max-w-lg" (click)="$event.stopPropagation()">
+    <div class="pds-modal-header">
+      <div
+        class="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0"
       >
+        <span class="fa-solid fa-flask text-amber-400"></span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h2 class="pds-modal-title">Nuevo Ingrediente</h2>
+        <p class="text-xs text-text-muted mt-0.5">
+          Insumo para recetas del menú
+        </p>
+      </div>
+      <button class="pds-modal-close" (click)="goBack()">
+        <span class="fa-solid fa-xmark"></span>
+      </button>
+    </div>
+
+    <div class="pds-modal-body space-y-4">
+      @if (errorMessage()) {
+        <div class="pds-alert-error">
+          <span class="fa-solid fa-exclamation-circle shrink-0"></span>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <app-insumo-fields
+        [(name)]="name"
+        [(quantity)]="quantity"
+        [(selectedUnit)]="selectedUnit"
+        [allowedUnits]="allowedUnits"
+        [quantityStep]="quantityStep"
+        (unitChange)="onUnitChange($event)"
+      />
+    </div>
+
+    <div class="pds-modal-footer">
+      <button class="pds-btn-secondary btn-sm" type="button" (click)="goBack()">
         Cancelar
       </button>
       <button
-        class="pds-btn-primary disabled:opacity-50"
-        type="submit"
+        class="pds-btn-primary btn-sm disabled:opacity-50"
         (click)="onSubmit($event)"
         [disabled]="isSubmitting()"
       >
@@ -99,10 +48,10 @@
           <span class="loading loading-spinner loading-xs"></span>
           Guardando...
         } @else {
+          <span class="fa-solid fa-check text-xs"></span>
           Guardar Ingrediente
         }
       </button>
     </div>
   </div>
-
-</main>
+</div>

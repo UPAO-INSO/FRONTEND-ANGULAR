@@ -1,0 +1,51 @@
+<div class="space-y-4">
+
+  <!-- Nombre -->
+  <div class="pds-field">
+    <label class="pds-label">Nombre del ingrediente</label>
+    <input
+      class="pds-input"
+      placeholder="Ej: Harina de Trigo"
+      [ngModel]="name()"
+      (ngModelChange)="name.set($event)"
+      name="insumoName"
+    />
+  </div>
+
+  <!-- Cantidad + Unidad -->
+  <div class="grid grid-cols-2 gap-3">
+
+    <div class="pds-field">
+      <label class="pds-label">Cantidad</label>
+      <input
+        class="pds-input"
+        placeholder="0"
+        type="number"
+        min="0"
+        [step]="quantityStep()"
+        [ngModel]="quantity()"
+        (ngModelChange)="quantity.set($event)"
+        name="insumoQuantity"
+      />
+    </div>
+
+    <div class="pds-field">
+      <label class="pds-label">Unidad de medida</label>
+      <div class="relative">
+        <select
+          class="pds-select"
+          [ngModel]="selectedUnit()"
+          (change)="unitChange.emit($event)"
+          name="insumoUnit"
+        >
+          @for (unit of allowedUnits(); track unit) {
+            <option [value]="unit">{{ unitLabels[unit] }}</option>
+          }
+        </select>
+        <span class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-xs"></span>
+      </div>
+    </div>
+
+  </div>
+
+</div>

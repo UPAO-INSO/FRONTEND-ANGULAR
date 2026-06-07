@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { InventoryService } from '../../services/inventory.service';
+import { InsumoFieldsComponent } from '../../components/insumo-fields/insumo-fields.component';
 import {
   InventoryRequest,
   InventoryType,
@@ -14,7 +15,7 @@ import {
 
 @Component({
   selector: 'app-add-insumo-page',
-  imports: [RouterLink, FormsModule],
+  imports: [InsumoFieldsComponent, FormsModule],
   templateUrl: './add-insumo-page.component.html',
 })
 export class AddInsumoPageComponent {
@@ -64,7 +65,9 @@ export class AddInsumoPageComponent {
     if (this.selectedUnit() === 'UNIDAD') {
       // Verificar si tiene decimales
       if (!Number.isInteger(value)) {
-        this.errorMessage.set('Las unidades solo aceptan números enteros, no decimales');
+        this.errorMessage.set(
+          'Las unidades solo aceptan números enteros, no decimales',
+        );
         this.quantity.set(Math.floor(value));
         return;
       }
@@ -95,7 +98,7 @@ export class AddInsumoPageComponent {
     const validation = validateInventoryItem(
       InventoryType.INGREDIENT,
       this.selectedUnit(),
-      this.quantity()!
+      this.quantity()!,
     );
 
     if (!validation.valid) {
@@ -115,12 +118,12 @@ export class AddInsumoPageComponent {
 
     this.inventoryService.create(request).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard/inventory']);
+        this.router.navigate(['/inventory']);
       },
       error: (err) => {
         console.error('Error creating inventory item:', err);
         this.errorMessage.set(
-          err.error?.message || 'Error al crear el ingrediente'
+          err.error?.message || 'Error al crear el ingrediente',
         );
         this.isSubmitting.set(false);
       },
@@ -132,6 +135,6 @@ export class AddInsumoPageComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard/inventory']);
+    this.router.navigate(['/inventory']);
   }
 }

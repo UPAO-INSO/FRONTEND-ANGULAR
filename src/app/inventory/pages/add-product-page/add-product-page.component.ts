@@ -5,10 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { ProductService } from '@src/app/products/services/product.service';
 import { ProductType } from '@src/app/products/interfaces/product.type';
 import { RecipeModalComponent, RecipeItem } from '../../components/recipe-modal/recipe-modal.component';
+import { ProductFieldsComponent } from '../../components/product-fields/product-fields.component';
+import { RecipeSectionComponent } from '../../components/recipe-section/recipe-section.component';
+import { StockSectionComponent } from '../../components/stock-section/stock-section.component';
 
 @Component({
   selector: 'app-add-product-page',
-  imports: [FormsModule, RecipeModalComponent],
+  imports: [FormsModule, RecipeModalComponent, ProductFieldsComponent, RecipeSectionComponent, StockSectionComponent],
   templateUrl: './add-product-page.component.html',
 })
 export class AddProductPageComponent implements OnInit {
@@ -128,7 +131,7 @@ export class AddProductPageComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard/inventory']);
+    this.router.navigate(['/inventory']);
   }
 
   onSubmit(event: Event): void {
@@ -192,7 +195,7 @@ export class AddProductPageComponent implements OnInit {
       .createProduct(request)
       .subscribe({
         next: () => {
-          this.router.navigate(['/dashboard/inventory']);
+          this.router.navigate(['/inventory']);
         },
         error: (err) => {
           console.error('Error creating product:', err);

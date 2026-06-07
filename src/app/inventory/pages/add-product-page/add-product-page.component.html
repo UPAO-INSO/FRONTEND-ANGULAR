@@ -1,202 +1,83 @@
-<main class="pds-page max-w-3xl mx-auto">
+<div class="pds-modal-overlay" (click)="goBack()">
+  <div class="pds-modal max-w-xl" (click)="$event.stopPropagation()">
 
-  <!-- Breadcrumb -->
-  <nav class="pds-breadcrumb">
-    <a class="pds-breadcrumb-link" (click)="goBack()">Inventario</a>
-    <span class="pds-breadcrumb-sep fa-solid fa-chevron-right"></span>
-    <span class="pds-breadcrumb-current">Añadir Producto</span>
-  </nav>
-
-  <!-- Header -->
-  <div class="pds-page-header">
-    <h1 class="pds-page-title">Registrar Nuevo Producto</h1>
-  </div>
-
-  @if (isLoading()) {
-    <div class="flex items-center justify-center py-24">
-      <span class="loading loading-bars loading-lg text-brand"></span>
-    </div>
-  } @else {
-
-    <!-- Error -->
-    @if (errorMessage()) {
-      <div class="pds-alert-error mb-6">
-        <span class="fa-solid fa-exclamation-circle shrink-0"></span>
-        {{ errorMessage() }}
+    <div class="pds-modal-header">
+      <div class="w-9 h-9 rounded-xl bg-brand/15 flex items-center justify-center shrink-0">
+        <span class="fa-solid fa-utensils text-brand"></span>
       </div>
+      <div class="flex-1 min-w-0">
+        <h2 class="pds-modal-title">Nuevo Producto</h2>
+        <p class="text-xs text-text-muted mt-0.5">Plato, bebida o descartable del menú</p>
+      </div>
+      <button class="pds-modal-close" (click)="goBack()">
+        <span class="fa-solid fa-xmark"></span>
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="pds-modal-body flex justify-center py-10">
+        <span class="loading loading-bars loading-lg text-brand"></span>
+      </div>
+    } @else {
+
+      <div class="pds-modal-body space-y-4">
+
+        @if (errorMessage()) {
+          <div class="pds-alert-error">
+            <span class="fa-solid fa-exclamation-circle shrink-0"></span>
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <!-- Campos básicos -->
+        <app-product-fields
+          [(name)]="name"
+          [(price)]="price"
+          [(description)]="description"
+          [selectedTypeId]="selectedTypeId()"
+          [productTypes]="productTypes()"
+          (typeChange)="onTypeChange($event)"
+        />
+
+        <!-- Stock (bebidas/descartables) -->
+        @if (isBeverageOrDisposable()) {
+          <app-stock-section
+            [isNew]="true"
+            [typeName]="selectedTypeName()"
+            [quantity]="initialQuantity()"
+            (quantityChange)="onInitialQuantityChange($event)"
+          />
+        }
+
+        <!-- Receta (platos) -->
+        @if (!isBeverageOrDisposable()) {
+          <app-recipe-section
+            [items]="recipeItems()"
+            (openModal)="openRecipeModal()"
+            (removeItem)="removeRecipeItem($event)"
+          />
+        }
+
+      </div>
+
+      <div class="pds-modal-footer">
+        <button class="pds-btn-secondary btn-sm" type="button" (click)="goBack()">Cancelar</button>
+        <button
+          class="pds-btn-primary btn-sm disabled:opacity-50"
+          (click)="onSubmit($event)"
+          [disabled]="isSubmitting()"
+        >
+          @if (isSubmitting()) {
+            <span class="loading loading-spinner loading-xs"></span> Guardando...
+          } @else {
+            <span class="fa-solid fa-check text-xs"></span> Guardar Producto
+          }
+        </button>
+      </div>
+
     }
-
-    <!-- Form Card -->
-    <div class="pds-card">
-      <div class="pds-card-body">
-        <form class="grid grid-cols-1 md:grid-cols-2 gap-6" (submit)="onSubmit($event)">
-
-          <!-- Nombre -->
-          <div class="md:col-span-2 pds-field">
-            <label class="pds-label">Nombre del Producto</label>
-            <input
-              class="pds-input"
-              placeholder="Ej: Lomo Saltado"
-              [ngModel]="name()"
-              (ngModelChange)="name.set($event)"
-              name="name"
-            />
-          </div>
-
-          <!-- Categoría -->
-          <div class="pds-field">
-            <label class="pds-label">Categoría</label>
-            <div class="relative">
-              <select
-                class="pds-select"
-                [ngModel]="selectedTypeId()"
-                (change)="onTypeChange($event)"
-                name="type"
-              >
-                <option value="" disabled>Seleccionar categoría</option>
-                @for (type of productTypes(); track type.id) {
-                  <option [value]="type.id">{{ type.name }}</option>
-                }
-              </select>
-              <span class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-text-muted text-xs"></span>
-            </div>
-          </div>
-
-          <!-- Precio -->
-          <div class="pds-field">
-            <label class="pds-label">Precio (S/.)</label>
-            <input
-              class="pds-input"
-              placeholder="Ej: 35.50"
-              step="0.1"
-              type="number"
-              min="0"
-              [ngModel]="price()"
-              (ngModelChange)="onPriceChange($event)"
-              name="price"
-            />
-          </div>
-
-          <!-- Descripción -->
-          <div class="md:col-span-2 pds-field">
-            <label class="pds-label">Descripción</label>
-            <textarea
-              class="pds-textarea min-h-[100px]"
-              placeholder="Describe el producto..."
-              [ngModel]="description()"
-              (ngModelChange)="description.set($event)"
-              name="description"
-            ></textarea>
-          </div>
-
-          <!-- Cantidad inicial — solo bebidas/descartables -->
-          @if (isBeverageOrDisposable()) {
-            <div class="md:col-span-2 pds-field">
-              <label class="pds-label">
-                Cantidad Inicial en Inventario
-                <span class="text-text-muted font-normal">(unidades)</span>
-              </label>
-              <input
-                class="pds-input"
-                placeholder="Ej: 24"
-                type="number"
-                min="0"
-                step="1"
-                [ngModel]="initialQuantity()"
-                (ngModelChange)="onInitialQuantityChange($event)"
-                name="initialQuantity"
-              />
-            </div>
-          }
-
-          <!-- Receta — solo platos -->
-          @if (!isBeverageOrDisposable()) {
-            <div class="md:col-span-2">
-              <div class="flex justify-between items-center mb-3">
-                <label class="pds-label">Receta / Ingredientes</label>
-                <button
-                  type="button"
-                  (click)="openRecipeModal()"
-                  class="pds-btn-secondary btn-sm"
-                >
-                  <span class="fa-solid fa-flask text-xs"></span>
-                  Gestionar Receta
-                </button>
-              </div>
-
-              @if (recipeItems().length > 0) {
-                <div class="pds-table-container">
-                  <table class="pds-table">
-                    <thead class="pds-table-head">
-                      <tr>
-                        <th class="pds-table-th">Ingrediente</th>
-                        <th class="pds-table-th">Cantidad</th>
-                        <th class="pds-table-th">Unidad</th>
-                        <th class="px-4 py-3"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (item of recipeItems(); track $index) {
-                        <tr class="pds-table-row">
-                          <td class="pds-table-td-primary">{{ item.name }}</td>
-                          <td class="pds-table-td">{{ item.quantity }}</td>
-                          <td class="pds-table-td">{{ item.unitOfMeasure }}</td>
-                          <td class="px-4 py-3 text-right">
-                            <button
-                              type="button"
-                              (click)="removeRecipeItem($index)"
-                              class="pds-btn-icon text-red-400 hover:text-red-300"
-                            >
-                              <span class="fa-solid fa-trash text-xs"></span>
-                            </button>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              } @else {
-                <div class="pds-empty border border-dashed border-border rounded-lg py-6">
-                  <div class="pds-empty-icon">
-                    <span class="fa-solid fa-flask"></span>
-                  </div>
-                  <p class="text-sm">No se ha definido una receta aún.</p>
-                  <p class="text-xs text-text-muted">Haz clic en "Gestionar Receta" para agregar ingredientes.</p>
-                </div>
-              }
-            </div>
-          }
-
-          <!-- Acciones -->
-          <div class="md:col-span-2 pds-card-footer border-t border-border pt-2 px-0">
-            <button
-              class="pds-btn-secondary"
-              type="button"
-              (click)="goBack()"
-            >
-              Cancelar
-            </button>
-            <button
-              class="pds-btn-primary disabled:opacity-50"
-              type="submit"
-              [disabled]="isSubmitting()"
-            >
-              @if (isSubmitting()) {
-                <span class="loading loading-spinner loading-xs"></span>
-                Guardando...
-              } @else {
-                Guardar Producto
-              }
-            </button>
-          </div>
-
-        </form>
-      </div>
-    </div>
-
-  }
-
-</main>
+  </div>
+</div>
 
 @if (showRecipeModal() && !isBeverageOrDisposable()) {
   <app-recipe-modal
