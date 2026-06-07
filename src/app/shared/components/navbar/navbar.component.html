@@ -25,6 +25,18 @@
       }
     </button>
 
+    <!-- Profile -->
+    @if (authService.authStatus() === 'authenticated') {
+      <a
+        routerLink="/profile"
+        class="pds-btn-icon"
+        title="Mi perfil"
+        aria-label="Mi perfil"
+      >
+        <span class="fa-solid fa-circle-user text-base"></span>
+      </a>
+    }
+
     <!-- Menu -->
     <div class="dropdown dropdown-end dropdown-bottom">
       <button

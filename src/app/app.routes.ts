@@ -87,6 +87,14 @@ export const routes: Routes = [
         loadChildren: () => import('./pensionistas/pensionistas.routes'),
       },
 
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./profile/pages/profile-page/profile-page.component').then(
+            (m) => m.ProfilePageComponent,
+          ),
+      },
+
       { path: '**', redirectTo: 'dashboard' },
     ],
   },
