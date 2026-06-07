@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { InventoryService } from '../../services/inventory.service';
+import { InsumoFieldsComponent } from '../../components/insumo-fields/insumo-fields.component';
 import {
   InventoryItem,
   InventoryUpdate,
@@ -16,7 +17,7 @@ import {
 
 @Component({
   selector: 'app-edit-insumo-page',
-  imports: [RouterLink, FormsModule],
+  imports: [FormsModule, InsumoFieldsComponent],
   templateUrl: './edit-insumo-page.component.html',
 })
 export class EditInsumoPageComponent implements OnInit {
@@ -101,7 +102,9 @@ export class EditInsumoPageComponent implements OnInit {
     if (this.selectedUnit() === 'UNIDAD') {
       // Verificar si tiene decimales
       if (!Number.isInteger(value)) {
-        this.errorMessage.set('Las unidades solo aceptan números enteros, no decimales');
+        this.errorMessage.set(
+          'Las unidades solo aceptan números enteros, no decimales',
+        );
         this.quantity.set(Math.floor(value));
         return;
       }
@@ -131,7 +134,7 @@ export class EditInsumoPageComponent implements OnInit {
     const validation = validateInventoryItem(
       this.selectedType(),
       this.selectedUnit(),
-      this.quantity()!
+      this.quantity()!,
     );
 
     if (!validation.valid) {
@@ -151,12 +154,12 @@ export class EditInsumoPageComponent implements OnInit {
 
     this.inventoryService.update(this.itemId(), request).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard/inventory']);
+        this.router.navigate(['/inventory']);
       },
       error: (err) => {
         console.error('Error updating item:', err);
         this.errorMessage.set(
-          err.error?.message || 'Error al actualizar el insumo'
+          err.error?.message || 'Error al actualizar el insumo',
         );
         this.isSubmitting.set(false);
       },
@@ -171,12 +174,12 @@ export class EditInsumoPageComponent implements OnInit {
     this.isDeleting.set(true);
     this.inventoryService.delete(this.itemId()).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard/inventory']);
+        this.router.navigate(['/inventory']);
       },
       error: (err) => {
         console.error('Error deleting item:', err);
         this.errorMessage.set(
-          err.error?.message || 'Error al eliminar el insumo'
+          err.error?.message || 'Error al eliminar el insumo',
         );
         this.isDeleting.set(false);
       },
@@ -188,6 +191,6 @@ export class EditInsumoPageComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard/inventory']);
+    this.router.navigate(['/inventory']);
   }
 }

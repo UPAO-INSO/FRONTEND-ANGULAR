@@ -1,35 +1,50 @@
 <main class="pds-page">
 
-  <!-- Header -->
-  <div class="pds-page-header">
-    <h1 class="pds-page-title flex items-center gap-2">
-      <span class="fa-solid fa-warehouse text-brand"></span>
-      Inventario
-    </h1>
-
+  <!-- ── Header ───────────────────────────────────────────────────── -->
+  <app-page-header
+    icon="fa-solid fa-warehouse"
+    title="Inventario"
+    subtitle="Productos, ingredientes y stock del restaurante"
+  >
     <div class="flex gap-2">
-      <a
-        routerLink="/dashboard/inventory/add-insumo"
-        class="pds-btn-secondary btn-sm"
-      >
+      <a routerLink="/inventory/add-insumo" class="pds-btn-secondary btn-sm">
         <span class="fa-solid fa-flask text-xs"></span>
-        Añadir Ingrediente
+        Ingrediente
       </a>
-      <a
-        routerLink="/dashboard/inventory/add-product"
-        class="pds-btn-primary btn-sm"
-      >
+      <a routerLink="/inventory/add-product" class="pds-btn-primary btn-sm">
         <span class="fa-solid fa-plus text-xs"></span>
-        Añadir Producto
+        Producto
       </a>
     </div>
+  </app-page-header>
+
+  <!-- ── KPI cards ────────────────────────────────────────────────── -->
+  <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+    <app-kpi-card
+      icon="fa-solid fa-boxes-stacked"
+      label="Total ítems"
+      [value]="totalAll()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-flask"
+      iconColor="text-amber-400"
+      iconBg="bg-amber-500/10"
+      label="Ingredientes"
+      [value]="totalInsumos()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-utensils"
+      iconColor="text-status-preparing"
+      iconBg="bg-status-preparing/10"
+      label="Productos"
+      [value]="totalProductos()"
+    />
   </div>
 
-  <!-- Filtros -->
-  <div class="pds-filters">
+  <!-- ── Filtros ───────────────────────────────────────────────────── -->
+  <div class="pds-filters mb-5">
 
-    <!-- Búsqueda -->
-    <div class="pds-search">
+    <div class="pds-search flex-1 max-w-72">
       <span class="pds-search-icon fa-solid fa-search"></span>
       <input
         class="pds-search-input"
@@ -39,7 +54,6 @@
       />
     </div>
 
-    <!-- Tabs de vista -->
     <div class="flex h-10 bg-background rounded-lg border border-border p-1 gap-1">
       @for (tab of viewTabs; track tab.value) {
         <button
@@ -53,14 +67,14 @@
 
   </div>
 
-  <!-- Chips de categoría (solo en vista Productos) -->
+  <!-- Chips de categoría (solo en Productos) -->
   @if (viewFilter() === 'products') {
     <div class="flex flex-wrap gap-2 mb-4">
       <button
         class="px-3 py-1 rounded-full text-xs font-medium transition-all {{ categoryBtnClass(null) }}"
         (click)="setCategoryFilter(null)"
       >
-        Todas las categorías
+        Todas
       </button>
       @for (type of productTypes(); track type.id) {
         <button
@@ -73,90 +87,85 @@
     </div>
   }
 
-  <!-- Tabla -->
-  <div class="pds-table-container">
+  <!-- ── Cards de inventario ───────────────────────────────────────── -->
+  <app-list-state
+    [loading]="isLoading()"
+    [error]="loadError()"
+    [empty]="unifiedItems().length === 0"
+    emptyIcon="box-open"
+    emptyTitle="Sin elementos"
+    emptyMessage="No se encontraron resultados para los filtros aplicados"
+    loadingMessage="Cargando inventario..."
+  >
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+      @for (item of unifiedItems(); track item.id + '-' + item.itemType) {
 
-    <app-list-state
-      [loading]="isLoading()"
-      [empty]="unifiedItems().length === 0"
-      emptyIcon="box-open"
-      emptyTitle="Sin elementos"
-      emptyMessage="No se encontraron resultados para los filtros aplicados"
-      loadingMessage="Cargando inventario..."
-    >
-      <table class="pds-table">
-        <thead class="pds-table-head">
-          <tr>
-            <th scope="col" class="pds-table-th">Nombre</th>
-            <th scope="col" class="pds-table-th">Categoría</th>
-            <th scope="col" class="pds-table-th">Cantidad</th>
-            <th scope="col" class="pds-table-th">Unidad / Precio</th>
-            <th scope="col" class="relative px-4 py-3"><span class="sr-only">Acciones</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of unifiedItems(); track item.id + '-' + item.itemType) {
-            <tr class="pds-table-row">
-              <td class="pds-table-td-primary">{{ item.name }}</td>
-              <td class="pds-table-td">
-                <span class="px-2 py-0.5 rounded-md bg-background text-text-secondary text-xs font-medium">
-                  {{ getCategoryLabel(item) }}
+        <div class="pds-card px-4 py-4 flex items-center gap-3 hover:border-brand/30 transition-all group">
+
+          <!-- Icono -->
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0
+                      {{ getItemIconBg(item) }}">
+            <span class="{{ getItemIcon(item) }} {{ getItemIconColor(item) }} text-base"></span>
+          </div>
+
+          <!-- Info principal -->
+          <div class="flex-1 min-w-0">
+
+            <!-- Nombre + badge tipo -->
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-sm font-semibold text-text-primary truncate">{{ item.name }}</p>
+            </div>
+
+            <!-- Categoría + precio -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full
+                           {{ item.itemType === 'inventory'
+                              ? 'bg-amber-500/10 text-amber-400'
+                              : 'bg-brand/10 text-brand' }}">
+                {{ getCategoryLabel(item) }}
+              </span>
+              @if (item.itemType === 'product' && item.price != null) {
+                <span class="text-xs text-text-muted font-mono">
+                  S/ {{ item.price.toFixed(2) }}
                 </span>
-              </td>
-              <td class="pds-table-td">{{ getQuantityDisplay(item) }}</td>
-              <td class="pds-table-td">{{ getUnitOrPrice(item) }}</td>
-              <td class="px-4 py-3 text-right">
-                <button
-                  (click)="editItem(item)"
-                  class="pds-btn-icon"
-                  title="Editar"
-                >
-                  <span class="fa-solid fa-pen-to-square text-sm"></span>
-                </button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </app-list-state>
+              }
+            </div>
 
-  </div>
+          </div>
 
-  <!-- Paginación -->
-  @if (totalPages() > 1) {
-    <div class="flex flex-col items-center gap-2 mt-4">
+          <!-- Stock -->
+          <div class="text-right shrink-0">
+            @let stock = getStockDisplay(item);
+            <p class="text-lg font-bold font-mono {{ getStockColorClass(item) }}">
+              {{ stock.value }}
+            </p>
+            <p class="text-[10px] text-text-muted uppercase tracking-wide">
+              {{ stock.label }}
+            </p>
+          </div>
 
-      <div class="flex items-center gap-1">
-        <button
-          (click)="goToPage(currentPage() - 1)"
-          [disabled]="currentPage() === 1"
-          class="btn btn-sm btn-ghost text-text-secondary hover:text-text-primary disabled:opacity-30"
-        >
-          <span class="fa-solid fa-chevron-left"></span>
-        </button>
-
-        @for (page of pageNumbers(); track page) {
+          <!-- Editar -->
           <button
-            (click)="goToPage(page)"
-            class="btn btn-sm min-w-9 {{ currentPage() === page ? 'bg-brand text-white border-0' : 'btn-ghost text-text-secondary hover:text-text-primary' }}"
+            (click)="editItem(item)"
+            class="pds-btn-icon shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Editar"
           >
-            {{ page }}
+            <span class="fa-solid fa-pen-to-square text-sm"></span>
           </button>
-        }
 
-        <button
-          (click)="goToPage(currentPage() + 1)"
-          [disabled]="currentPage() === totalPages()"
-          class="btn btn-sm btn-ghost text-text-secondary hover:text-text-primary disabled:opacity-30"
-        >
-          <span class="fa-solid fa-chevron-right"></span>
-        </button>
-      </div>
+        </div>
 
-      <p class="text-xs text-text-muted">
-        Página {{ currentPage() }} de {{ totalPages() }} · {{ allUnifiedItems().length }} elementos
-      </p>
+      }
+    </div>
+  </app-list-state>
 
+  <!-- ── Paginación ────────────────────────────────────────────────── -->
+  @if (totalPages() > 1) {
+    <div class="mt-5">
+      <app-pagination
+        [currentPage]="currentPage()"
+        [pages]="totalPages()"
+      />
     </div>
   }
 

@@ -15,6 +15,10 @@ import {
 } from '../../interfaces/inventory.interface';
 import { ProductType } from '@src/app/products/interfaces/product.type';
 import { ListStateComponent } from '@src/app/shared/components/list-state/list-state.component';
+import { PageHeaderComponent } from '@src/app/shared/components/page-header/page-header.component';
+import { KpiCardComponent } from '@src/app/shared/components/kpi-card/kpi-card.component';
+import { PaginationComponent } from '@src/app/shared/components/pagination/pagination.component';
+import { PaginationService } from '@src/app/shared/components/pagination/pagination.service';
 
 type ViewFilter = 'all' | 'products' | 'insumos';
 
@@ -22,31 +26,28 @@ const ITEMS_PER_PAGE = 10;
 
 @Component({
   selector: 'app-inventory-page',
-  imports: [RouterLink, FormsModule, ListStateComponent],
+  imports: [RouterLink, FormsModule, ListStateComponent, PageHeaderComponent, KpiCardComponent, PaginationComponent],
   templateUrl: './inventory-page.component.html',
 })
 export class InventoryPageComponent {
-  private inventoryService = inject(InventoryService);
-  private productService = inject(ProductService);
-  private router = inject(Router);
+  private inventoryService  = inject(InventoryService);
+  private productService    = inject(ProductService);
+  private router            = inject(Router);
+  readonly paginationService = inject(PaginationService);
 
   // Filtros
-  searchTerm = signal('');
-  viewFilter = signal<ViewFilter>('all');
+  searchTerm            = signal('');
+  viewFilter            = signal<ViewFilter>('all');
   productCategoryFilter = signal<number | null>(null);
 
-  // Paginación
-  currentPage = signal(1);
+  // Paginación local (usa PaginationService como fuente de verdad)
+  currentPage = computed(() => this.paginationService.currentPage());
 
   readonly viewTabs: { value: ViewFilter; label: string }[] = [
     { value: 'all',      label: 'Todos'     },
     { value: 'products', label: 'Productos' },
     { value: 'insumos',  label: 'Items'     },
   ];
-
-  pageNumbers = computed(() =>
-    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
-  );
 
   // Tipos de productos (cargar una sola vez)
   productTypesResource = rxResource({
@@ -76,24 +77,8 @@ export class InventoryPageComponent {
     },
   });
 
-  // Mapa de inventario por nombre para obtener cantidades de bebidas/descartables
-  private inventoryByName = computed<Map<string, { quantity: number; unitOfMeasure: string }>>(() => {
-    const map = new Map<string, { quantity: number; unitOfMeasure: string }>();
-    const inventoryData = this.inventoryResource.value();
-    if (inventoryData?.content) {
-      for (const inv of inventoryData.content) {
-        const item = inv as InventoryItem;
-        // Solo bebidas y descartables
-        if (item.type === InventoryType.BEVERAGE || item.type === InventoryType.DISPOSABLE) {
-          map.set(item.name.toLowerCase(), {
-            quantity: item.quantity,
-            unitOfMeasure: item.unitOfMeasure
-          });
-        }
-      }
-    }
-    return map;
-  });
+  // inventoryByName eliminado — el stock ahora viene directamente del backend
+  // via ProductResponseDto.stock (FK directo inventory_id en product)
 
   // Todos los items sin paginar (para calcular total)
   allUnifiedItems = computed<UnifiedInventoryItem[]>(() => {
@@ -154,6 +139,7 @@ export class InventoryPageComponent {
             description: prod.description,
             productTypeId: prod.productTypeId,
             productTypeName: prod.productTypeName,
+            quantity: prod.stock ?? undefined,  // stock directo del backend (para bebidas/descartables)
           });
         }
       }
@@ -171,16 +157,32 @@ export class InventoryPageComponent {
     return allItems.slice(startIndex, endIndex);
   });
 
-  isLoading = computed(
-    () =>
-      this.inventoryResource.isLoading() || this.productsResource.isLoading()
+  isLoading = computed(() =>
+    (this.inventoryResource.isLoading()  && !this.inventoryResource.error()) ||
+    (this.productsResource.isLoading()   && !this.productsResource.error())
   );
 
-  // Total de páginas basado en paginación local
-  totalPages = computed(() => {
-    const totalItems = this.allUnifiedItems().length;
-    return Math.ceil(totalItems / ITEMS_PER_PAGE);
-  });
+  loadError = computed(() =>
+    (this.inventoryResource.error() as Error | undefined)?.message ??
+    (this.productsResource.error()  as Error | undefined)?.message ??
+    null
+  );
+
+  totalPages = computed(() =>
+    Math.ceil(this.allUnifiedItems().length / ITEMS_PER_PAGE)
+  );
+
+  // ── KPI computed ──────────────────────────────────────────────────
+  totalInsumos   = computed(() =>
+    (this.inventoryResource.value()?.content ?? [])
+      .filter((i: InventoryItem) =>
+        i.type !== InventoryType.BEVERAGE && i.type !== InventoryType.DISPOSABLE
+      ).length
+  );
+  totalProductos = computed(() =>
+    (this.productsResource.value()?.content ?? []).length
+  );
+  totalAll       = computed(() => this.totalInsumos() + this.totalProductos());
 
   // Helpers para template
   getCategoryLabel(item: UnifiedInventoryItem): string {
@@ -195,16 +197,12 @@ export class InventoryPageComponent {
 
   getQuantityDisplay(item: UnifiedInventoryItem): string {
     if (item.itemType === 'product') {
-      // Para productos, verificar si es bebida o descartable (tienen inventario)
       const typeName = item.productTypeName?.toUpperCase();
-      if (typeName === 'BEBIDAS' || typeName === 'DESCARTABLES') {
-        // Buscar la cantidad en el inventario por nombre
-        const invData = this.inventoryByName().get(item.name.toLowerCase());
-        if (invData) {
-          return invData.quantity.toString();
-        }
+      if ((typeName === 'BEBIDAS' || typeName === 'DESCARTABLES') && item.quantity != null) {
+        // Stock real del backend via FK directo (sin nombre matching)
+        return item.quantity.toString();
       }
-      // Para platos (ENTRADAS, CARTA, SEGUNDOS) no tienen cantidad directa
+      // Para platos no hay stock directo (depende de ingredientes)
       return 'N/A';
     }
     return item.quantity?.toString() ?? '-';
@@ -223,53 +221,89 @@ export class InventoryPageComponent {
   // Acciones
   setFilter(filter: ViewFilter): void {
     this.viewFilter.set(filter);
-    // Resetear filtro de categoría si no estamos en productos
-    if (filter !== 'products') {
-      this.productCategoryFilter.set(null);
-    }
-    // Resetear a página 1
-    this.currentPage.set(1);
+    if (filter !== 'products') this.productCategoryFilter.set(null);
+    this.paginationService.resetPage();
   }
 
   setCategoryFilter(categoryId: number | null): void {
     this.productCategoryFilter.set(categoryId);
-    // Resetear a página 1 al cambiar categoría
-    this.currentPage.set(1);
+    this.paginationService.resetPage();
   }
 
   onSearch(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.searchTerm.set(target.value);
-    // Resetear a página 1 al buscar
-    this.currentPage.set(1);
-  }
-
-  // Navegación de páginas
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages()) {
-      this.currentPage.set(page);
-    }
+    this.searchTerm.set((event.target as HTMLInputElement).value);
+    this.paginationService.resetPage();
   }
 
   editItem(item: UnifiedInventoryItem): void {
     if (item.itemType === 'inventory') {
-      this.router.navigate(['/dashboard/inventory/edit-insumo', item.id]);
+      this.router.navigate(['/inventory/edit-insumo', item.id]);
     } else {
-      this.router.navigate(['/dashboard/inventory/edit-product', item.id]);
+      this.router.navigate(['/inventory/edit-product', item.id]);
     }
   }
 
-  /** Clase del tab de vista (Todos / Productos / Items) */
   viewTabClass(filter: ViewFilter): string {
     return this.viewFilter() === filter
       ? 'bg-surface-nav text-white shadow-sm'
       : 'text-gray-400 hover:text-gray-200 hover:bg-surface-nav/50';
   }
 
-  /** Clase del botón de categoría de producto */
   categoryBtnClass(id: number | null): string {
     return this.productCategoryFilter() === id
       ? 'bg-brand text-white'
       : 'bg-background-secondary text-gray-400 hover:text-white hover:bg-surface';
+  }
+
+  // ── Helpers visuales ────────────────────────────────────────────
+
+  /** Icono Font Awesome para el tipo de ítem */
+  getItemIcon(item: UnifiedInventoryItem): string {
+    if (item.itemType === 'inventory') return 'fa-solid fa-flask';
+    const t = item.productTypeName?.toUpperCase() ?? '';
+    if (t.includes('BEBIDA')) return 'fa-solid fa-bottle-water';
+    if (t.includes('DESCARTABLE')) return 'fa-solid fa-box';
+    return 'fa-solid fa-utensils';
+  }
+
+  /** Color del icono */
+  getItemIconColor(item: UnifiedInventoryItem): string {
+    if (item.itemType === 'inventory') return 'text-amber-400';
+    const t = item.productTypeName?.toUpperCase() ?? '';
+    if (t.includes('BEBIDA')) return 'text-blue-400';
+    if (t.includes('DESCARTABLE')) return 'text-gray-400';
+    return 'text-brand';
+  }
+
+  /** Fondo del icono */
+  getItemIconBg(item: UnifiedInventoryItem): string {
+    if (item.itemType === 'inventory') return 'bg-amber-500/10';
+    const t = item.productTypeName?.toUpperCase() ?? '';
+    if (t.includes('BEBIDA')) return 'bg-blue-500/10';
+    if (t.includes('DESCARTABLE')) return 'bg-gray-500/10';
+    return 'bg-brand/10';
+  }
+
+  /** Color del stock según cantidad */
+  getStockColorClass(item: UnifiedInventoryItem): string {
+    const qty = item.quantity;
+    if (qty == null) return 'text-text-muted';
+    if (qty <= 0)    return 'text-red-400';
+    if (qty <= 5)    return 'text-orange-400';
+    if (qty <= 20)   return 'text-amber-400';
+    return 'text-status-ready';
+  }
+
+  /** Texto del stock con unidad */
+  getStockDisplay(item: UnifiedInventoryItem): { value: string; label: string } {
+    if (item.itemType === 'product') {
+      const t = item.productTypeName?.toUpperCase() ?? '';
+      if ((t.includes('BEBIDA') || t.includes('DESCARTABLE')) && item.quantity != null) {
+        return { value: item.quantity.toString(), label: 'und' };
+      }
+      return { value: '—', label: 'por receta' };
+    }
+    const symbol = item.unitOfMeasure ? UNIT_OF_MEASURE_SYMBOLS[item.unitOfMeasure] : '';
+    return { value: item.quantity?.toString() ?? '—', label: symbol };
   }
 }

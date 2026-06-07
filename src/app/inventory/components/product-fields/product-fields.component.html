@@ -1,0 +1,71 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+  <!-- Nombre -->
+  <div class="sm:col-span-2 pds-field">
+    <label class="pds-label">Nombre del producto</label>
+    <input
+      class="pds-input"
+      placeholder="Ej: Lomo Saltado"
+      [ngModel]="name()"
+      (ngModelChange)="name.set($event)"
+      name="productName"
+    />
+  </div>
+
+  <!-- Categoría -->
+  <div class="pds-field">
+    <label class="pds-label">Categoría</label>
+    <div class="relative">
+      <select
+        class="pds-select"
+        [ngModel]="selectedTypeId()"
+        (change)="typeChange.emit($event)"
+        name="productType"
+      >
+        <option [value]="null" disabled>Seleccionar categoría</option>
+        @for (type of productTypes(); track type.id) {
+          <option [value]="type.id">{{ type.name }}</option>
+        }
+      </select>
+      <span class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-xs"></span>
+    </div>
+    @if (categoryChangeWarning()) {
+      <p class="text-xs text-amber-400 mt-1.5 flex items-center gap-1">
+        <span class="fa-solid fa-triangle-exclamation text-[10px]"></span>
+        {{ categoryChangeWarning() }}
+      </p>
+    }
+  </div>
+
+  <!-- Precio -->
+  <div class="pds-field">
+    <label class="pds-label">Precio (S/.)</label>
+    <input
+      class="pds-input"
+      placeholder="0.00"
+      type="number"
+      min="0"
+      step="0.1"
+      [ngModel]="price()"
+      (ngModelChange)="price.set($event)"
+      name="productPrice"
+    />
+  </div>
+
+  <!-- Descripción -->
+  <div class="sm:col-span-2 pds-field">
+    <label class="pds-label">
+      Descripción
+      <span class="text-text-muted font-normal ml-1">(opcional)</span>
+    </label>
+    <textarea
+      class="pds-textarea"
+      rows="2"
+      placeholder="Describe el producto..."
+      [ngModel]="description()"
+      (ngModelChange)="description.set($event)"
+      name="productDescription"
+    ></textarea>
+  </div>
+
+</div>
