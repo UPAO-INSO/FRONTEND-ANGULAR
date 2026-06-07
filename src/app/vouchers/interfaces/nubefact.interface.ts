@@ -19,6 +19,8 @@ export interface NubefactItem {
 export interface CreateVoucherRequest {
   serie: string;
   numero: number;
+  /** ID del pago en nuestra BD para asociar automáticamente en el backend */
+  paymentId?: number;
   sunat_transaction: number;
   cliente_tipo_de_documento: number;
   cliente_numero_de_documento: string;
