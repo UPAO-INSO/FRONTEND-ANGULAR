@@ -32,7 +32,7 @@ export class NavbarComponent {
   themeService = inject(ThemeService);
   envs = environment;
 
-  userJobTitle = signal<string>('');
+  userRole = signal<string>('');
 
   allMenuOptions: MenuOption[] = [
     {
@@ -40,69 +40,68 @@ export class NavbarComponent {
       label: 'Mesas',
       sublabel: 'Seleccionar mesa',
       route: '/tables',
-      allowedRoles: ['mesero', 'gerente'],
+      allowedRoles: ['MESERO', 'CAJERO', 'GERENTE'],
     },
     {
       icon: 'fa-solid fa-table-list',
       label: 'Pedidos',
       sublabel: 'Revisa tus pedidos',
       route: '/orders',
-      allowedRoles: ['gerente', 'cocina'],
+      allowedRoles: ['MESERO', 'CAJERO', 'COCINERO', 'GERENTE'],
     },
     {
       icon: 'fa-solid fa-file-invoice',
       label: 'Facturación',
       sublabel: 'Comprueba tus facturas',
       route: '/vouchers',
-      allowedRoles: ['administrador', 'gerente', 'cajero'],
+      allowedRoles: ['CAJERO', 'GERENTE'],
     },
     {
       icon: 'fa-solid fa-briefcase',
       label: 'Inventario',
       sublabel: 'Gestiona tu inventario',
       route: '/inventory',
-      allowedRoles: ['gerente', 'cocinero'],
+      allowedRoles: ['GERENTE', 'COCINERO'],
     },
     {
       icon: 'fa-solid fa-cash-register',
       label: 'Pagos',
       sublabel: 'Valida tus pagos',
       route: '/payments',
-      allowedRoles: ['gerente', 'cajero'],
+      allowedRoles: ['CAJERO', 'GERENTE'],
     },
     {
       icon: 'fa-solid fa-utensils',
       label: 'Cocina',
       sublabel: 'Gestiona los pedidos en cocina',
       route: '/kitchen',
-      allowedRoles: ['cocinero', 'gerente'],
+      allowedRoles: ['COCINERO', 'GERENTE'],
     },
   ];
 
   menuOptions = computed(() => {
-    const jobTitle = this.userJobTitle().toLowerCase();
-    if (!jobTitle) return [];
+    const role = this.userRole().toUpperCase();
+    if (!role) return [];
+    // ADMINISTRADOR ve todas las opciones del menú
+    if (role === 'ADMINISTRADOR') return this.allMenuOptions;
     return this.allMenuOptions.filter(opt =>
-      !opt.allowedRoles?.length ||
-      opt.allowedRoles.some(r =>
-        r.toLowerCase() === jobTitle || jobTitle.includes(r.toLowerCase())
-      )
+      !opt.allowedRoles?.length || opt.allowedRoles.includes(role)
     );
   });
 
   constructor() {
-    this.loadUserJobTitle();
+    this.loadUserRole();
   }
 
-  private loadUserJobTitle() {
+  private loadUserRole() {
     try {
       const raw = localStorage.getItem('user-data');
       if (raw) {
         const data: UserData = JSON.parse(raw);
-        this.userJobTitle.set(data.jobTitle || data.role || '');
+        this.userRole.set(data.role || '');
       }
     } catch {
-      this.userJobTitle.set('');
+      this.userRole.set('');
     }
   }
 
