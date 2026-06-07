@@ -5,5 +5,5 @@ export const environment = {
   companySlogan: 'Gestiona tus pedidos fácilmente',
 
   API_URL: 'https://backend-pds-prod.up.railway.app/api',
-  WS_URL: 'wss://backend-pds-prod.up.railway.app',
+  WS_URL: 'https://backend-pds-prod.up.railway.app',
 };
