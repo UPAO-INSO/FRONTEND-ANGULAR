@@ -4,6 +4,6 @@ export const environment = {
   companyName2: 'App',
   companySlogan: 'Gestiona tus pedidos',
 
-  API_URL: 'https://7f127d8683fe.ngrok-free.app/api',
-  WS_URL: '//7f127d8683fe.ngrok-free.app',
+  API_URL: 'https://xmk6tjqx-8080.brs.devtunnels.ms/api',
+  WS_URL: '//xmk6tjqx-8080.brs.devtunnels.ms',
 };

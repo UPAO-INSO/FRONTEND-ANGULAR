@@ -410,7 +410,7 @@
 
   /* Título principal h1 */
   .pds-page-title {
-    @apply text-2xl sm:text-3xl font-bold text-text-primary tracking-tight;
+    @apply text-xl sm:text-2xl font-bold text-text-primary tracking-tight;
   }
 
   /* Subtítulo / descripción bajo el título */
