@@ -4,6 +4,6 @@ export const environment = {
   companyName2: 'App',
   companySlogan: 'Gestiona tus pedidos',
 
-  API_URL: 'https://backend-pds.railway.internal:8080/api',
+  API_URL: 'http://backend-pds.railway.internal:8080/api',
   WS_URL: 'wss://backend-pds.railway.internal:8080',
 };
