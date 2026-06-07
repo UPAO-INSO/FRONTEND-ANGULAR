@@ -15,6 +15,6 @@ FROM nginx:alpine
 COPY --from=build /app/dist/pds-app/browser /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 8080
 
-CMD ["/bin/sh", "-c", "envsubst '$PORT' < /etc/nginx/conf.d/default.conf > /tmp/nginx.conf && mv /tmp/nginx.conf /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["nginx", "-g", "daemon off;"]
