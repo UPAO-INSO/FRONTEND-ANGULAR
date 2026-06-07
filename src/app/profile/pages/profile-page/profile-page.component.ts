@@ -24,6 +24,7 @@ export class ProfilePageComponent implements OnInit {
 
   profile = signal<ProfileResponse | null>(null);
   loading = signal(true);
+  loadError = signal<string | null>(null);
 
   // Formulario personal
   personal = { name: '', lastname: '', phone: '' };
@@ -40,6 +41,17 @@ export class ProfilePageComponent implements OnInit {
   passwordState = signal<SectionState>(freshState());
 
   ngOnInit(): void {
+    this.loadProfile();
+  }
+
+  reload(): void {
+    this.loading.set(true);
+    this.loadError.set(null);
+    this.profile.set(null);
+    this.loadProfile();
+  }
+
+  private loadProfile(): void {
     this.profileService.getProfile().subscribe({
       next: (data) => {
         this.profile.set(data);
@@ -48,7 +60,11 @@ export class ProfilePageComponent implements OnInit {
         this.newEmail = data.email;
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: (e) => {
+        const msg = e?.error?.message ?? `Error al cargar el perfil (${e?.status ?? 'sin conexión'}).`;
+        this.loadError.set(msg);
+        this.loading.set(false);
+      },
     });
   }
 
