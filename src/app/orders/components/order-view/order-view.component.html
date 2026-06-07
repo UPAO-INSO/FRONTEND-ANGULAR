@@ -99,20 +99,37 @@
       <div class="flex flex-col sm:flex-row gap-2 pt-1">
 
         @if (canProcessPayment() && isAtm()) {
-          <button
-            class="flex-1 btn h-11 text-white border-0 gap-2 transition-all
-              {{ culqiOrder() ? 'bg-brand hover:bg-brand-dark' : 'bg-orange-600 hover:bg-orange-700' }}"
-            (click)="openPayment()"
-            [disabled]="activeOrder().orderStatus === orderStatus.PAID"
-          >
-            @if (culqiOrder()) {
-              <span class="fa-solid fa-qrcode text-sm"></span>
-              <span>Ver QR de Pago</span>
-            } @else {
-              <span class="fa-solid fa-wallet text-sm"></span>
-              <span>Procesar Pago</span>
-            }
-          </button>
+          @if (checkingPayment()) {
+            <!-- Verificando si ya existe un pago... -->
+            <button class="flex-1 btn h-11 bg-surface border-border text-text-secondary gap-2" disabled>
+              <span class="loading loading-spinner loading-xs"></span>
+              Verificando pago...
+            </button>
+          } @else if (existingPayment()) {
+            <!-- Pago ya registrado → redirigir a pagos -->
+            <button
+              class="flex-1 btn h-11 bg-brand hover:bg-brand-dark text-white border-0 gap-2 transition-all"
+              (click)="viewExistingPayment()"
+            >
+              <span class="fa-solid fa-receipt text-sm"></span>
+              Ver Pago Registrado
+            </button>
+          } @else {
+            <!-- Sin pago → procesar -->
+            <button
+              class="flex-1 btn h-11 text-white border-0 gap-2 transition-all
+                {{ culqiOrder() ? 'bg-brand hover:bg-brand-dark' : 'bg-orange-600 hover:bg-orange-700' }}"
+              (click)="openPayment()"
+            >
+              @if (culqiOrder()) {
+                <span class="fa-solid fa-qrcode text-sm"></span>
+                Ver QR de Pago
+              } @else {
+                <span class="fa-solid fa-wallet text-sm"></span>
+                Procesar Pago
+              }
+            </button>
+          }
         }
 
         @if (!isAtm()) {
@@ -126,9 +143,12 @@
         }
 
         @if (activeOrder().orderStatus === orderStatus.PAID) {
-          <button class="flex-1 btn h-11 bg-brand hover:bg-brand-dark text-white border-0 gap-2">
-            <span class="fa-solid fa-file-invoice text-sm"></span>
-            Comprobante
+          <button
+            class="flex-1 btn h-11 bg-brand hover:bg-brand-dark text-white border-0 gap-2 transition-all"
+            (click)="viewExistingPayment()"
+          >
+            <span class="fa-solid fa-receipt text-sm"></span>
+            Ver Pago
           </button>
         }
 

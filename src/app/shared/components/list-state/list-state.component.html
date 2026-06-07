@@ -1,28 +1,28 @@
-@if (loading()) {
-  <div class="flex flex-col items-center justify-center h-full px-4">
-    <span class="loading loading-bars loading-md sm:loading-lg"></span>
-    <span class="text-text-secondary font-medium mt-3 sm:mt-5 text-sm sm:text-base">
+@if (error()) {
+  <div class="flex flex-col items-center justify-center h-full px-4 text-center py-12">
+    <div class="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mb-3">
+      <span class="fa-solid fa-exclamation-triangle text-red-400 text-xl"></span>
+    </div>
+    <p class="text-sm font-semibold text-text-secondary mb-1">No se pudo cargar la información</p>
+    <p class="text-xs text-text-muted max-w-xs">{{ error() }}</p>
+  </div>
+
+} @else if (loading()) {
+  <div class="flex flex-col items-center justify-center h-full px-4 py-12">
+    <span class="loading loading-bars loading-md sm:loading-lg text-brand"></span>
+    <span class="text-text-secondary font-medium mt-3 text-sm">
       {{ loadingMessage() }}
     </span>
   </div>
 
-} @else if (error()) {
-  <div class="flex flex-col items-center justify-center h-full px-4 text-center">
-    <div class="pds-alert-error flex-col items-center text-center">
-      <span class="fa-solid fa-exclamation-triangle text-3xl sm:text-5xl mb-2"></span>
-      <span class="text-base sm:text-xl font-medium mb-1">Error al cargar</span>
-      <span class="text-xs sm:text-sm opacity-80">{{ error() }}</span>
-    </div>
-  </div>
-
 } @else if (empty()) {
-  <div class="pds-empty">
+  <div class="pds-empty py-12">
     <div class="pds-empty-icon">
       <span class="fa-solid fa-{{ emptyIcon() }}"></span>
     </div>
-    <span class="text-base sm:text-xl font-medium text-text-secondary">{{ emptyTitle() }}</span>
+    <span class="text-base font-medium text-text-secondary">{{ emptyTitle() }}</span>
     @if (emptyMessage()) {
-      <span class="text-xs sm:text-sm text-text-muted">{{ emptyMessage() }}</span>
+      <span class="text-xs text-text-muted text-center">{{ emptyMessage() }}</span>
     }
   </div>
 

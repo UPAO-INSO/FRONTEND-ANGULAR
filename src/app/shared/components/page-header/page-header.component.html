@@ -1,0 +1,19 @@
+<div class="pds-page-header">
+
+  <!-- Título + subtítulo -->
+  <div>
+    <h1 class="pds-page-title">
+      @if (icon()) {
+        <span class="{{ icon() }} text-brand text-xl mr-3"></span>
+      }
+      {{ title() }}
+    </h1>
+    @if (subtitle()) {
+      <p class="pds-page-subtitle">{{ subtitle() }}</p>
+    }
+  </div>
+
+  <!-- Slot de acciones (botones, filtros, etc.) -->
+  <ng-content />
+
+</div>

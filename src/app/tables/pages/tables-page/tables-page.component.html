@@ -26,7 +26,8 @@
   <app-table-list
     [tables]="tablesResource.value()?.content ?? []"
     [isEmpty]="(tablesResource.value()?.content?.length ?? 0) === 0"
-    [isLoading]="tablesResource.isLoading()"
+    [isLoading]="tablesResource.isLoading() && !tablesResource.error()"
+    [errorMessage]="tablesLoadError()"
     [activeOrdersByTable]="activeOrdersByTable()"
     [modifyStatus]="modifyStatusChanged()"
     (modifyStatusChanged)="onModifyStatusChanged($event)"

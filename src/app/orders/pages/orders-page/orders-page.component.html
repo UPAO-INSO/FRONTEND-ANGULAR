@@ -1,17 +1,50 @@
 <div class="pds-page">
 
+  <!-- Header + filtros de estado (dentro de app-order-header-status) -->
   <app-order-header-status
     (status)="selectedOrderStatus.set($event)"
     (value)="tableNumber.set($event)"
   />
 
+  <!-- KPI cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+    <app-kpi-card
+      icon="fa-solid fa-receipt"
+      label="Total pedidos"
+      [value]="totalOrders()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-hourglass-half"
+      iconColor="text-status-pending"
+      iconBg="bg-status-pending/10"
+      label="Pendientes"
+      [value]="pendingCount()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-fire-burner"
+      iconColor="text-status-preparing"
+      iconBg="bg-status-preparing/10"
+      label="En cocina"
+      [value]="preparingCount()"
+    />
+    <app-kpi-card
+      icon="fa-solid fa-bell"
+      iconColor="text-status-ready"
+      iconBg="bg-status-ready/10"
+      label="Listos"
+      [value]="readyCount()"
+      valueColor="text-status-ready"
+    />
+  </div>
+
+  <!-- Lista de pedidos -->
   <app-order-list
     [totalPages]="orderResource.value()?.totalPages ?? 0"
     [currentPage]="paginationService.currentPage()"
     [orders]="orderResource.value()?.content ?? []"
     [isEmpty]="(orderResource.value()?.content?.length ?? 0) === 0"
-    [isLoading]="orderResource.isLoading()"
-    [errorMessage]="orderResource.error()?.message ?? null"
+    [isLoading]="isLoading()"
+    [errorMessage]="loadError()"
     (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
   />
 

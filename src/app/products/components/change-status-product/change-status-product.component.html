@@ -1,5 +1,4 @@
 <div class="h-full flex flex-col font-display">
-
   <!-- Header -->
   <div class="pds-modal-header">
     <h1 class="pds-modal-title text-xl sm:text-2xl">Gestión de productos</h1>
@@ -13,7 +12,7 @@
   </div>
 
   <!-- Search -->
-  <div class="pds-search px-5 py-3 border-b border-border">
+  <div class="px-5 py-3 border-b border-border">
     <app-search-product-input (value)="debouncedSearch.set($event)" />
   </div>
 
@@ -26,13 +25,18 @@
   </div>
 
   <!-- Products Grid -->
-  <div class="flex-1 overflow-y-auto px-2 sm:px-4 custom-scrollbar pb-4">
-
+  <div
+    class="flex-1 overflow-y-auto px-2 sm:px-4 custom-dropdown-scrollbar pb-4"
+  >
     <!-- Loading state -->
     @if (filteredProducts.isLoading()) {
       <div class="flex flex-col items-center justify-center py-8 sm:py-12">
-        <span class="loading loading-bars loading-md sm:loading-lg text-brand mb-2"></span>
-        <span class="text-text-secondary text-xs sm:text-sm">Cargando productos...</span>
+        <span
+          class="loading loading-bars loading-md sm:loading-lg text-brand mb-2"
+        ></span>
+        <span class="text-text-secondary text-xs sm:text-sm"
+          >Cargando productos...</span
+        >
       </div>
     }
 
@@ -49,7 +53,9 @@
 
     <!-- Products grid -->
     @else if (filteredProducts.value()) {
-      <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+      <div
+        class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-6"
+      >
         @for (product of filteredProducts.value(); track product.id) {
           <app-order-product-item
             [product]="product"
@@ -67,7 +73,9 @@
             <span class="fa-solid fa-box-open"></span>
           </div>
           <p class="font-medium">No hay productos en esta categoría</p>
-          <p class="text-xs text-text-muted">Selecciona otra categoría o agrega nuevos productos</p>
+          <p class="text-xs text-text-muted">
+            Selecciona otra categoría o agrega nuevos productos
+          </p>
         </div>
       }
     }
@@ -79,9 +87,10 @@
           <span class="fa-solid fa-utensils"></span>
         </div>
         <p class="font-medium">Selecciona una categoría</p>
-        <p class="text-xs text-text-muted">Elige una categoría para ver los productos disponibles</p>
+        <p class="text-xs text-text-muted">
+          Elige una categoría para ver los productos disponibles
+        </p>
       </div>
     }
-
   </div>
 </div>

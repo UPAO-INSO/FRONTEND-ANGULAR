@@ -1,8 +1,10 @@
-<span class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm pointer-events-none z-10"></span>
-<input
-  class="w-full pl-10 pr-4 py-2 rounded-md bg-transparent border border-border text-text-primary placeholder:text-text-muted text-sm focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand transition-colors"
-  placeholder="Buscar por productos"
-  #txtSearch
-  (keyup)="inputValue.set(txtSearch.value)"
-  type="text"
-/>
+<div class="pds-search">
+  <span class="pds-search-icon fa-solid fa-magnifying-glass"></span>
+  <input
+    class="pds-search-input"
+    placeholder="Buscar por productos"
+    #txtSearch
+    (keyup)="inputValue.set(txtSearch.value)"
+    type="text"
+  />
+</div>

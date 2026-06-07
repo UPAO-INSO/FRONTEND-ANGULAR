@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { OrderService } from '../../services/order.service';
 import { OrderListComponent } from '../../components/order-list/order-list.component';
 import { OrderStatusComponent } from '../../components/order-header-status/order-header-status.component';
 import { OrderStatus, UUID } from '../../interfaces/order.interface';
+import { KpiCardComponent } from '@src/app/shared/components/kpi-card/kpi-card.component';
 
 import { PaginationService } from '@shared/components/pagination/pagination.service';
 import { OrderSyncService } from '@src/app/shared/services/order-sync.service';
@@ -17,7 +18,7 @@ enum Direction {
 
 @Component({
   selector: 'app-orders-page',
-  imports: [OrderListComponent, OrderStatusComponent],
+  imports: [OrderListComponent, OrderStatusComponent, KpiCardComponent],
   templateUrl: './orders-page.component.html',
 })
 export default class OrdersPageComponent {
@@ -27,7 +28,23 @@ export default class OrdersPageComponent {
   private culqiService = inject(CulqiService);
 
   selectedOrderStatus = signal<OrderStatus | null>(null);
-  tableNumber = signal<number | null>(null);
+  tableNumber         = signal<number | null>(null);
+
+  isLoading  = computed(() => this.orderResource.isLoading() && !this.orderResource.error());
+  loadError  = computed(() => (this.orderResource.error() as Error | undefined)?.message ?? null);
+  totalOrders  = computed(() => this.orderResource.value()?.totalElements ?? 0);
+  pendingCount = computed(() =>
+    (this.orderResource.value()?.content ?? [])
+      .filter(o => o.orderStatus === OrderStatus.PENDING).length
+  );
+  preparingCount = computed(() =>
+    (this.orderResource.value()?.content ?? [])
+      .filter(o => o.orderStatus === OrderStatus.PREPARING).length
+  );
+  readyCount = computed(() =>
+    (this.orderResource.value()?.content ?? [])
+      .filter(o => o.orderStatus === OrderStatus.READY).length
+  );
 
   constructor() {
     this.orderSyncService.orderUpdates$.subscribe((update) => {

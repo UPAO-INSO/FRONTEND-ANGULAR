@@ -17,6 +17,7 @@ export class ProductMapper {
       productTypeId: content.productTypeId,
       productTypeName: content.productTypeName,
       imageUrl: content.imageUrl,
+      stock: content.stock ?? null,
     };
   }
 
