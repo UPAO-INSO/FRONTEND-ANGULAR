@@ -1,0 +1,438 @@
+<main class="pds-page">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <app-page-header
+      icon="fa-solid fa-bookmark"
+      title="Separaciones del Día"
+      subtitle="Reservas de menú para clientes y pensionistas"
+    />
+    <button class="btn btn-sm bg-brand text-white border-none hover:bg-brand/80 gap-1.5"
+            (click)="openModal()">
+      <i class="fa-solid fa-plus text-xs"></i>
+      <span class="hidden sm:inline">Nueva separación</span>
+      <span class="sm:hidden">Nueva</span>
+    </button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <app-kpi-card icon="fa-solid fa-bookmark"
+                  label="Total hoy"
+                  [value]="separaciones().length" />
+    <app-kpi-card icon="fa-solid fa-clock"
+                  label="Pendientes"
+                  [value]="pendientes()"
+                  iconColor="text-yellow-400"
+                  iconBg="bg-yellow-500/10" />
+    <app-kpi-card icon="fa-solid fa-bell"
+                  label="Listas"
+                  [value]="listas()"
+                  iconColor="text-teal-400"
+                  iconBg="bg-teal-500/10" />
+    <app-kpi-card icon="fa-solid fa-check-double"
+                  label="Entregadas"
+                  [value]="entregadas()"
+                  iconColor="text-gray-400"
+                  iconBg="bg-gray-500/10" />
+  </div>
+
+  <!-- Error de acción -->
+  @if (actionError()) {
+    <div class="pds-alert-error mb-4">
+      <i class="fa-solid fa-triangle-exclamation shrink-0"></i>
+      {{ actionError() }}
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (separacionesResource.isLoading()) {
+    <div class="flex justify-center py-20">
+      <span class="loading loading-bars loading-lg text-brand"></span>
+    </div>
+  } @else {
+
+    <!-- Estado vacío -->
+    @if (separaciones().length === 0) {
+      <div class="pds-card flex flex-col items-center gap-4 py-20 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-background-secondary flex items-center justify-center">
+          <i class="fa-solid fa-bookmark text-2xl text-text-muted"></i>
+        </div>
+        <div>
+          <p class="font-ui font-medium text-text-primary">Sin separaciones para hoy</p>
+          <p class="text-sm text-text-secondary mt-1">Las reservas del día aparecerán aquí.</p>
+        </div>
+        <button class="btn btn-sm bg-brand text-white border-none hover:bg-brand/80"
+                (click)="openModal()">
+          <i class="fa-solid fa-plus text-xs"></i> Crear primera separación
+        </button>
+      </div>
+    } @else {
+
+      <!-- Lista de separaciones -->
+      <div class="space-y-2">
+        @for (sep of separaciones(); track sep.id) {
+          <div class="pds-card px-0 py-0 overflow-hidden border-l-4 transition-all duration-base hover:shadow-md"
+               [class]="statusBorderClass(sep.status)">
+            <div class="px-4 py-3.5 flex flex-col sm:flex-row sm:items-center gap-3">
+
+              <!-- Info principal -->
+              <div class="flex-1 min-w-0">
+
+                <!-- Nombre + badges -->
+                <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <span class="font-ui font-semibold text-text-primary">{{ sep.clientName }}</span>
+                  @if (sep.pensionistaId) {
+                    <span class="badge badge-xs bg-brand/15 text-brand border-none font-ui">
+                      <i class="fa-solid fa-id-card text-[9px] mr-0.5"></i> Pensionista
+                    </span>
+                  }
+                  <span class="badge badge-sm font-ui rounded-lg {{ statusClass(sep.status) }}">
+                    {{ statusLabel(sep.status) }}
+                  </span>
+                </div>
+
+                <!-- Items -->
+                <div class="flex flex-wrap gap-1 mb-1.5">
+                  @for (item of sep.items; track item.id) {
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs
+                                 bg-background-secondary text-text-secondary border border-border font-ui">
+                      <span class="font-mono text-brand">{{ item.quantity }}×</span>
+                      {{ item.productName }}
+                    </span>
+                  }
+                </div>
+
+                <!-- Notas -->
+                @if (sep.notes) {
+                  <p class="text-xs text-text-muted line-clamp-1">
+                    <i class="fa-solid fa-note-sticky mr-1 opacity-60"></i>{{ sep.notes }}
+                  </p>
+                }
+              </div>
+
+              <!-- Precio + acciones -->
+              <div class="flex items-center gap-3 shrink-0 sm:ml-auto">
+                <span class="font-mono font-semibold text-text-primary tabular-nums">
+                  S/&nbsp;{{ sep.totalPrice | number:'1.2-2' }}
+                </span>
+
+                @if (sep.status === 'PENDIENTE') {
+                  <div class="flex gap-1.5">
+                    <button
+                      class="btn btn-xs bg-teal-500/15 text-teal-400 border border-teal-500/30
+                             hover:bg-teal-500/25 gap-1 font-ui"
+                      (click)="changeStatus(sep, 'LISTA')"
+                      title="Marcar como lista">
+                      <i class="fa-solid fa-bell text-xs"></i>
+                      <span class="hidden sm:inline">Lista</span>
+                    </button>
+                    <button
+                      class="btn btn-xs bg-red-500/10 text-red-400 border border-red-500/20
+                             hover:bg-red-500/20"
+                      (click)="cancel(sep)"
+                      title="Cancelar separación">
+                      <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                  </div>
+                }
+
+                @if (sep.status === 'LISTA') {
+                  <div class="flex gap-1.5">
+                    <button
+                      class="btn btn-xs bg-gray-500/15 text-gray-300 border border-gray-500/30
+                             hover:bg-gray-500/25 gap-1 font-ui"
+                      (click)="changeStatus(sep, 'ENTREGADA')"
+                      title="Marcar como entregada">
+                      <i class="fa-solid fa-check text-xs"></i>
+                      <span class="hidden sm:inline">Entregar</span>
+                    </button>
+                    <button
+                      class="btn btn-xs bg-red-500/10 text-red-400 border border-red-500/20
+                             hover:bg-red-500/20"
+                      (click)="cancel(sep)"
+                      title="Cancelar">
+                      <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</main>
+
+<!-- ── Modal crear separación ───────────────────────────────────────── -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+       (click)="closeModal()">
+    <div class="bg-surface rounded-2xl border border-border w-full max-w-lg max-h-[92vh]
+                flex flex-col shadow-2xl"
+         (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-brand/15 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-bookmark text-brand text-sm"></i>
+          </div>
+          <div>
+            <h2 class="font-display font-semibold text-text-primary leading-tight">
+              Nueva Separación
+            </h2>
+            <p class="text-xs text-text-muted">Reserva para hoy</p>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-ghost text-text-muted hover:text-text-primary"
+                (click)="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-5">
+
+        <!-- Tipo de cliente -->
+        <div>
+          <label class="block text-xs font-ui font-medium text-text-secondary mb-2">
+            Tipo de cliente
+          </label>
+          <div class="flex gap-2">
+            <button class="flex-1 btn btn-sm font-ui border transition-all duration-fast"
+                    [class]="clienteMode() === 'libre'
+                      ? 'bg-brand text-white border-brand'
+                      : 'bg-background-secondary text-text-secondary border-border'"
+                    (click)="clienteMode.set('libre')">
+              <i class="fa-solid fa-user text-xs"></i> Cliente
+            </button>
+            <button class="flex-1 btn btn-sm font-ui border transition-all duration-fast"
+                    [class]="clienteMode() === 'pensionista'
+                      ? 'bg-brand text-white border-brand'
+                      : 'bg-background-secondary text-text-secondary border-border'"
+                    (click)="clienteMode.set('pensionista')">
+              <i class="fa-solid fa-id-card text-xs"></i> Pensionista
+            </button>
+          </div>
+        </div>
+
+        <!-- Cliente / Pensionista -->
+        @if (clienteMode() === 'libre') {
+          <div class="relative">
+            <label class="block text-xs font-ui font-medium text-text-secondary mb-1.5">
+              Cliente <span class="text-red-400">*</span>
+            </label>
+
+            @if (selectedCustomer()) {
+              <!-- Cliente seleccionado -->
+              <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand/10 border border-brand/30">
+                <i class="fa-solid fa-user text-brand text-xs shrink-0"></i>
+                <span class="font-ui text-sm text-text-primary flex-1">
+                  {{ selectedCustomer()!.name }}
+                  @if (selectedCustomer()!.lastname) { {{ selectedCustomer()!.lastname }} }
+                </span>
+                <button class="text-text-muted hover:text-text-primary transition-colors"
+                        (click)="clearCustomer()">
+                  <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+              </div>
+            } @else {
+              <!-- Búsqueda -->
+              <input type="text"
+                     class="input input-sm w-full bg-background-secondary border-border
+                            text-text-primary focus:border-brand transition-colors"
+                     placeholder="Buscar o crear cliente..."
+                     [value]="customerQuery()"
+                     (input)="onCustomerQueryChange($any($event.target).value)"
+                     autocomplete="off" />
+
+              @if (customerDropdownOpen() && customerQuery().length >= 2) {
+                <div class="absolute z-20 w-full mt-1 bg-surface border border-border rounded-xl
+                            shadow-xl max-h-52 overflow-y-auto custom-dropdown-scrollbar">
+                  @for (c of customerResults(); track c.id) {
+                    <button class="w-full px-3 py-2.5 text-left flex items-center gap-2
+                                   hover:bg-background-secondary transition-colors"
+                            (click)="selectCustomer(c)">
+                      <i class="fa-solid fa-user text-text-muted text-xs shrink-0"></i>
+                      <span class="font-ui text-sm text-text-primary">
+                        {{ c.name }}@if (c.lastname) { {{ c.lastname }} }
+                      </span>
+                      @if (c.phone) {
+                        <span class="font-mono text-xs text-text-muted ml-auto">{{ c.phone }}</span>
+                      }
+                    </button>
+                  }
+                  <button class="w-full px-3 py-2.5 text-left flex items-center gap-2
+                                 hover:bg-background-secondary transition-colors
+                                 border-t border-border text-brand"
+                          (click)="createAndSelectCustomer(customerQuery())">
+                    <i class="fa-solid fa-plus text-xs shrink-0"></i>
+                    <span class="font-ui text-sm">Crear "{{ customerQuery() }}"</span>
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        } @else {
+          <div>
+            <label class="block text-xs font-ui font-medium text-text-secondary mb-1.5">
+              Pensionista <span class="text-red-400">*</span>
+            </label>
+            @if (pensionistas().length === 0) {
+              <p class="text-xs text-text-muted bg-background-secondary rounded-lg px-3 py-2.5">
+                No hay pensionistas activos.
+              </p>
+            } @else {
+              <select class="select select-sm w-full bg-background-secondary border-border
+                             text-text-primary focus:border-brand"
+                      (change)="pensionistaId.set(+$any($event.target).value || null)">
+                <option value="">— Seleccionar pensionista —</option>
+                @for (p of pensionistas(); track p.id) {
+                  <option [value]="p.id">
+                    {{ p.name }} · {{ p.creditsRemaining }} crédito(s) · S/ {{ p.planPricePerMeal }}
+                  </option>
+                }
+              </select>
+            }
+          </div>
+        }
+
+        <!-- Platos disponibles -->
+        <div>
+          <label class="block text-xs font-ui font-medium text-text-secondary mb-2">
+            Platos disponibles hoy
+          </label>
+
+          @if (availableProductsResource.isLoading() || menuResource.isLoading()) {
+            <div class="flex items-center justify-center gap-2 py-8 text-text-muted">
+              <span class="loading loading-spinner loading-sm text-brand"></span>
+              <span class="text-xs">Cargando...</span>
+            </div>
+          } @else if (productosParaModal().length === 0) {
+            <div class="flex flex-col items-center gap-2 py-8 text-center
+                        bg-background-secondary rounded-xl border border-border">
+              <i class="fa-solid fa-utensils text-2xl text-text-muted"></i>
+              <p class="text-xs text-text-muted">
+                Sin platos disponibles.<br>
+                Actívalos desde <strong>Cocina → Productos</strong>.
+              </p>
+            </div>
+          } @else {
+            <div class="space-y-1.5">
+              @for (item of productosParaModal(); track item.productId) {
+                <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-fast"
+                     [class]="item.soldOut
+                       ? 'bg-background-secondary border-red-500/20 opacity-55'
+                       : getQty(item.productId) > 0
+                         ? 'bg-brand/5 border-brand/30'
+                         : 'bg-background-secondary border-border'">
+
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-ui text-text-primary truncate">{{ item.productName }}</p>
+                    <p class="text-xs text-text-muted">
+                      <span class="font-mono">S/ {{ item.productPrice | number:'1.2-2' }}</span>
+                      @if (item.remainingPortions != null) {
+                        <span class="ml-1.5" [class]="item.remainingPortions <= 2 ? 'text-amber-400' : ''">
+                          · {{ item.remainingPortions }} disponibles
+                        </span>
+                      }
+                    </p>
+                  </div>
+
+                  @if (item.soldOut) {
+                    <span class="text-xs text-red-400 font-ui font-medium shrink-0">Agotado</span>
+                  } @else {
+                    <div class="flex items-center gap-0.5 shrink-0">
+                      <button class="w-7 h-7 rounded-lg flex items-center justify-center
+                                     text-text-muted hover:bg-background hover:text-text-primary
+                                     transition-colors cursor-pointer"
+                              (click)="setQty(item.productId, getQty(item.productId) - 1)">
+                        <i class="fa-solid fa-minus text-[10px]"></i>
+                      </button>
+                      <span class="w-7 text-center font-mono text-sm font-semibold"
+                            [class]="getQty(item.productId) > 0 ? 'text-brand' : 'text-text-muted'">
+                        {{ getQty(item.productId) }}
+                      </span>
+                      <button class="w-7 h-7 rounded-lg flex items-center justify-center
+                                     text-text-muted hover:bg-background hover:text-text-primary
+                                     transition-colors cursor-pointer"
+                              (click)="setQty(item.productId, getQty(item.productId) + 1)">
+                        <i class="fa-solid fa-plus text-[10px]"></i>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Notas -->
+        <div>
+          <label class="block text-xs font-ui font-medium text-text-secondary mb-1.5">
+            Notas <span class="text-text-muted font-normal">(opcional)</span>
+          </label>
+          <textarea class="textarea textarea-sm w-full bg-background-secondary border-border
+                           text-text-primary resize-none focus:border-brand transition-colors"
+                    rows="2"
+                    placeholder="Sin picante, para llevar..."
+                    [value]="notes()"
+                    (input)="notes.set($any($event.target).value)"></textarea>
+        </div>
+
+        <!-- Resumen carrito -->
+        @if (cart().length > 0) {
+          <div class="rounded-xl bg-brand/8 border border-brand/20 p-3.5 space-y-1.5">
+            @for (item of cart(); track item.producto.productId) {
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-text-secondary font-ui">
+                  <span class="font-mono text-brand font-semibold mr-1">{{ item.quantity }}×</span>
+                  {{ item.producto.productName }}
+                </span>
+                @if (clienteMode() === 'libre') {
+                  <span class="font-mono text-text-primary">
+                    S/ {{ (item.producto.productPrice * item.quantity) | number:'1.2-2' }}
+                  </span>
+                }
+              </div>
+            }
+            <div class="flex items-center justify-between pt-2 border-t border-brand/20 mt-2">
+              <span class="text-xs font-ui text-text-secondary">Total estimado</span>
+              <span class="font-mono font-bold text-brand text-base">
+                S/ {{ totalEstimado() | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+        }
+
+        <!-- Error -->
+        @if (saveError()) {
+          <div class="pds-alert-error">
+            <i class="fa-solid fa-triangle-exclamation shrink-0"></i>
+            {{ saveError() }}
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-2 px-5 py-4 border-t border-border">
+        <button class="btn btn-sm btn-ghost text-text-secondary font-ui"
+                (click)="closeModal()">
+          Cancelar
+        </button>
+        <button class="btn btn-sm bg-brand text-white border-none hover:bg-brand/80 gap-1.5 font-ui"
+                [disabled]="!canSave() || saving()"
+                (click)="save()">
+          @if (saving()) {
+            <span class="loading loading-spinner loading-xs"></span> Guardando...
+          } @else {
+            <i class="fa-solid fa-bookmark text-xs"></i> Separar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
