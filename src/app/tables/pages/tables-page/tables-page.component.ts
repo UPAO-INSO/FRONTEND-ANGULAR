@@ -115,6 +115,10 @@ export class TablesPageComponent {
     },
   });
 
+  tablesLoadError = computed(() =>
+    (this.tablesResource.error() as Error | undefined)?.message ?? null
+  );
+
   activeOrdersByTable = computed(() => {
     const orders = this.activeOrdersResource.value() || [];
     const ordersByTable = new Map<number, ContentOrder>();

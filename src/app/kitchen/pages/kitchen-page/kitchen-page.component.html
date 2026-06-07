@@ -1,27 +1,29 @@
-<div class="h-screen bg-background text-text-primary font-display flex flex-col">
-  <nav>
-    <app-kitchen-nav
-      [productTypes]="productTypeResource.value() ?? []"
-      [orders]="ordersResource.value()?.content ?? []"
-      [currentPage]="currentPage()"
-      [totalPages]="ordersResource.value()?.totalPages ?? 0"
-      [error]="ordersResource.error()"
-      [isLoading]="ordersResource.isLoading()"
-      [refreshTrigger]="refreshProductsTrigger()"
-      (refresh)="onRefresh()"
-      (updatedProductStaus)="onProductStatusUpdated($event)"
-      (value)="tableNumber.set($event)"
-    />
-  </nav>
+<div class="h-dvh bg-background text-text-primary font-display flex flex-col overflow-hidden">
 
-  <main class="overflow-y-auto">
+  <!-- Header / Nav de cocina -->
+  <app-kitchen-nav
+    [productTypes]="productTypeResource.value() ?? []"
+    [orders]="ordersResource.value()?.content ?? []"
+    [currentPage]="currentPage()"
+    [totalPages]="ordersResource.value()?.totalPages ?? 0"
+    [error]="ordersResource.error()"
+    [isLoading]="ordersResource.isLoading()"
+    [refreshTrigger]="refreshProductsTrigger()"
+    (refresh)="onRefresh()"
+    (updatedProductStaus)="onProductStatusUpdated($event)"
+    (value)="tableNumber.set($event)"
+  />
+
+  <!-- Lista de órdenes KDS — ocupa todo el espacio restante -->
+  <main class="flex-1 overflow-y-auto min-h-0">
     <app-kitchen-order-list
       [orders]="ordersResource.value()?.content ?? []"
-      [isLoading]="ordersResource.isLoading()"
+      [isLoading]="ordersResource.isLoading() && !ordersResource.error()"
       [error]="ordersResource.error()"
       (statusChange)="onStatusChange($event.orderId, $event.newStatus)"
       (refresh)="onRefresh()"
       (servedProductOrder)="onServerProductOrder($event)"
     />
   </main>
+
 </div>

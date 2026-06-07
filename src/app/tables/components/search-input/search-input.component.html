@@ -1,7 +1,9 @@
 <input
   required
   placeholder="N° de mesa"
-  class="text-text-primary placeholder:text-text-muted"
+  class="pds-search-input"
   #txtSearch
   (keyup)="inputValue.set(+txtSearch.value)"
+  type="number"
+  min="1"
 />
