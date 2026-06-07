@@ -1,0 +1,329 @@
+<main class="pds-page">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <app-page-header
+      icon="fa-solid fa-id-card"
+      title="Pensionistas"
+      subtitle="Planes de almuerzo con precio diferenciado"
+    />
+    <button class="btn btn-sm bg-brand text-white border-none hover:bg-brand/80"
+            (click)="openCreate()">
+      <i class="fa-solid fa-plus"></i> Nuevo
+    </button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+    <app-kpi-card icon="fa-solid fa-id-card"   label="Total"        [value]="pensionistas().length" />
+    <app-kpi-card icon="fa-solid fa-circle-check" label="Activos"   [value]="activos()"
+                  iconColor="text-teal-400" iconBg="bg-teal-500/10" />
+    <app-kpi-card icon="fa-solid fa-circle-exclamation" label="Sin créditos" [value]="sinCreditos()"
+                  iconColor="text-red-400" iconBg="bg-red-500/10" />
+  </div>
+
+  <!-- Loading -->
+  @if (pensionistasResource.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-bars loading-lg text-brand"></span>
+    </div>
+  }
+
+  <!-- Lista -->
+  @else if (pensionistas().length === 0) {
+    <div class="pds-card flex flex-col items-center gap-3 py-16 text-center">
+      <i class="fa-solid fa-id-card text-4xl text-text-muted"></i>
+      <p class="text-text-secondary">No hay pensionistas registrados.</p>
+      <button class="btn btn-sm bg-brand text-white border-none" (click)="openCreate()">
+        Registrar pensionista
+      </button>
+    </div>
+  }
+
+  @else {
+    <div class="space-y-3">
+      @for (p of pensionistas(); track p.id) {
+        <div class="pds-card px-4 py-4"
+             [class.opacity-60]="!p.active">
+
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+
+            <!-- Avatar + info -->
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div class="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-user text-brand text-sm"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-ui font-semibold text-text-primary truncate">{{ p.name }}</span>
+                  @if (!p.active) {
+                    <span class="badge badge-xs bg-red-500/20 text-red-400 border-none">Inactivo</span>
+                  }
+                </div>
+                @if (p.phone) {
+                  <p class="text-xs text-text-muted">{{ p.phone }}</p>
+                }
+              </div>
+            </div>
+
+            <!-- Créditos -->
+            <div class="flex flex-col items-end gap-1 shrink-0">
+              <div class="flex items-center gap-1">
+                <span class="font-mono font-bold text-lg {{ creditsColor(p) }}">
+                  {{ p.creditsRemaining }}
+                </span>
+                <span class="text-xs text-text-muted">/ {{ p.planCredits }} créditos</span>
+              </div>
+              <div class="w-32 h-1.5 rounded-full bg-background-secondary overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-300"
+                     [style.width.%]="creditsPercent(p)"
+                     [class]="creditsPercent(p) <= 10 ? 'bg-red-400' : creditsPercent(p) <= 30 ? 'bg-orange-400' : 'bg-status-ready'">
+                </div>
+              </div>
+              <p class="text-xs text-text-muted">S/ {{ p.planPricePerMeal | number:'1.2-2' }} / almuerzo</p>
+            </div>
+
+            <!-- Acciones -->
+            <div class="flex gap-1 shrink-0">
+              <button class="btn btn-xs bg-background-secondary text-text-secondary border-border hover:text-text-primary"
+                      (click)="openHistorial(p)" title="Ver historial">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </button>
+              <button class="btn btn-xs bg-brand/20 text-brand border-none hover:bg-brand/40"
+                      (click)="openRenew(p)" title="Renovar plan">
+                <i class="fa-solid fa-rotate"></i>
+              </button>
+              <button class="btn btn-xs bg-background-secondary text-text-secondary border-border hover:text-text-primary"
+                      (click)="openEdit(p)" title="Editar">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</main>
+
+<!-- ── Modal crear/editar ────────────────────────────────────────────── -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+       (click)="closeModal()">
+    <div class="bg-surface rounded-2xl border border-border w-full max-w-md flex flex-col"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+        <h2 class="font-display font-semibold text-text-primary">
+          {{ editTarget() ? 'Editar Pensionista' : 'Nuevo Pensionista' }}
+        </h2>
+        <button class="btn btn-sm btn-ghost text-text-muted" (click)="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="px-5 py-4 space-y-4">
+
+        <!-- Selección de cliente -->
+        <div class="relative">
+          <label class="block text-xs font-ui text-text-secondary mb-1">Cliente *</label>
+
+          @if (selectedCustomer()) {
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand/10 border border-brand/30">
+              <i class="fa-solid fa-user text-brand text-xs shrink-0"></i>
+              <div class="flex-1 min-w-0">
+                <span class="font-ui text-sm text-text-primary">
+                  {{ selectedCustomer()!.name }}
+                  @if (selectedCustomer()!.lastname) { {{ selectedCustomer()!.lastname }} }
+                </span>
+                @if (selectedCustomer()!.phone) {
+                  <span class="text-xs text-text-muted ml-2">{{ selectedCustomer()!.phone }}</span>
+                }
+              </div>
+              <button class="text-text-muted hover:text-text-primary transition-colors shrink-0"
+                      (click)="clearCustomer()">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+            </div>
+          } @else {
+            <input type="text"
+                   class="input input-sm w-full bg-background-secondary border-border
+                          text-text-primary focus:border-brand transition-colors"
+                   placeholder="Buscar o crear cliente..."
+                   [value]="customerQuery()"
+                   (input)="onCustomerQueryChange($any($event.target).value)"
+                   autocomplete="off" />
+
+            @if (customerDropdownOpen() && customerQuery().length >= 2) {
+              <div class="absolute z-20 w-full mt-1 bg-surface border border-border rounded-xl
+                          shadow-xl max-h-48 overflow-y-auto custom-dropdown-scrollbar">
+                @for (c of customerResults(); track c.id) {
+                  <button class="w-full px-3 py-2.5 text-left flex items-center gap-2
+                                 hover:bg-background-secondary transition-colors"
+                          (click)="selectCustomer(c)">
+                    <i class="fa-solid fa-user text-text-muted text-xs shrink-0"></i>
+                    <span class="font-ui text-sm text-text-primary">
+                      {{ c.name }}@if (c.lastname) { {{ c.lastname }} }
+                    </span>
+                    @if (c.phone) {
+                      <span class="font-mono text-xs text-text-muted ml-auto">{{ c.phone }}</span>
+                    }
+                  </button>
+                }
+                <button class="w-full px-3 py-2.5 text-left flex items-center gap-2
+                               hover:bg-background-secondary transition-colors
+                               border-t border-border text-brand"
+                        (click)="createAndSelectCustomer(customerQuery())">
+                  <i class="fa-solid fa-plus text-xs shrink-0"></i>
+                  <span class="font-ui text-sm">Crear "{{ customerQuery() }}"</span>
+                </button>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-ui text-text-secondary mb-1">Créditos (días)</label>
+            <input type="number" min="1" class="input input-sm w-full bg-background-secondary border-border text-text-primary"
+                   [value]="form().planCredits"
+                   (input)="patchForm({ planCredits: +$any($event.target).value })" />
+          </div>
+          <div>
+            <label class="block text-xs font-ui text-text-secondary mb-1">Precio / almuerzo (S/)</label>
+            <input type="number" min="0" step="0.5" class="input input-sm w-full bg-background-secondary border-border text-text-primary"
+                   [value]="form().planPricePerMeal"
+                   (input)="patchForm({ planPricePerMeal: +$any($event.target).value })" />
+          </div>
+        </div>
+
+        <!-- Total calculado -->
+        <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-brand/10 border border-brand/20">
+          <span class="text-xs font-ui text-text-secondary">Total del plan</span>
+          <span class="font-mono font-semibold text-brand">S/ {{ planTotal() | number:'1.2-2' }}</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-ui text-text-secondary mb-1">Notas</label>
+          <textarea class="textarea textarea-sm w-full bg-background-secondary border-border text-text-primary resize-none"
+                    rows="2"
+                    [value]="form().notes ?? ''"
+                    (input)="patchForm({ notes: $any($event.target).value })"></textarea>
+        </div>
+
+        @if (saveError()) {
+          <div class="pds-alert-error">
+            <i class="fa-solid fa-triangle-exclamation shrink-0"></i>
+            {{ saveError() }}
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2 px-5 py-4 border-t border-border">
+        <button class="btn btn-sm btn-ghost text-text-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn btn-sm bg-brand text-white border-none hover:bg-brand/80"
+                [disabled]="!selectedCustomer() || saving()"
+                (click)="save()">
+          @if (saving()) { <span class="loading loading-spinner loading-xs"></span> }
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Modal renovar ─────────────────────────────────────────────────── -->
+@if (showRenew()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+       (click)="closeRenew()">
+    <div class="bg-surface rounded-2xl border border-border w-full max-w-sm flex flex-col"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+        <h2 class="font-display font-semibold text-text-primary">Renovar Plan</h2>
+        <button class="btn btn-sm btn-ghost text-text-muted" (click)="closeRenew()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="px-5 py-4 space-y-4">
+        <p class="text-sm text-text-secondary">
+          Agregar créditos al plan de
+          <strong class="text-text-primary">{{ renewTarget()?.name }}</strong>.
+          Precio actual: S/ {{ renewTarget()?.planPricePerMeal | number:'1.2-2' }} / almuerzo.
+        </p>
+
+        <div>
+          <label class="block text-xs font-ui text-text-secondary mb-1">Créditos a agregar</label>
+          <input type="number" min="1" class="input input-sm w-full bg-background-secondary border-border text-text-primary"
+                 [value]="renewCredits()"
+                 (input)="renewCredits.set(+$any($event.target).value)" />
+        </div>
+
+        <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-brand/10 border border-brand/20">
+          <span class="text-xs font-ui text-text-secondary">Costo de renovación</span>
+          <span class="font-mono font-semibold text-brand">
+            S/ {{ (renewCredits() * (renewTarget()?.planPricePerMeal ?? 0)) | number:'1.2-2' }}
+          </span>
+        </div>
+
+        @if (renewError()) {
+          <div class="pds-alert-error">
+            <i class="fa-solid fa-triangle-exclamation shrink-0"></i>
+            {{ renewError() }}
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2 px-5 py-4 border-t border-border">
+        <button class="btn btn-sm btn-ghost text-text-secondary" (click)="closeRenew()">Cancelar</button>
+        <button class="btn btn-sm bg-brand text-white border-none hover:bg-brand/80"
+                [disabled]="renewCredits() < 1 || renewing()"
+                (click)="renew()">
+          @if (renewing()) { <span class="loading loading-spinner loading-xs"></span> }
+          <i class="fa-solid fa-rotate"></i> Renovar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Panel historial ───────────────────────────────────────────────── -->
+@if (showHistorial()) {
+  <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+       (click)="closeHistorial()">
+    <div class="bg-surface rounded-2xl border border-border w-full max-w-md max-h-[80vh] flex flex-col"
+         (click)="$event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+        <h2 class="font-display font-semibold text-text-primary">
+          Historial — {{ historialPensionista()?.name }}
+        </h2>
+        <button class="btn btn-sm btn-ghost text-text-muted" (click)="closeHistorial()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto custom-scrollbar px-5 py-4">
+        @if (consumosResource.isLoading()) {
+          <div class="flex justify-center py-8">
+            <span class="loading loading-spinner loading-sm text-brand"></span>
+          </div>
+        } @else if (consumos().length === 0) {
+          <p class="text-center text-text-muted py-8">Sin consumos registrados.</p>
+        } @else {
+          <div class="space-y-2">
+            @for (c of consumos(); track c.id) {
+              <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-background-secondary border border-border">
+                <div class="flex items-center gap-2">
+                  <i class="fa-solid fa-utensils text-brand text-xs"></i>
+                  <span class="text-sm font-ui text-text-primary">{{ c.date | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <span class="font-mono text-sm text-text-secondary">S/ {{ c.priceApplied | number:'1.2-2' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
