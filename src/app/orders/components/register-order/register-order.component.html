@@ -1,65 +1,118 @@
-<div class="pds-modal-overlay font-display">
-  <div class="pds-modal max-w-7xl w-full max-h-screen py-2 sm:py-4">
-    <!-- Main Container -->
-    <div
-      class="flex flex-col lg:flex-row gap-4 sm:gap-6 h-auto lg:h-[calc(100vh-8rem)] p-3 sm:p-4 md:p-6"
-    >
-      <!-- Products Section -->
-      <div
-        class="w-full lg:w-2/3 h-auto lg:h-full overflow-y-auto custom-dropdown-scrollbar"
+<!-- ── Overlay principal ─────────────────────────────────────────── -->
+<div class="pds-modal-overlay p-0 lg:p-4 font-display">
+
+  <!--
+    Móvil  (<lg): pantalla completa, sin bordes ni padding
+    Desktop (lg+): modal centrado con 2 columnas lado a lado
+  -->
+  <div class="
+    w-full bg-surface flex flex-col
+    h-dvh rounded-none
+    lg:h-auto lg:max-h-[90vh] lg:max-w-7xl
+    lg:rounded-2xl lg:shadow-2xl lg:border lg:border-border
+  ">
+
+    <!-- ══ Tabs de navegación — solo en móvil ═══════════════════ -->
+    <div class="lg:hidden flex items-center border-b border-border bg-surface shrink-0">
+
+      <!-- Tab: Productos -->
+      <button
+        class="flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold
+               transition-colors border-b-2
+               {{ activeTab() === 'products'
+                  ? 'text-brand border-brand'
+                  : 'text-text-muted border-transparent hover:text-text-secondary' }}"
+        (click)="activeTab.set('products')"
       >
-        <app-order-products
-          [productTypes]="productTypeResource.value() ?? []"
-          [selectedTable]="selectedTable()"
-          (closeModal)="onCloseModal()"
-        />
+        <span class="fa-solid fa-utensils text-sm"></span>
+        Productos
+      </button>
+
+      <!-- Tab: Carrito con badge -->
+      <button
+        class="flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold
+               transition-colors border-b-2
+               {{ activeTab() === 'summary'
+                  ? 'text-brand border-brand'
+                  : 'text-text-muted border-transparent hover:text-text-secondary' }}"
+        (click)="activeTab.set('summary')"
+      >
+        <span class="fa-solid fa-cart-shopping text-sm"></span>
+        Carrito
+        @if (cartCount() > 0) {
+          <span class="flex items-center justify-center w-5 h-5 rounded-full bg-brand text-white text-[10px] font-bold leading-none">
+            {{ cartCount() }}
+          </span>
+        }
+      </button>
+
+    </div>
+    <!-- ════════════════════════════════════════════════════════ -->
+
+    <!-- ══ Contenido principal ══════════════════════════════════ -->
+    <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+
+      <!-- Sección de productos
+           Móvil:   visible solo en tab 'products'
+           Desktop: siempre visible, 2/3 del ancho -->
+      <div
+        class="flex-1 overflow-y-auto custom-dropdown-scrollbar
+               lg:w-2/3 lg:border-r lg:border-border
+               {{ activeTab() !== 'products' ? 'hidden lg:flex lg:flex-col' : 'flex flex-col' }}"
+      >
+        <div class="p-3 sm:p-4 md:p-5 h-full">
+          <app-order-products
+            [productTypes]="productTypeResource.value() ?? []"
+            [selectedTable]="selectedTable()"
+            (closeModal)="onCloseModal()"
+          />
+        </div>
       </div>
 
-      <!-- Summary Section -->
+      <!-- Sección de resumen / carrito
+           Móvil:   visible solo en tab 'summary'
+           Desktop: siempre visible, 1/3 del ancho -->
       <div
-        class="w-full lg:w-1/3 pds-card p-3 sm:p-4 md:p-5 h-auto lg:h-full overflow-y-auto custom-dropdown-scrollbar"
+        class="overflow-y-auto custom-dropdown-scrollbar
+               lg:w-1/3
+               {{ activeTab() !== 'summary' ? 'hidden lg:flex lg:flex-col' : 'flex flex-col flex-1' }}"
       >
-        <app-order-summary
-          [selectedTable]="selectedTable()"
-          [activeOrder]="activeOrder()"
-          (createOrder)="onCreateOrder($event)"
-          (updateOrder)="onUpdateOrder($event.id, $event.order)"
-        />
+        <div class="p-3 sm:p-4 md:p-5 h-full">
+          <app-order-summary
+            [selectedTable]="selectedTable()"
+            [activeOrder]="activeOrder()"
+            (createOrder)="onCreateOrder($event)"
+            (updateOrder)="onUpdateOrder($event.id, $event.order)"
+          />
+        </div>
       </div>
+
     </div>
+
   </div>
 
-  <!-- Confirmation Modal -->
+  <!-- ── Modal de confirmación ─────────────────────────────────── -->
   @if (showCreateConfirmModal()) {
     <div class="pds-modal-overlay z-60">
       <div class="pds-modal max-w-md">
-        <!-- Header -->
+
         <div class="pds-modal-header">
           <span class="fa-solid fa-plus-circle text-brand text-xl"></span>
           <h3 class="pds-modal-title">Confirmar Crear Orden</h3>
         </div>
 
-        <!-- Body -->
         <div class="pds-modal-body">
           <p class="text-sm text-text-secondary">
             ¿Estás seguro de que deseas crear una nueva orden para la
-            <strong class="text-text-primary"
-              >Mesa {{ selectedTable().number }}</strong
-            >?
+            <strong class="text-text-primary">Mesa {{ selectedTable().number }}</strong>?
           </p>
 
           @if (pendingOrderData()) {
             <div class="pds-info-panel mt-3">
               <p class="pds-section-title mb-2">Resumen:</p>
               <p class="text-sm text-text-primary">
-                <strong>{{
-                  pendingOrderData()?.productOrders?.length || 0
-                }}</strong>
-                producto{{
-                  (pendingOrderData()?.productOrders?.length || 0) !== 1
-                    ? "s"
-                    : ""
-                }}
+                <strong>{{ pendingOrderData()?.productOrders?.length || 0 }}</strong>
+                producto{{ (pendingOrderData()?.productOrders?.length || 0) !== 1 ? 's' : '' }}
               </p>
               @if (pendingOrderData()?.comment) {
                 <p class="text-sm mt-1 text-text-secondary wrap-break-word">
@@ -70,16 +123,13 @@
           }
         </div>
 
-        <!-- Footer -->
         <div class="pds-modal-footer">
-          <button class="pds-btn-secondary" (click)="cancelCreateOrder()">
-            Cancelar
-          </button>
-          <button class="pds-btn-primary" (click)="confirmCreateOrder()">
-            Sí, Guardar Orden
-          </button>
+          <button class="pds-btn-secondary btn-sm" (click)="cancelCreateOrder()">Cancelar</button>
+          <button class="pds-btn-primary btn-sm"   (click)="confirmCreateOrder()">Sí, Guardar Orden</button>
         </div>
+
       </div>
     </div>
   }
+
 </div>

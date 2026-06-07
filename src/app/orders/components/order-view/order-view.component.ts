@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import {
   ContentOrder,
   OrderStatus,
@@ -9,12 +9,15 @@ import {
   ORDER_STATUS_LABELS,
 } from '@src/app/shared/utils/order-status.utils';
 import { DatePipe, TitleCasePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { Table } from '@src/app/tables/interfaces/table.interface';
 import {
   CreateCulqiOrder,
   RESTCulqiOrder,
 } from '@src/app/shared/interfaces/culqi.interface';
 import { CulqiService } from '@src/app/shared/services/culqi.service';
+import { PaymentsService } from '@src/app/payments/services/payments.service';
+import { ContentPayment } from '@src/app/payments/interfaces/payments.inteface';
 import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-modify-modal.component';
 import { ConfirmStatusModalComponent } from '../confirm-status-modal/confirm-status-modal.component';
 import { PaymentCheckoutComponent } from '@src/app/payments/components/payment-checkout/payment-checkout.component';
@@ -43,58 +46,68 @@ interface StatusChange {
   templateUrl: './order-view.component.html',
 })
 export class OrderViewComponent {
-  private culqiService = inject(CulqiService);
+  private culqiService    = inject(CulqiService);
+  private paymentsService = inject(PaymentsService);
+  private router          = inject(Router);
 
-  selectedTable = input<Table | null>();
-  activeOrder = input.required<ContentOrder>();
-  isAtm = input.required<boolean>();
-  textConfirm = input.required<string>();
+  selectedTable    = input<Table | null>();
+  activeOrder      = input.required<ContentOrder>();
+  isAtm            = input.required<boolean>();
+  textConfirm      = input.required<string>();
   changeStatusQuery = input.required<OrderStatus>();
 
-  statusChange = output<StatusChange>();
-  statusModifyModalChange = output<boolean>();
+  statusChange             = output<StatusChange>();
+  statusModifyModalChange  = output<boolean>();
+  closeModal               = output<void>();
+  paymentSuccess           = output<PaymentSuccessData>();
 
-  orderStatus = OrderStatus;
+  readonly orderStatus = OrderStatus;
 
-  closeModal = output<void>();
-
-  showConfirmModal = signal<boolean>(false);
+  showConfirmModal       = signal<boolean>(false);
   showConfirmModifyModal = signal<boolean>(false);
-  showPaymentModal = signal<boolean>(false);
+  showPaymentModal       = signal<boolean>(false);
 
-  culqiOrder = signal<RESTCulqiOrder | null>(null);
+  culqiOrder   = signal<RESTCulqiOrder | null>(null);
+  existingPayment = signal<ContentPayment | null>(null);
+  checkingPayment = signal<boolean>(false);
 
   paymentData = signal<CreateCulqiOrder>({
-    amount: 0,
-    description: '',
-    orderNumber: '',
-    confirm: true,
+    amount:          0,
+    description:     '',
+    orderNumber:     '',
+    confirm:         true,
     currencyIsoCode: 'PEN',
-    expirationDate: '',
-    clientDetailsRequest: {
-      first_name: '',
-      last_name: '',
-      email: '',
-      phone_number: '',
-    },
-    metadata: {
-      customer_id: 0,
-    },
+    expirationDate:  '',
+    clientDetailsRequest: { first_name: '', last_name: '', email: '', phone_number: '' },
+    metadata: { customer_id: 0 },
   });
 
-  paymentSuccess = output<PaymentSuccessData>();
+  constructor() {
+    // Al cambiar la orden activa, buscar si ya tiene un pago registrado
+    effect(() => {
+      const order = this.activeOrder();
+      if (!order?.id) return;
 
-  onStatusConfirmModifyModalChange() {
-    this.showConfirmModifyModal.set(true);
+      // Si ya está PAID, seguro tiene pago — lo buscamos para mostrar enlace
+      if (order.orderStatus === OrderStatus.PAID || this.canProcessPayment()) {
+        this.checkingPayment.set(true);
+        this.paymentsService.getPaymentByOrderId(order.id).subscribe({
+          next: (payment) => {
+            this.existingPayment.set(payment);
+            this.checkingPayment.set(false);
+          },
+          error: () => this.checkingPayment.set(false),
+        });
+      }
+    });
   }
 
-  cancelConfirmModifyModalChange() {
-    this.showConfirmModifyModal.set(false);
-  }
+  // ── Acciones ──────────────────────────────────────────────────────
 
-  onStatusChange() {
-    this.showConfirmModal.set(true);
-  }
+  onStatusConfirmModifyModalChange() { this.showConfirmModifyModal.set(true); }
+  cancelConfirmModifyModalChange()   { this.showConfirmModifyModal.set(false); }
+  onStatusChange()                   { this.showConfirmModal.set(true); }
+  cancelStatusChange()               { this.showConfirmModal.set(false); }
 
   confirmStatusModifyModalChange(status: boolean) {
     this.showConfirmModifyModal.set(false);
@@ -110,106 +123,78 @@ export class OrderViewComponent {
     }
   }
 
-  cancelStatusChange() {
-    this.showConfirmModal.set(false);
-  }
-
-  onCloseModal() {
-    this.closeModal.emit();
-  }
-
-  calcSubtotal(): number {
-    return this.activeOrder()?.totalPrice!;
-  }
-
-  calcTax(): number {
-    const subtotal = this.calcSubtotal();
-    const taxRate = 0.18;
-    return parseFloat((subtotal * taxRate).toFixed(2));
-  }
-
-  calcTotal(): number {
-    return this.calcSubtotal() + this.calcTax();
-  }
-
-  getOrderAmPm(order: ContentOrder) {
-    if (!order || !order.createdAt) return '';
-
-    const date = new Date(order.createdAt);
-    const hours = date.getHours();
-
-    return hours >= 12 ? 'PM' : 'AM';
-  }
-
-  getColorOrderInTableStatus(order: ContentOrder): string {
-    return ORDER_STATUS_BG_CLASS[order.orderStatus] ?? '';
-  }
+  onCloseModal() { this.closeModal.emit(); }
 
   openPayment() {
     const order = this.activeOrder();
+    const existingCulqiOrder = this.culqiService.getCulqiOrder(order.id);
 
-    const existingOrder = this.culqiService.getCulqiOrder(order.id);
-
-    if (existingOrder) {
-      this.culqiOrder.set(existingOrder);
+    if (existingCulqiOrder) {
+      this.culqiOrder.set(existingCulqiOrder);
       this.showPaymentModal.set(true);
       return;
     }
 
-    const expirationInSeconds = Math.floor(
-      (Date.now() + 10 * 60 * 1000) / 1000
-    );
-
+    const expirationInSeconds = Math.floor((Date.now() + 10 * 60 * 1000) / 1000);
     this.paymentData.set({
-      amount: this.calcTotal(),
-      description: `Orden ${order.id} - Mesa ${this.activeOrder().tableId}`,
-      orderNumber: order.id.toString(),
-      confirm: true,
+      amount:          this.calcTotal(),
+      description:     `Orden ${order.id} - Mesa ${order.tableId}`,
+      orderNumber:     order.id.toString(),
+      confirm:         true,
       currencyIsoCode: 'PEN',
-      expirationDate: expirationInSeconds.toString(),
-      clientDetailsRequest: {
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone_number: '',
-      },
-      metadata: {
-        customer_id: 0,
-      },
+      expirationDate:  expirationInSeconds.toString(),
+      clientDetailsRequest: { first_name: '', last_name: '', email: '', phone_number: '' },
+      metadata: { customer_id: 0 },
     });
     this.showPaymentModal.set(true);
   }
 
+  /** Navega a la página de pagos (filtra por el ID del pago existente) */
+  viewExistingPayment() {
+    this.closeModal.emit();
+    this.router.navigate(['/payments']);
+  }
+
   onPaymentSuccess(culqiOrder: RESTCulqiOrder) {
     this.culqiOrder.set(culqiOrder);
-
-    this.paymentSuccess.emit({
-      orderId: this.activeOrder().id,
-      chargeId: culqiOrder.id,
-    });
+    this.paymentSuccess.emit({ orderId: this.activeOrder().id, chargeId: culqiOrder.id });
+    // Recargar el pago existente después de procesar
+    this.paymentsService.getPaymentByOrderId(this.activeOrder().id).subscribe(
+      (payment) => this.existingPayment.set(payment)
+    );
   }
 
-  onPaymentError(error: any) {
-    console.error('Error en el pago:', error);
-  }
-
-  onPaymentCancel() {
-    this.showPaymentModal.set(false);
-  }
+  onPaymentError(error: any) { console.error('Error en el pago:', error); }
+  onPaymentCancel()          { this.showPaymentModal.set(false); }
 
   resetPayment() {
     this.showPaymentModal.set(false);
-    const orderId = this.activeOrder().id;
-
-    this.culqiService.removeCulqiOrder(orderId);
-
+    this.culqiService.removeCulqiOrder(this.activeOrder().id);
     this.culqiOrder.set(null);
-    this.showPaymentModal.set(false);
   }
+
+  // ── Cálculos ──────────────────────────────────────────────────────
+
+  calcSubtotal(): number { return this.activeOrder()?.totalPrice!; }
+
+  calcTax(): number {
+    return parseFloat((this.calcSubtotal() * 0.18).toFixed(2));
+  }
+
+  calcTotal(): number { return this.calcSubtotal() + this.calcTax(); }
 
   canProcessPayment(): boolean {
     const status = this.activeOrder().orderStatus;
     return status === OrderStatus.READY || status === OrderStatus.COMPLETED;
+  }
+
+  getOrderAmPm(order: ContentOrder): string {
+    if (!order?.createdAt) return '';
+    return new Date(order.createdAt).getHours() >= 12 ? 'PM' : 'AM';
+  }
+
+  getColorOrderInTableStatus(order: ContentOrder): string {
+    return ORDER_STATUS_BG_CLASS[order.orderStatus] ?? '';
   }
 
   getOrderStatusText(order: ContentOrder): string {

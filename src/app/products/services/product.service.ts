@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { effect, inject, Injectable, OnInit, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '@environments/environment';
 import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 
@@ -13,7 +13,6 @@ import {
 } from '../interfaces/product.type';
 import { ProductMapper, ProductTypeMapper } from '../mapper/product-mapper';
 import { WebSocketService } from '@shared/services/websocket.service';
-import { WebSocketMessage } from '@shared/interfaces/websocket-message.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -80,6 +79,7 @@ export class ProductService {
   clearProductsCache(): void {
     this.productsCache.clear();
     this.productByIdCache.clear();
+    this.productsByTypeCache.clear();
   }
 
   private initializeUserId() {
@@ -102,40 +102,6 @@ export class ProductService {
       console.error('Error parsing user-data from localStorage:', error);
       this.userId.set('error');
     }
-  }
-
-  private setupWebSocketConnection() {
-    effect(() => {
-      const currentUserId = this.userId();
-      if (currentUserId && currentUserId !== '') {
-        console.log('Joining WebSocket room with userId:', currentUserId);
-        this.wsService.joinRoom('pds-room');
-
-        this.setupProductUpdateListener();
-      }
-    });
-  }
-
-  private setupProductUpdateListener() {
-    this.wsService.productUpdates$.subscribe((update) => {
-      if (update && update.type === 'PRODUCT_UPDATE') {
-        console.log('Product update received from another device:', update);
-
-        if (update.updatedBy !== this.userId()) {
-          console.log('Triggering refresh for external product update');
-          this.clearProductsCache();
-          this.triggerRefresh();
-        }
-      }
-    });
-  }
-
-  sendMessage() {
-    const message: WebSocketMessage = {
-      content: 'WEBSOCKET-MESSAGE',
-      sender: this.userId(),
-    };
-    this.wsService.sendMessage('pds-room', message);
   }
 
   sendProductUpdate(productId: number, available: boolean) {
@@ -164,12 +130,7 @@ export class ProductService {
       .patch(`${this.envs.API_URL}/products/partial/${id}`, partialDto)
       .pipe(
         tap(() => {
-          const cachedProduct = this.productByIdCache.get(id);
-          if (cachedProduct) {
-            cachedProduct.available = available;
-            this.productByIdCache.set(id, cachedProduct);
-          }
-
+          this.clearProductsCache();
           this.sendProductUpdate(id, available);
           this.triggerRefresh();
         }),
