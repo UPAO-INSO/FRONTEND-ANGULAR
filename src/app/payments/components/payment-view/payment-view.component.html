@@ -1,66 +1,60 @@
 @if (isOpen()) {
   <div class="pds-modal-overlay">
-    <div class="pds-modal max-w-3xl">
+    <div class="pds-modal max-w-3xl max-h-[90dvh]">
 
       <!-- Header -->
       <div class="pds-modal-header">
-        <div class="flex flex-col gap-0.5">
-          <h3 class="pds-modal-title text-xl font-bold">Detalles del Pago</h3>
-          <p class="text-text-secondary font-mono text-sm">ID: {{ payment().id }}</p>
+        <div class="flex flex-col gap-0.5 min-w-0 flex-1">
+          <h3 class="pds-modal-title text-lg sm:text-xl font-bold">Detalles del Pago</h3>
+          <p class="text-text-secondary font-mono text-xs truncate">
+            ID: {{ payment().id }}
+          </p>
         </div>
-        <button (click)="onClose()" class="pds-modal-close">
+        <button (click)="onClose()" class="pds-modal-close shrink-0">
           <span class="fa-solid fa-xmark text-xl"></span>
         </button>
       </div>
 
       <!-- Body -->
       <div class="pds-modal-body">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          <!-- Información del Pago -->
+          <!-- Columna izquierda: resumen + detalles + fechas -->
           <div class="space-y-4">
+
+            <!-- Monto + Estado -->
+            <div class="flex items-center justify-between gap-3 bg-background-secondary rounded-xl px-4 py-3">
+              <p class="text-2xl font-bold text-brand font-mono">
+                {{ formatAmount(payment().amount) | currency : "S/ " }}
+              </p>
+              <span class="badge {{ getStatusClass(payment().state) }} gap-1.5 shrink-0">
+                @if (payment().state === 'paid') {
+                  <span class="fa-solid fa-circle-check text-sm"></span>
+                } @else if (payment().state === 'pending') {
+                  <span class="fa-solid fa-clock text-sm"></span>
+                }
+                <span class="leading-none pb-1">{{ getStatusText(payment().state) }}</span>
+              </span>
+            </div>
+
+            <!-- Detalles -->
             <div class="pds-info-panel">
               <p class="pds-section-title">Información del Pago</p>
-
-              <!-- Estado -->
-              <div class="mb-3">
-                <p class="pds-label">Estado</p>
-                <div class="mt-1">
-                  <span class="badge {{ getStatusClass(payment().state) }} gap-1.5">
-                    @if (payment().state === 'paid') {
-                      <span class="fa-solid fa-circle-check text-sm"></span>
-                    } @else if (payment().state === 'pending') {
-                      <span class="fa-solid fa-clock text-sm"></span>
-                    }
-                    <span class="leading-none pb-1">{{ getStatusText(payment().state) }}</span>
-                  </span>
+              <div class="space-y-3">
+                <div class="pds-info-row">
+                  <span class="pds-info-label">Método</span>
+                  <span class="pds-info-value">{{ getPaymentTypeText(payment().paymentType) }}</span>
                 </div>
-              </div>
-
-              <!-- Monto -->
-              <div class="mb-3">
-                <p class="pds-label">Monto</p>
-                <p class="text-2xl font-bold text-brand">
-                  {{ formatAmount(payment().amount) | currency : "S/ " }}
-                </p>
-              </div>
-
-              <!-- Método de Pago -->
-              <div class="mb-3">
-                <p class="pds-label">Método de Pago</p>
-                <p class="pds-info-value">{{ getPaymentTypeText(payment().paymentType) }}</p>
-              </div>
-
-              <!-- Proveedor -->
-              <div class="mb-3">
-                <p class="pds-label">Proveedor</p>
-                <p class="pds-info-value capitalize">{{ payment().provider }}</p>
-              </div>
-
-              <!-- Descripción -->
-              <div>
-                <p class="pds-label">Descripción</p>
-                <p class="text-text-secondary">{{ payment().description }}</p>
+                <div class="pds-info-row">
+                  <span class="pds-info-label">Proveedor</span>
+                  <span class="pds-info-value capitalize">{{ payment().provider }}</span>
+                </div>
+                @if (payment().description) {
+                  <div class="flex flex-col gap-1">
+                    <span class="pds-info-label">Descripción</span>
+                    <span class="text-text-secondary text-sm break-all">{{ payment().description }}</span>
+                  </div>
+                }
               </div>
             </div>
 
@@ -70,36 +64,35 @@
               <div class="space-y-3">
                 <div class="pds-info-row">
                   <span class="pds-info-label">Creado</span>
-                  <span class="pds-info-value">{{ payment().createdAt | date : "dd/MM/yyyy HH:mm:ss" }}</span>
+                  <span class="pds-info-value text-xs sm:text-sm">{{ payment().createdAt | date : "dd/MM/yyyy HH:mm" }}</span>
                 </div>
-
                 @if (payment().paidAt) {
                   <div class="pds-info-row">
                     <span class="pds-info-label">Pagado</span>
-                    <span class="pds-info-value">{{ payment().paidAt | date : "dd/MM/yyyy HH:mm:ss" }}</span>
+                    <span class="pds-info-value text-xs sm:text-sm">{{ payment().paidAt | date : "dd/MM/yyyy HH:mm" }}</span>
                   </div>
                 }
-
                 @if (payment().expirationDate) {
                   <div class="pds-info-row">
                     <span class="pds-info-label">Expiración</span>
-                    <span class="pds-info-value">{{ payment().expirationDate | date : "dd/MM/yyyy HH:mm:ss" }}</span>
+                    <span class="pds-info-value text-xs sm:text-sm">{{ payment().expirationDate | date : "dd/MM/yyyy HH:mm" }}</span>
                   </div>
                 }
               </div>
             </div>
           </div>
 
-          <!-- QR Code y Enlaces -->
+          <!-- Columna derecha: QR + link + orden -->
           <div class="space-y-4">
+
             @if (payment().qr) {
               <div class="pds-info-panel">
                 <p class="pds-section-title">Código QR</p>
-                <div class="flex justify-center bg-white p-4 rounded-lg">
+                <div class="flex justify-center bg-white p-3 rounded-lg">
                   <img
                     [src]="payment().qr"
                     alt="QR Code"
-                    class="w-64 h-64 object-contain"
+                    class="w-40 h-40 sm:w-56 sm:h-56 object-contain"
                   />
                 </div>
               </div>
@@ -119,32 +112,31 @@
               </div>
             }
 
-            <!-- Información de la Orden -->
             @if (payment().order) {
               <div class="pds-info-panel">
                 <p class="pds-section-title">Orden Asociada</p>
-                <div class="space-y-2">
-                  <div class="pds-info-row">
+                <div class="space-y-3">
+                  <div class="flex flex-col gap-0.5">
                     <span class="pds-info-label">ID Orden</span>
-                    <span class="font-mono text-text-primary text-sm">{{ payment().order.id }}</span>
+                    <span class="font-mono text-text-primary text-xs break-all">{{ payment().order.id }}</span>
                   </div>
                   <div class="pds-info-row">
                     <span class="pds-info-label">Mesa</span>
                     <span class="pds-info-value">{{ payment().order.tableId }}</span>
                   </div>
                   <div class="pds-info-row">
-                    <span class="pds-info-label">Total Items</span>
+                    <span class="pds-info-label">Items</span>
                     <span class="pds-info-value">{{ payment().order.totalItems }}</span>
                   </div>
                   <div class="pds-info-row">
                     <span class="pds-info-label">Total</span>
-                    <span class="pds-info-value font-semibold">{{ payment().order.totalPrice | currency : "S/ " }}</span>
+                    <span class="pds-info-value font-semibold text-brand">{{ payment().order.totalPrice | currency : "S/ " }}</span>
                   </div>
                 </div>
               </div>
             }
-          </div>
 
+          </div>
         </div>
       </div>
 
