@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
 import { ThemeService } from '@shared/services/theme.service';
 import { WebSocketService } from '@shared/services/websocket.service';
@@ -29,6 +29,7 @@ export class SidebarComponent {
   themeService = inject(ThemeService);
   wsService    = inject(WebSocketService);
   authService  = inject(AuthService);
+  private router = inject(Router);
   envs = environment;
 
   private userRole = signal('');
@@ -74,8 +75,23 @@ export class SidebarComponent {
 
   close() { this.closed.emit(); }
 
+  formatTokenCountdown(secs: number): string {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  getTokenPercent(secs: number): number {
+    return Math.min(100, Math.round((secs / 300) * 100));
+  }
+
   onLogout() {
     this.closed.emit();
     this.authService.logout();
+  }
+
+  onLogin() {
+    this.closed.emit();
+    this.router.navigateByUrl('/auth/login');
   }
 }

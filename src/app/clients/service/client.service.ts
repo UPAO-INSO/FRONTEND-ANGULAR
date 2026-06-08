@@ -135,4 +135,13 @@ export class ClientService {
         })
       );
   }
+
+  quickCreate(name: string, lastname?: string, phone?: string): Observable<Client> {
+    return this.http.post<Client>(`${this.baseUrl}/customers`, { name, lastname, phone }).pipe(
+      catchError((error) => {
+        console.error('Error creating client:', error);
+        return throwError(() => new Error('Error al crear el cliente.'));
+      })
+    );
+  }
 }
