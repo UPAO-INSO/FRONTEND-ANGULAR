@@ -239,15 +239,16 @@ export class PaymentCheckoutComponent {
   onPayWithWallet() {
     const request = this.paymentRequest();
     const customerInfo = this.getCustomerInfo();
+    const client = this.selectedClient();
 
-    if (
-      !customerInfo?.first_name ||
-      !customerInfo?.last_name ||
-      !customerInfo?.email ||
-      !customerInfo?.phone_number
-    ) {
+    if (!client || !customerInfo?.first_name || !customerInfo?.last_name) {
+      this.errorMessage.set('Selecciona un cliente para continuar con el pago');
+      return;
+    }
+
+    if (!customerInfo.email || !customerInfo.phone_number) {
       this.errorMessage.set(
-        'Selecciona un cliente para continuar con el pago',
+        'El cliente seleccionado no tiene email o teléfono registrado. Edítalo antes de continuar.',
       );
       return;
     }

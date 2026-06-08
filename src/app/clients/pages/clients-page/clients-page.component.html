@@ -1,0 +1,204 @@
+<div class="flex flex-col gap-6 h-full p-6">
+  <app-page-header
+    icon="fa-solid fa-users"
+    title="Clientes"
+    subtitle="Gestiona los clientes registrados"
+  />
+
+  <!-- Toolbar -->
+  <div
+    class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
+  >
+    <div class="relative w-full sm:max-w-sm">
+      <span
+        class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm"
+      ></span>
+      <input
+        type="text"
+        placeholder="Buscar por nombre o documento..."
+        class="w-full pl-9 pr-4 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+        (input)="onSearchInput($event)"
+      />
+    </div>
+    <button
+      class="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg text-sm font-medium hover:bg-brand-dark transition-colors shrink-0"
+      (click)="openCreate()"
+    >
+      <span class="fa-solid fa-plus"></span>
+      Nuevo Cliente
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div
+    class="bg-surface border border-border rounded-xl overflow-hidden flex flex-col flex-1"
+  >
+    <app-list-state
+      [loading]="isLoading()"
+      [error]="loadError()"
+      [empty]="isEmpty()"
+      emptyIcon="users"
+      emptyTitle="Sin clientes"
+      emptyMessage="No hay clientes registrados. Crea el primero."
+    />
+
+    @if (!isLoading() && !loadError() && clients().length > 0) {
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-sm">
+          <thead class="bg-background-secondary border-b border-border">
+            <tr>
+              <th class="text-left px-4 py-3 text-text-secondary font-medium">
+                Cliente
+              </th>
+              <th class="text-left px-4 py-3 text-text-secondary font-medium">
+                Documento
+              </th>
+              <th
+                class="text-left px-4 py-3 text-text-secondary font-medium hidden md:table-cell"
+              >
+                Email
+              </th>
+              <th
+                class="text-left px-4 py-3 text-text-secondary font-medium hidden lg:table-cell"
+              >
+                Teléfono
+              </th>
+              <th class="text-right px-4 py-3 text-text-secondary font-medium">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            @for (client of clients(); track client.id) {
+              <tr class="hover:bg-background-secondary transition-colors">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center shrink-0"
+                    >
+                      <span class="fa-solid fa-user text-brand text-xs"></span>
+                    </div>
+                    <span class="font-medium text-text-primary">{{
+                      getFullName(client)
+                    }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <span
+                    class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-background-secondary text-text-secondary text-xs font-mono"
+                  >
+                    {{ getDocumentLabel(client) }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-text-secondary hidden md:table-cell">
+                  {{ client.email || "—" }}
+                </td>
+                <td class="px-4 py-3 text-text-secondary hidden lg:table-cell">
+                  {{ client.phone || "—" }}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-2">
+                    <button
+                      class="p-1.5 rounded-lg text-text-muted hover:text-brand hover:bg-brand/10 transition-colors"
+                      title="Editar"
+                      (click)="openEdit(client)"
+                    >
+                      <span class="fa-solid fa-pen-to-square text-sm"></span>
+                    </button>
+                    <button
+                      class="p-1.5 rounded-lg text-text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                      title="Eliminar"
+                      (click)="openDeleteConfirm(client)"
+                    >
+                      <span class="fa-solid fa-trash text-sm"></span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() > 1) {
+        <div class="px-4 py-3 border-t border-border">
+          <app-pagination
+            [pages]="totalPages()"
+            [currentPage]="paginationService.currentPage()"
+          />
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Form Modal -->
+<app-client-form-modal
+  [isOpen]="showFormModal()"
+  [client]="selectedClient()"
+  (saved)="onFormSaved()"
+  (cancel)="onFormCancel()"
+/>
+
+<!-- Delete Confirm Modal -->
+@if (showDeleteConfirm()) {
+  <div
+    class="fixed inset-0 bg-overlay z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-surface border border-border rounded-xl shadow-xl w-full max-w-sm animate-fade-in"
+    >
+      <div class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div
+            class="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0"
+          >
+            <span class="fa-solid fa-triangle-exclamation text-red-400"></span>
+          </div>
+          <div>
+            <h3 class="font-semibold text-text-primary">Eliminar cliente</h3>
+            <p class="text-sm text-text-muted">
+              Esta acción no se puede deshacer
+            </p>
+          </div>
+        </div>
+
+        <p class="text-sm text-text-secondary mb-4">
+          ¿Eliminar a
+          <span class="font-medium text-text-primary">{{
+            getFullName(clientToDelete()!)
+          }}</span
+          >?
+        </p>
+
+        @if (deleteError()) {
+          <p
+            class="text-sm text-red-400 bg-red-400/10 rounded-lg px-3 py-2 mb-4"
+          >
+            {{ deleteError() }}
+          </p>
+        }
+
+        <div class="flex gap-3 justify-end">
+          <button
+            class="px-4 py-2 text-sm text-text-secondary hover:text-text-primary border border-border rounded-lg transition-colors"
+            (click)="cancelDelete()"
+            [disabled]="isDeleting()"
+          >
+            Cancelar
+          </button>
+          <button
+            class="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+            (click)="confirmDelete()"
+            [disabled]="isDeleting()"
+          >
+            @if (isDeleting()) {
+              <span class="fa-solid fa-spinner animate-spin mr-1"></span>
+            }
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

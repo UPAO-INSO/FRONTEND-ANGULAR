@@ -1,7 +1,6 @@
 @if (isOpen()) {
   <div class="pds-modal-overlay z-70">
     <div class="pds-modal max-w-2xl">
-
       <!-- Header -->
       <div class="pds-modal-header">
         <span class="fa-solid fa-users text-brand"></span>
@@ -13,172 +12,95 @@
 
       <!-- Body -->
       <div class="pds-modal-body space-y-4">
+        <!-- Barra de búsqueda (oculta durante creación) -->
+        @if (!createInitialData()) {
+          <div class="pds-field">
+            <div class="flex gap-2">
+              <div class="pds-search flex-1">
+                <span class="pds-search-icon fa-solid fa-search"></span>
+                <input
+                  type="text"
+                  placeholder="Buscar por DNI o RUC..."
+                  class="pds-search-input"
+                  [value]="documentQuery()"
+                  (input)="onSearchInput($event)"
+                />
+              </div>
 
-        <!-- Barra de búsqueda -->
-        <div class="pds-field">
-          <div class="flex gap-2">
-            <div class="pds-search flex-1">
-              <span class="pds-search-icon fa-solid fa-search"></span>
-              <input
-                type="text"
-                placeholder="Buscar por DNI o RUC..."
-                class="pds-search-input"
-                [value]="documentQuery()"
-                (input)="onSearchInput($event)"
-              />
+              @if (documentQuery()) {
+                <button
+                  class="pds-btn-secondary btn-sm"
+                  (click)="clearSearch()"
+                >
+                  <span class="fa-solid fa-xmark"></span>
+                </button>
+              }
+
+              @if (
+                documentQuery().length >= 8 &&
+                getClients().length === 0 &&
+                !clientsResource.isLoading()
+              ) {
+                <button
+                  class="pds-btn-primary btn-sm"
+                  (click)="startClientCreation()"
+                  [disabled]="isLookingUpDocument()"
+                  title="Crear nuevo cliente"
+                >
+                  @if (isLookingUpDocument()) {
+                    <span class="loading loading-spinner loading-sm"></span>
+                  } @else {
+                    <span class="fa-solid fa-plus"></span>
+                  }
+                </button>
+              }
             </div>
-
-            @if (documentQuery()) {
-              <button
-                class="pds-btn-secondary btn-sm"
-                (click)="clearSearch()"
-              >
-                <span class="fa-solid fa-xmark"></span>
-              </button>
-            }
-
-            @if (documentQuery().length >= 8 && getClients().length === 0 && !clientsResource.isLoading()) {
-              <button
-                class="pds-btn-primary btn-sm"
-                (click)="startClientCreation()"
-                [disabled]="isCreatingClient()"
-                title="Crear nuevo cliente"
-              >
-                @if (isCreatingClient()) {
-                  <span class="loading loading-spinner loading-sm"></span>
-                } @else {
-                  <span class="fa-solid fa-plus"></span>
-                }
-              </button>
-            }
+            <p class="text-xs text-text-muted mt-1">
+              Ingresa al menos 3 caracteres para buscar
+            </p>
           </div>
-          <p class="text-xs text-text-muted mt-1">Ingresa al menos 3 caracteres para buscar</p>
-        </div>
+        }
 
-        @if (isCreatingClient()) {
+        <!-- Spinner de lookup RENIEC -->
+        @if (isLookingUpDocument()) {
           <div class="pds-alert-warning">
             <span class="loading loading-spinner loading-sm shrink-0"></span>
             <span>Consultando documento {{ documentQuery() }}...</span>
           </div>
         }
 
-        @if (newClientData()) {
+        <!-- Error de lookup (fallo en RENIEC, no de formulario) -->
+        @if (lookupError()) {
+          <div class="pds-alert-error">
+            <span class="fa-solid fa-exclamation-triangle shrink-0"></span>
+            <span>{{ lookupError() }}</span>
+          </div>
+        }
+
+        <!-- Formulario de creación inline -->
+        @if (createInitialData()) {
           <div class="pds-info-panel">
-            <h4 class="pds-card-title mb-3 flex items-center gap-2">
+            <h4 class="pds-card-title mb-4 flex items-center gap-2">
               <span class="fa-solid fa-user-plus text-brand"></span>
               Confirmar Nuevo Cliente
             </h4>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="pds-field">
-                <label class="pds-label">Documento</label>
-                <input
-                  type="text"
-                  class="pds-input-sm"
-                  [value]="newClientData()!.documentNumber"
-                  readonly
-                />
-              </div>
-
-              @if (newClientData()!.documentNumber.length === 8) {
-                <div class="pds-field">
-                  <label class="pds-label">Nombres</label>
-                  <input
-                    type="text"
-                    class="pds-input-sm"
-                    [value]="newClientData()!.name"
-                    (input)="updateNewClientField('name', $event)"
-                  />
-                </div>
-                <div class="pds-field">
-                  <label class="pds-label">Apellidos</label>
-                  <input
-                    type="text"
-                    class="pds-input-sm"
-                    [value]="newClientData()!.lastname || ''"
-                    (input)="updateNewClientField('lastname', $event)"
-                  />
-                </div>
-              } @else {
-                <div class="md:col-span-2 pds-field">
-                  <label class="pds-label">Razón Social</label>
-                  <input
-                    type="text"
-                    class="pds-input-sm"
-                    [value]="newClientData()!.name"
-                    (input)="updateNewClientField('name', $event)"
-                  />
-                </div>
-              }
-
-              <div class="md:col-span-2 pds-field">
-                <label class="pds-label">Dirección</label>
-                <input
-                  type="text"
-                  class="pds-input-sm"
-                  [value]="newClientData()!.completeAddress || ''"
-                  (input)="updateNewClientField('completeAddress', $event)"
-                />
-              </div>
-
-              <div class="pds-field">
-                <label class="pds-label">Teléfono</label>
-                <input
-                  type="text"
-                  class="pds-input-sm"
-                  [value]="newClientData()!.phone || ''"
-                  (input)="updateNewClientField('phone', $event)"
-                />
-              </div>
-
-              <div class="pds-field">
-                <label class="pds-label">Email</label>
-                <input
-                  type="email"
-                  class="pds-input-sm"
-                  [value]="newClientData()!.email || ''"
-                  (input)="updateNewClientField('email', $event)"
-                />
-              </div>
-            </div>
-
-            <div class="flex gap-2 mt-4 justify-end">
-              <button class="pds-btn-secondary btn-sm" (click)="cancelClientCreation()">
-                Cancelar
-              </button>
-              <button
-                class="pds-btn-primary"
-                (click)="confirmClientCreation()"
-                [disabled]="isSavingClient()"
-              >
-                @if (isSavingClient()) {
-                  <span class="loading loading-spinner loading-xs"></span>
-                } @else {
-                  <span class="fa-solid fa-save"></span>
-                }
-                Crear Cliente
-              </button>
-            </div>
+            <app-client-form-inline
+              [initialData]="createInitialData()"
+              (saved)="onClientCreated($event)"
+              (cancel)="cancelCreate()"
+            />
           </div>
         }
 
-        <!-- Error de creación -->
-        @if (creationError()) {
-          <div class="pds-alert-error">
-            <span class="fa-solid fa-exclamation-triangle shrink-0"></span>
-            <span>{{ creationError() }}</span>
-          </div>
-        }
-
-        <!-- Estado de carga -->
-        @if (clientsResource.isLoading()) {
+        <!-- Estado de carga de lista -->
+        @if (!createInitialData() && clientsResource.isLoading()) {
           <div class="flex justify-center items-center py-8">
             <span class="loading loading-spinner loading-lg text-brand"></span>
           </div>
         }
 
-        <!-- Mensaje de error -->
-        @if (clientsResource.error()) {
+        <!-- Error al cargar lista -->
+        @if (!createInitialData() && clientsResource.error()) {
           <div class="pds-alert-error">
             <span class="fa-solid fa-exclamation-triangle shrink-0"></span>
             <span>Error al cargar clientes. Intenta nuevamente.</span>
@@ -186,7 +108,11 @@
         }
 
         <!-- Lista de clientes -->
-        @if (!clientsResource.isLoading() && !clientsResource.error() && !newClientData()) {
+        @if (
+          !createInitialData() &&
+          !clientsResource.isLoading() &&
+          !clientsResource.error()
+        ) {
           <div class="max-h-96 overflow-y-auto custom-scrollbar space-y-2">
             @if (getClients().length === 0) {
               <div class="pds-empty">
@@ -207,14 +133,16 @@
           </div>
 
           @if (!documentQuery()) {
-            <app-pagination [pages]="getTotalPages()" [currentPage]="currentPage()" />
+            <app-pagination
+              [pages]="getTotalPages()"
+              [currentPage]="currentPage()"
+            />
           }
         }
-
       </div>
 
-      <!-- Footer -->
-      @if (!newClientData()) {
+      <!-- Footer (solo en modo selección, no en creación) -->
+      @if (!createInitialData()) {
         <div class="pds-modal-footer">
           <button class="pds-btn-secondary" (click)="close()">Cancelar</button>
           <button
@@ -227,7 +155,6 @@
           </button>
         </div>
       }
-
     </div>
   </div>
 }

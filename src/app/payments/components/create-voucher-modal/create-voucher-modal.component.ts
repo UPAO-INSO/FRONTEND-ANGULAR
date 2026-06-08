@@ -123,7 +123,7 @@ export class CreateVoucherModalComponent {
       documentNumber:  c.documentNumber,
       documentType:    (c.documentType as DocumentType) ?? DocumentType.DNI,
       email:           c.email,
-      deparment:       c.departament,   // Note: frontend usa 'deparment' (sin 'a')
+      departament:     c.departament,
       province:        c.province,
       district:        c.district,
       completeAddress: c.completeAddress,
@@ -185,7 +185,7 @@ export class CreateVoucherModalComponent {
 
     const denominacion = `${client.name} ${client.lastname}`.trim();
     const direccion    = client.completeAddress ||
-      `${client.district}, ${client.province}, ${client.deparment}`.trim();
+      `${client.district}, ${client.province}, ${client.departament}`.trim();
 
     return {
       serie:                          this.voucherType() === VoucherType.RECEIPT ? 'BBB1' : 'FFF1',
