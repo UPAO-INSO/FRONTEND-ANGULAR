@@ -18,6 +18,7 @@ import {
 import { CulqiService } from '@src/app/shared/services/culqi.service';
 import { PaymentsService } from '@src/app/payments/services/payments.service';
 import { ContentPayment } from '@src/app/payments/interfaces/payments.inteface';
+import { OrderService } from '../../services/order.service';
 import { ConfirmModifyModalComponent } from '../confirm-modify-modal/confirm-modify-modal.component';
 import { ConfirmStatusModalComponent } from '../confirm-status-modal/confirm-status-modal.component';
 import { PaymentCheckoutComponent } from '@src/app/payments/components/payment-checkout/payment-checkout.component';
@@ -48,6 +49,7 @@ interface StatusChange {
 export class OrderViewComponent {
   private culqiService    = inject(CulqiService);
   private paymentsService = inject(PaymentsService);
+  private orderService    = inject(OrderService);
   private router          = inject(Router);
 
   selectedTable    = input<Table | null>();
@@ -162,6 +164,10 @@ export class OrderViewComponent {
     this.paymentsService.getPaymentByOrderId(this.activeOrder().id).subscribe(
       (payment) => this.existingPayment.set(payment)
     );
+    // El WebSocket confirmó el pago → cambiar estado del pedido a PAID
+    if (culqiOrder.state === 'paid') {
+      this.orderService.updateOrderStatus(this.activeOrder().id, OrderStatus.PAID).subscribe();
+    }
   }
 
   onPaymentError(error: any) { console.error('Error en el pago:', error); }
