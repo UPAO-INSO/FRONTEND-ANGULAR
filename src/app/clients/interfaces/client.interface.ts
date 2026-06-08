@@ -23,7 +23,7 @@ export interface Client {
   documentNumber: string;
   documentType: DocumentType;
   email: string;
-  deparment: string;
+  departament: string; // typo comes from backend field name
   province: string;
   district: string;
   completeAddress: string;

@@ -43,6 +43,7 @@ export class SidebarComponent {
     { icon: 'fa-solid fa-warehouse',    label: 'Inventario',   route: '/inventory',    exact: false, color: 'text-status-ready',          allowedRoles: ['GERENTE', 'COCINERO'] },
     { icon: 'fa-solid fa-bookmark',     label: 'Separaciones', route: '/separaciones', exact: false, color: 'text-yellow-400',            allowedRoles: ['MESERO', 'COCINERO', 'GERENTE'] },
     { icon: 'fa-solid fa-id-card',      label: 'Pensionistas', route: '/pensionistas', exact: false, color: 'text-purple-400',            allowedRoles: ['GERENTE'] },
+    { icon: 'fa-solid fa-users',        label: 'Clientes',     route: '/clients',      exact: false, color: 'text-blue-400',               allowedRoles: ['CAJERO', 'GERENTE'] },
   ];
 
   visibleLinks = computed(() => {

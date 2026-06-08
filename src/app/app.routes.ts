@@ -88,6 +88,13 @@ export const routes: Routes = [
       },
 
       {
+        path: 'clients',
+        canActivate: [RoleGuard],
+        data: { roles: ['CAJERO', 'GERENTE', 'ADMINISTRADOR'] },
+        loadChildren: () => import('./clients/clients.routes'),
+      },
+
+      {
         path: 'profile',
         loadComponent: () =>
           import('./profile/pages/profile-page/profile-page.component').then(

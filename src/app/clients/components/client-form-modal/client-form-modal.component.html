@@ -1,0 +1,200 @@
+@if (isOpen()) {
+  <div class="fixed inset-0 bg-overlay z-50 flex items-center justify-center p-4">
+    <div class="bg-surface border border-border rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col animate-fade-in">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center">
+            <span class="fa-solid fa-user text-brand text-sm"></span>
+          </div>
+          <h2 class="font-semibold text-text-primary">
+            {{ isEdit ? 'Editar cliente' : 'Nuevo cliente' }}
+          </h2>
+        </div>
+        <button
+          class="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-background transition-colors"
+          (click)="onCancel()"
+        >
+          <span class="fa-solid fa-xmark"></span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-4 overflow-y-auto custom-secondary-scrollbar flex-1 space-y-4">
+
+        <!-- Documento + Autofill (solo en creación) -->
+        @if (!isEdit) {
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">
+              N° Documento (DNI / RUC)
+            </label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                class="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors font-mono"
+                placeholder="Ej: 12345678"
+                [value]="form().documentNumber"
+                (input)="updateField('documentNumber', $event)"
+              />
+              <button
+                class="px-3 py-2 bg-brand/10 text-brand border border-brand/20 rounded-lg text-sm font-medium hover:bg-brand/20 transition-colors disabled:opacity-50 shrink-0"
+                (click)="lookupDocument()"
+                [disabled]="isLookingUp()"
+              >
+                @if (isLookingUp()) {
+                  <span class="fa-solid fa-spinner animate-spin"></span>
+                } @else {
+                  <span class="fa-solid fa-wand-magic-sparkles"></span>
+                }
+                Autocompletar
+              </button>
+            </div>
+            @if (lookupDone()) {
+              <p class="text-xs text-status-ready mt-1">
+                <span class="fa-solid fa-check mr-1"></span>Datos cargados desde Factiliza
+              </p>
+            }
+          </div>
+        }
+
+        <!-- Nombre y Apellido -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">Nombre *</label>
+            <input
+              type="text"
+              class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+              placeholder="Nombre"
+              [value]="form().name"
+              (input)="updateField('name', $event)"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">Apellido</label>
+            <input
+              type="text"
+              class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+              placeholder="Apellido"
+              [value]="form().lastname"
+              (input)="updateField('lastname', $event)"
+            />
+          </div>
+        </div>
+
+        <!-- Teléfono y Email -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">Teléfono</label>
+            <input
+              type="tel"
+              class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+              placeholder="987654321"
+              [value]="form().phone"
+              (input)="updateField('phone', $event)"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">Email</label>
+            <input
+              type="email"
+              class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+              placeholder="correo@ejemplo.com"
+              [value]="form().email"
+              (input)="updateField('email', $event)"
+            />
+          </div>
+        </div>
+
+        <!-- Documento en modo edición -->
+        @if (isEdit) {
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">N° Documento</label>
+            <input
+              type="text"
+              class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors font-mono"
+              placeholder="DNI o RUC"
+              [value]="form().documentNumber"
+              (input)="updateField('documentNumber', $event)"
+            />
+          </div>
+        }
+
+        <!-- Departamento, Provincia, Distrito -->
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">Departamento</label>
+            <input
+              type="text"
+              class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+              placeholder="La Libertad"
+              [value]="form().department"
+              (input)="updateField('department', $event)"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">Provincia</label>
+            <input
+              type="text"
+              class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+              placeholder="Trujillo"
+              [value]="form().province"
+              (input)="updateField('province', $event)"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-text-secondary mb-1">Distrito</label>
+            <input
+              type="text"
+              class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+              placeholder="Trujillo"
+              [value]="form().district"
+              (input)="updateField('district', $event)"
+            />
+          </div>
+        </div>
+
+        <!-- Dirección completa -->
+        <div>
+          <label class="block text-xs font-medium text-text-secondary mb-1">Dirección completa</label>
+          <input
+            type="text"
+            class="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
+            placeholder="Av. Los Incas 123"
+            [value]="form().completeAddress"
+            (input)="updateField('completeAddress', $event)"
+          />
+        </div>
+
+        <!-- Error -->
+        @if (error()) {
+          <p class="text-sm text-red-400 bg-red-400/10 rounded-lg px-3 py-2">
+            <span class="fa-solid fa-circle-exclamation mr-1"></span>
+            {{ error() }}
+          </p>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="flex gap-3 justify-end px-6 py-4 border-t border-border shrink-0">
+        <button
+          class="px-4 py-2 text-sm text-text-secondary hover:text-text-primary border border-border rounded-lg transition-colors"
+          (click)="onCancel()"
+          [disabled]="isSaving()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="flex items-center gap-2 px-4 py-2 text-sm bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors disabled:opacity-50"
+          (click)="onSubmit()"
+          [disabled]="isSaving()"
+        >
+          @if (isSaving()) {
+            <span class="fa-solid fa-spinner animate-spin"></span>
+          }
+          {{ isEdit ? 'Guardar cambios' : 'Crear cliente' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

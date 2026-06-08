@@ -93,12 +93,46 @@ export class ClientService {
       catchError((error) => {
         console.error('Error fetching client:', error);
         return throwError(
-          () =>
-            new Error(
-              'Error al obtener el cliente. Por favor, intente nuevamente.'
-            )
+          () => new Error('Error al obtener el cliente. Por favor, intente nuevamente.')
         );
       })
     );
+  }
+
+  fetchClientsPage(options: ClientOptions = {}): Observable<RESTClient> {
+    const { page = 1, limit = 10 } = options;
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    return this.http.get<RESTClient>(`${this.baseUrl}/customers`, { params });
+  }
+
+  searchByName(name: string): Observable<Client[]> {
+    return this.http.get<Client[]>(`${this.baseUrl}/customers/search`, {
+      params: new HttpParams().set('q', name),
+    });
+  }
+
+  updateClient(id: number, client: CreateClientRequest): Observable<Client> {
+    return this.http.put<Client>(`${this.baseUrl}/customers/${id}`, client).pipe(
+      catchError((error) => {
+        console.error('Error updating client:', error);
+        return throwError(() => new Error('Error al actualizar el cliente.'));
+      })
+    );
+  }
+
+  deleteClient(id: number): Observable<string> {
+    return this.http
+      .delete(`${this.baseUrl}/customers/${id}`, { responseType: 'text' })
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.status === 409
+              ? 'El cliente tiene registros asociados y no puede eliminarse'
+              : 'Error al eliminar el cliente.';
+          return throwError(() => new Error(message));
+        })
+      );
   }
 }
