@@ -42,8 +42,12 @@ export class AuthService {
   /** Tipo de alerta de sesión activa ('none' = sin alerta) */
   readonly sessionAlert = computed(() => this._sessionAlert());
 
+  /** Segundos restantes hasta que expire el access token. null = sin token. */
+  readonly tokenSecondsLeft = signal<number | null>(null);
+
   constructor() {
     this._initFromStorage();
+    this._startTokenCountdown();
   }
 
   // ─── Inicialización ─────────────────────────────────────────────
@@ -238,5 +242,16 @@ export class AuthService {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+  }
+
+  private _startTokenCountdown(): void {
+    setInterval(() => {
+      const token = this.getAccessToken();
+      if (!token) { this.tokenSecondsLeft.set(null); return; }
+      const expiry = parseTokenExpiry(token);
+      if (!expiry) { this.tokenSecondsLeft.set(null); return; }
+      const secs = Math.floor((expiry - Date.now()) / 1000);
+      this.tokenSecondsLeft.set(secs > 0 ? secs : 0);
+    }, 1000);
   }
 }

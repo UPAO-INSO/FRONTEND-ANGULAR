@@ -5,7 +5,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { of } from 'rxjs';
 
 import { PensionistaService } from '@pensionistas/services/pensionista.service';
-import { CustomerService } from '@src/app/customers/services/customer.service';
+import { ClientService } from '@src/app/clients/service/client.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { KpiCardComponent } from '@shared/components/kpi-card/kpi-card.component';
 import {
@@ -13,7 +13,7 @@ import {
   Pensionista,
   PensionistaConsumo,
 } from '@pensionistas/interfaces/pensionista.interface';
-import { Customer } from '@src/app/customers/interfaces/customer.interface';
+import { Client } from '@src/app/clients/interfaces/client.interface';
 
 @Component({
   selector: 'app-pensionistas-page',
@@ -22,7 +22,7 @@ import { Customer } from '@src/app/customers/interfaces/customer.interface';
 })
 export default class PensionistasPageComponent {
   private service         = inject(PensionistaService);
-  private customerService = inject(CustomerService);
+  private clientService = inject(ClientService);
 
   // ── Resources ─────────────────────────────────────────────────────
   pensionistasResource = rxResource({
@@ -41,9 +41,9 @@ export default class PensionistasPageComponent {
   saveError    = signal<string | null>(null);
 
   // Búsqueda de cliente para el modal
-  selectedCustomer       = signal<Customer | null>(null);
+  selectedCustomer       = signal<Client | null>(null);
   customerQuery          = signal('');
-  customerResults        = signal<Customer[]>([]);
+  customerResults        = signal<Client[]>([]);
   customerDropdownOpen   = signal(false);
   private searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
@@ -65,7 +65,7 @@ export default class PensionistasPageComponent {
   openEdit(p: Pensionista) {
     this.editTarget.set(p);
     this.selectedCustomer.set(
-      p.customerId ? { id: p.customerId, name: p.name, lastname: null, phone: p.phone ?? null, email: null, documentNumber: null, documentType: null } : null
+      p.customerId ? { id: p.customerId, name: p.name, lastname: '', phone: p.phone ?? '', email: '', documentNumber: '', documentType: undefined, departament: '', province: '', district: '', completeAddress: '' } as unknown as Client : null
     );
     this.customerQuery.set('');
     this.customerResults.set([]);
@@ -94,7 +94,7 @@ export default class PensionistasPageComponent {
       return;
     }
     this.searchDebounce = setTimeout(() => {
-      this.customerService.searchByName(q).subscribe({
+      this.clientService.searchByName(q).subscribe({
         next: (results) => {
           this.customerResults.set(results);
           this.customerDropdownOpen.set(true);
@@ -103,7 +103,7 @@ export default class PensionistasPageComponent {
     }, 300);
   }
 
-  selectCustomer(customer: Customer) {
+  selectCustomer(customer: Client) {
     this.selectedCustomer.set(customer);
     this.customerDropdownOpen.set(false);
     this.customerQuery.set('');
@@ -117,7 +117,7 @@ export default class PensionistasPageComponent {
 
   createAndSelectCustomer(name: string) {
     this.customerDropdownOpen.set(false);
-    this.customerService.create({ name: name.trim() }).subscribe({
+    this.clientService.quickCreate(name.trim()).subscribe({
       next: (customer) => this.selectCustomer(customer),
     });
   }

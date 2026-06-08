@@ -8,7 +8,7 @@ import { SeparacionService } from '@separaciones/services/separacion.service';
 import { PensionistaService } from '@pensionistas/services/pensionista.service';
 import { MenuDiarioService } from '@menu/services/menu-diario.service';
 import { ProductService } from '@products/services/product.service';
-import { CustomerService } from '@src/app/customers/services/customer.service';
+import { ClientService } from '@src/app/clients/service/client.service';
 import { WebSocketService } from '@shared/services/websocket.service';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { KpiCardComponent } from '@shared/components/kpi-card/kpi-card.component';
@@ -18,7 +18,7 @@ import {
   SeparacionItemRequest,
   SeparacionStatus,
 } from '@separaciones/interfaces/separacion.interface';
-import { Customer } from '@src/app/customers/interfaces/customer.interface';
+import { Client } from '@src/app/clients/interfaces/client.interface';
 
 type ClienteMode = 'pensionista' | 'libre';
 
@@ -47,7 +47,7 @@ export default class SeparacionesPageComponent {
   private pensionistaService = inject(PensionistaService);
   private menuService        = inject(MenuDiarioService);
   private productService     = inject(ProductService);
-  private customerService    = inject(CustomerService);
+  private clientService      = inject(ClientService);
   private wsService          = inject(WebSocketService);
   private destroyRef         = inject(DestroyRef);
 
@@ -118,8 +118,8 @@ export default class SeparacionesPageComponent {
 
   // Búsqueda de cliente
   customerQuery          = signal('');
-  customerResults        = signal<Customer[]>([]);
-  selectedCustomer       = signal<Customer | null>(null);
+  customerResults        = signal<Client[]>([]);
+  selectedCustomer       = signal<Client | null>(null);
   customerDropdownOpen   = signal(false);
   private searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
@@ -156,7 +156,7 @@ export default class SeparacionesPageComponent {
       return;
     }
     this.searchDebounce = setTimeout(() => {
-      this.customerService.searchByName(q).subscribe({
+      this.clientService.searchByName(q).subscribe({
         next: (results) => {
           this.customerResults.set(results);
           this.customerDropdownOpen.set(true);
@@ -165,7 +165,7 @@ export default class SeparacionesPageComponent {
     }, 300);
   }
 
-  selectCustomer(customer: Customer) {
+  selectCustomer(customer: Client) {
     this.selectedCustomer.set(customer);
     this.customerDropdownOpen.set(false);
     this.customerQuery.set('');
@@ -179,7 +179,7 @@ export default class SeparacionesPageComponent {
 
   createAndSelectCustomer(name: string) {
     this.customerDropdownOpen.set(false);
-    this.customerService.create({ name: name.trim() }).subscribe({
+    this.clientService.quickCreate(name.trim()).subscribe({
       next: (customer) => this.selectCustomer(customer),
     });
   }

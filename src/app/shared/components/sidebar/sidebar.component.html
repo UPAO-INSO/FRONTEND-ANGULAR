@@ -126,15 +126,49 @@
       </a>
     }
 
-    <!-- Logout -->
-    <button
-      class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-red-500/8 hover:text-red-400 transition-all duration-150"
-      (click)="onLogout()"
-    >
-      <span
-        class="fa-solid fa-right-from-bracket text-sm w-4 text-center shrink-0"
-      ></span>
-      <span>Cerrar Sesión</span>
-    </button>
+    <!-- Barra de sesión -->
+    @if (authService.authStatus() === 'authenticated') {
+      @let secs = authService.tokenSecondsLeft();
+      @if (secs !== null) {
+        <div class="px-3 py-1.5">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] text-text-muted">Sesión</span>
+            <span class="text-[10px] font-mono"
+                  [class.text-text-muted]="secs > 120"
+                  [class.text-status-pending]="secs <= 120 && secs > 60"
+                  [class.text-status-cancelled]="secs <= 60">
+              {{ formatTokenCountdown(secs) }}
+            </span>
+          </div>
+          <div class="h-0.5 w-full bg-border rounded-full overflow-hidden">
+            <div class="h-full rounded-full transition-[width] duration-1000 ease-linear"
+                 [style.width.%]="getTokenPercent(secs)"
+                 [class.bg-brand]="secs > 120"
+                 [class.bg-status-pending]="secs <= 120 && secs > 60"
+                 [class.bg-status-cancelled]="secs <= 60">
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- Logout / Login -->
+    @if (authService.authStatus() === 'authenticated') {
+      <button
+        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-red-500/8 hover:text-red-400 transition-all duration-150"
+        (click)="onLogout()"
+      >
+        <span class="fa-solid fa-right-from-bracket text-sm w-4 text-center shrink-0"></span>
+        <span>Cerrar Sesión</span>
+      </button>
+    } @else {
+      <button
+        class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-brand/10 hover:text-brand transition-all duration-150"
+        (click)="onLogin()"
+      >
+        <span class="fa-solid fa-right-to-bracket text-sm w-4 text-center shrink-0"></span>
+        <span>Iniciar Sesión</span>
+      </button>
+    }
   </div>
 </aside>
