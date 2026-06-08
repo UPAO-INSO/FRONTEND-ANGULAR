@@ -6,9 +6,13 @@
   />
 
   <!-- Toolbar -->
-  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+  <div
+    class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
+  >
     <div class="relative w-full sm:max-w-sm">
-      <span class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm"></span>
+      <span
+        class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm"
+      ></span>
       <input
         type="text"
         placeholder="Buscar por nombre o documento..."
@@ -26,7 +30,9 @@
   </div>
 
   <!-- Table -->
-  <div class="bg-surface border border-border rounded-xl overflow-hidden flex flex-col flex-1">
+  <div
+    class="bg-surface border border-border rounded-xl overflow-hidden flex flex-col flex-1"
+  >
     <app-list-state
       [loading]="isLoading()"
       [error]="loadError()"
@@ -41,11 +47,25 @@
         <table class="w-full text-sm">
           <thead class="bg-background-secondary border-b border-border">
             <tr>
-              <th class="text-left px-4 py-3 text-text-secondary font-medium">Cliente</th>
-              <th class="text-left px-4 py-3 text-text-secondary font-medium">Documento</th>
-              <th class="text-left px-4 py-3 text-text-secondary font-medium hidden md:table-cell">Email</th>
-              <th class="text-left px-4 py-3 text-text-secondary font-medium hidden lg:table-cell">Teléfono</th>
-              <th class="text-right px-4 py-3 text-text-secondary font-medium">Acciones</th>
+              <th class="text-left px-4 py-3 text-text-secondary font-medium">
+                Cliente
+              </th>
+              <th class="text-left px-4 py-3 text-text-secondary font-medium">
+                Documento
+              </th>
+              <th
+                class="text-left px-4 py-3 text-text-secondary font-medium hidden md:table-cell"
+              >
+                Email
+              </th>
+              <th
+                class="text-left px-4 py-3 text-text-secondary font-medium hidden lg:table-cell"
+              >
+                Teléfono
+              </th>
+              <th class="text-right px-4 py-3 text-text-secondary font-medium">
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border">
@@ -53,22 +73,28 @@
               <tr class="hover:bg-background-secondary transition-colors">
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center shrink-0">
+                    <div
+                      class="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center shrink-0"
+                    >
                       <span class="fa-solid fa-user text-brand text-xs"></span>
                     </div>
-                    <span class="font-medium text-text-primary">{{ getFullName(client) }}</span>
+                    <span class="font-medium text-text-primary">{{
+                      getFullName(client)
+                    }}</span>
                   </div>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-background-secondary text-text-secondary text-xs font-mono">
+                  <span
+                    class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-background-secondary text-text-secondary text-xs font-mono"
+                  >
                     {{ getDocumentLabel(client) }}
                   </span>
                 </td>
                 <td class="px-4 py-3 text-text-secondary hidden md:table-cell">
-                  {{ client.email || '—' }}
+                  {{ client.email || "—" }}
                 </td>
                 <td class="px-4 py-3 text-text-secondary hidden lg:table-cell">
-                  {{ client.phone || '—' }}
+                  {{ client.phone || "—" }}
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex items-center justify-end gap-2">
@@ -96,7 +122,10 @@
 
       @if (totalPages() > 1) {
         <div class="px-4 py-3 border-t border-border">
-          <app-pagination [totalPages]="totalPages()" />
+          <app-pagination
+            [pages]="totalPages()"
+            [currentPage]="paginationService.currentPage()"
+          />
         </div>
       }
     }
@@ -113,26 +142,39 @@
 
 <!-- Delete Confirm Modal -->
 @if (showDeleteConfirm()) {
-  <div class="fixed inset-0 bg-overlay z-50 flex items-center justify-center p-4">
-    <div class="bg-surface border border-border rounded-xl shadow-xl w-full max-w-sm animate-fade-in">
+  <div
+    class="fixed inset-0 bg-overlay z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="bg-surface border border-border rounded-xl shadow-xl w-full max-w-sm animate-fade-in"
+    >
       <div class="p-6">
         <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+          <div
+            class="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0"
+          >
             <span class="fa-solid fa-triangle-exclamation text-red-400"></span>
           </div>
           <div>
             <h3 class="font-semibold text-text-primary">Eliminar cliente</h3>
-            <p class="text-sm text-text-muted">Esta acción no se puede deshacer</p>
+            <p class="text-sm text-text-muted">
+              Esta acción no se puede deshacer
+            </p>
           </div>
         </div>
 
         <p class="text-sm text-text-secondary mb-4">
           ¿Eliminar a
-          <span class="font-medium text-text-primary">{{ getFullName(clientToDelete()!) }}</span>?
+          <span class="font-medium text-text-primary">{{
+            getFullName(clientToDelete()!)
+          }}</span
+          >?
         </p>
 
         @if (deleteError()) {
-          <p class="text-sm text-red-400 bg-red-400/10 rounded-lg px-3 py-2 mb-4">
+          <p
+            class="text-sm text-red-400 bg-red-400/10 rounded-lg px-3 py-2 mb-4"
+          >
             {{ deleteError() }}
           </p>
         }

@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { map, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { ClientService } from '../../service/client.service';
@@ -40,7 +40,7 @@ export class ClientsPageComponent {
   deleteError = signal<string | null>(null);
   isDeleting = signal(false);
 
-  clientsResource = rxResource({
+  clientsResource = rxResource<RESTClient, { page: number; search: string }>({
     params: () => ({
       page: this.paginationService.currentPage(),
       search: this.searchTerm(),
@@ -48,30 +48,34 @@ export class ClientsPageComponent {
     stream: ({ params }) => {
       const term = params.search.trim();
       if (term.length >= 2) {
-        return /^\d+$/.test(term)
+        const src = /^\d+$/.test(term)
           ? this.clientService.searchByDocument(term)
           : this.clientService.searchByName(term);
+        return src.pipe(
+          map(clients => ({
+            content: clients,
+            totalPages: 1,
+            totalElements: clients.length,
+            size: clients.length,
+            page: 1,
+            empty: clients.length === 0,
+          } as RESTClient))
+        );
       }
       return this.clientService.fetchClientsPage({ page: params.page, limit: 10 });
     },
   });
 
-  clients = computed<Client[]>(() => {
-    const val = this.clientsResource.value();
-    if (!val) return [];
-    if (Array.isArray(val)) return val as Client[];
-    return (val as RESTClient).content ?? [];
-  });
-
-  totalPages = computed<number>(() => {
-    const val = this.clientsResource.value();
-    if (!val || Array.isArray(val)) return 1;
-    return (val as RESTClient).totalPages ?? 1;
-  });
+  clients = computed<Client[]>(() => this.clientsResource.value()?.content ?? []);
+  totalPages = computed<number>(() => this.clientsResource.value()?.totalPages ?? 1);
 
   isLoading = computed(() => this.clientsResource.isLoading());
-  loadError = computed(() => (this.clientsResource.error() as Error | undefined)?.message ?? null);
-  isEmpty = computed(() => !this.isLoading() && !this.loadError() && this.clients().length === 0);
+  loadError = computed(
+    () => (this.clientsResource.error() as Error | undefined)?.message ?? null,
+  );
+  isEmpty = computed(
+    () => !this.isLoading() && !this.loadError() && this.clients().length === 0,
+  );
 
   constructor() {
     this.searchSubject
